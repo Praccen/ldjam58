@@ -109,8 +109,7 @@ export default class Texture {
       }
       let base64 = btoa(contentString);
       this.loadFromFile("data:" + mimeType + ";base64," + base64);
-    }
-    catch (e) {
+    } catch (e) {
       console.warn(e.message);
     }
   }

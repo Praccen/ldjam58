@@ -222,17 +222,16 @@ export default class MeshStore {
             newlyCreatedMesh.gltfObject.images[imageIndex].mimeType,
             content
           );
-          if (newlyCreatedMesh.gltfObject.images[imageIndex].name != undefined && newlyCreatedMesh.gltfObject.images[imageIndex].name != "") {
+          if (
+            newlyCreatedMesh.gltfObject.images[imageIndex].name != undefined &&
+            newlyCreatedMesh.gltfObject.images[imageIndex].name != ""
+          ) {
             this.textureStore.setTexture(
               newlyCreatedMesh.gltfObject.images[imageIndex].name,
               texture
             );
-          }
-          else {
-             this.textureStore.setTexture(
-              path+"/"+imageIndex,
-              texture
-            );
+          } else {
+            this.textureStore.setTexture(path + "/" + imageIndex, texture);
           }
         }
         resolve(newlyCreatedMesh);
@@ -557,32 +556,42 @@ export default class MeshStore {
       // Chunks are serial, starting with 4 byte chunk length, followed by 4 byte chunk type
 
       let offset = 12;
-      let bufferCounter = 0; 
+      let bufferCounter = 0;
 
       while (offset < arrayBuffer.byteLength) {
-        const chunkLength = new Int32Array(arrayBuffer.slice(offset, offset + 4))[0];
-        const chunkType = decoder.decode(arrayBuffer.slice(offset + 4, offset + 8));
+        const chunkLength = new Int32Array(
+          arrayBuffer.slice(offset, offset + 4)
+        )[0];
+        const chunkType = decoder.decode(
+          arrayBuffer.slice(offset + 4, offset + 8)
+        );
 
         offset += 8;
 
         if (chunkType.startsWith("JSON")) {
-          const jsonString = decoder.decode(arrayBuffer.slice(offset, offset + chunkLength))
+          const jsonString = decoder.decode(
+            arrayBuffer.slice(offset, offset + chunkLength)
+          );
           try {
             gltfContent = JSON.parse(jsonString);
-          }
-          catch (e) {
+          } catch (e) {
             console.warn(
               "JSON parse error when parsing " + meshPath + ": " + e.message
             );
             return null;
           }
-        }
-        else if (chunkType.startsWith("BIN")) {
+        } else if (chunkType.startsWith("BIN")) {
           if (gltfContent.buffers == undefined) {
-            console.warn("Parsing glb chunk of type bin before json chunk in file " + meshPath);
+            console.warn(
+              "Parsing glb chunk of type bin before json chunk in file " +
+                meshPath
+            );
             return null;
           }
-          gltfContent.buffers[bufferCounter] = arrayBuffer.slice(offset, offset + chunkLength);
+          gltfContent.buffers[bufferCounter] = arrayBuffer.slice(
+            offset,
+            offset + chunkLength
+          );
           bufferCounter++;
         }
         offset += chunkLength;

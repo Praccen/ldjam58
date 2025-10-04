@@ -91,7 +91,10 @@ export default class PhysicsScene {
         continue;
       }
 
-      if (ignoreNonCollidableObjects && !treeContent.physicsObject.isCollidable) {
+      if (
+        ignoreNonCollidableObjects &&
+        !treeContent.physicsObject.isCollidable
+      ) {
         continue;
       }
 
@@ -105,21 +108,32 @@ export default class PhysicsScene {
           // TODO: Doesn't work, fix
 
           // set inverse matrix for ray
-          ray.setInverseMatrix(mat4.invert(mat4.create(), treeContent.physicsObject.transform.matrix));
+          ray.setInverseMatrix(
+            mat4.invert(
+              mat4.create(),
+              treeContent.physicsObject.transform.matrix
+            )
+          );
 
           // get the shapes in the internal tree that intersects with the ray
-          let internalTreeContentToTestAgainst = new Array<TreePhysicsContentElement>();
-          treeContent.physicsObject.internalTree.getContentForRayCast(ray, internalTreeContentToTestAgainst, Math.min(maxDistance, closestHit));
+          let internalTreeContentToTestAgainst =
+            new Array<TreePhysicsContentElement>();
+          treeContent.physicsObject.internalTree.getContentForRayCast(
+            ray,
+            internalTreeContentToTestAgainst,
+            Math.min(maxDistance, closestHit)
+          );
 
           hit = IntersectionTester.doRayCast(
             ray,
-            internalTreeContentToTestAgainst.map((value) => {return value.shape}),
+            internalTreeContentToTestAgainst.map((value) => {
+              return value.shape;
+            }),
             Math.min(maxDistance, closestHit)
           );
 
           // reset the inverse matrix for the ray
           ray.setInverseMatrix(mat4.create());
-          
         }
 
         if (closestHit > hit) {
@@ -199,32 +213,51 @@ export default class PhysicsScene {
             physicsObjectTestShapes.length = 0;
 
             // set inverse matrix for otherObject.physicsObject.boundingBox to the one of physicsObject
-            otherObject.physicsObject.boundingBox.setInverseMatrix(mat4.invert(mat4.create(), physicsObject.transform.matrix));
+            otherObject.physicsObject.boundingBox.setInverseMatrix(
+              mat4.invert(mat4.create(), physicsObject.transform.matrix)
+            );
 
             // get the shapes in the tree that intersects with the bounding box of otherObject
-            physicsObject.internalTree.getContentFromIntersection([otherObject.physicsObject.boundingBox], physicsObjectTestShapes);
+            physicsObject.internalTree.getContentFromIntersection(
+              [otherObject.physicsObject.boundingBox],
+              physicsObjectTestShapes
+            );
             // physicsObject.internalTree.getAllContent(physicsObjectTestShapes);
 
             for (let internalTreeNode of physicsObjectTestShapes) {
-              internalTreeNode.shape.setTransformMatrix(physicsObject.transform.matrix);
+              internalTreeNode.shape.setTransformMatrix(
+                physicsObject.transform.matrix
+              );
             }
 
             // reset the inverse matrix for the otherObject bounding box
-            otherObject.physicsObject.boundingBox.setInverseMatrix(mat4.create());
+            otherObject.physicsObject.boundingBox.setInverseMatrix(
+              mat4.create()
+            );
           }
 
           if (otherObject.physicsObject.internalTree != undefined) {
             otherObjectTestShapes.length = 0;
 
             // set inverse matrix for physicsObject.boundingBox to the one of otherObject
-            physicsObject.boundingBox.setInverseMatrix(mat4.invert(mat4.create(), otherObject.physicsObject.transform.matrix));
+            physicsObject.boundingBox.setInverseMatrix(
+              mat4.invert(
+                mat4.create(),
+                otherObject.physicsObject.transform.matrix
+              )
+            );
 
             // get the shapes in the tree that intersects with the bounding box of physicsObject
-            otherObject.physicsObject.internalTree.getContentFromIntersection([physicsObject.boundingBox], otherObjectTestShapes);
+            otherObject.physicsObject.internalTree.getContentFromIntersection(
+              [physicsObject.boundingBox],
+              otherObjectTestShapes
+            );
             // otherObject.physicsObject.internalTree.getAllContent(otherObjectTestShapes);
 
             for (let internalTreeNode of otherObjectTestShapes) {
-              internalTreeNode.shape.setTransformMatrix(otherObject.physicsObject.transform.matrix);
+              internalTreeNode.shape.setTransformMatrix(
+                otherObject.physicsObject.transform.matrix
+              );
             }
 
             // reset the inverse matrix for the physicsObject bounding box

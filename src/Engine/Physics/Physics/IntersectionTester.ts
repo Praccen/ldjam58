@@ -100,7 +100,7 @@ export module IntersectionTester {
             new IntersectionInformation(
               tempIntersectionAxis,
               tempIntersectionDepth.depth,
-              vec3.create(),//SAT.getIntersectionPoint(shapeA, shapeB, tempIntersectionAxis),
+              vec3.create(), //SAT.getIntersectionPoint(shapeA, shapeB, tempIntersectionAxis),
               shapeA,
               shapeB
             )

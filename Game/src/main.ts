@@ -93,7 +93,7 @@ function animate() {
   gameContext.draw();
 }
 
-let progress = {requested: 0, loaded: 0};
+let progress = { requested: 0, loaded: 0 };
 // Start animating!
 gameContext.loadMeshes(progress).then(() => {
   splashScreen.destroy();
@@ -109,5 +109,3 @@ function loadingScreenAnimate() {
 }
 
 requestAnimationFrame(loadingScreenAnimate);
-
-

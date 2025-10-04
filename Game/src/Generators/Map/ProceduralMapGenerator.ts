@@ -15,9 +15,13 @@ import { LabyrinthGenerator } from "../LabyrinthGenerator.js";
 
 const floorLayouts: string[] = [
   `
-  44444
-  44444
-  44544
+  1111111
+  1111111
+  1111111
+  1110111
+  1111111
+  1111111
+  1111111
   `,
   `
   54s44
@@ -55,10 +59,8 @@ const floorLayouts: string[] = [
   11010111101111111110111101111111111101111111111
   11111311111011111111111111111113311110101111111
   11111111111111111111111111111113111111111111111
-  `
+  `,
 ];
-
-
 
 enum BridgeType {
   NOT_A_BRIDGE,
@@ -285,7 +287,7 @@ export default class ProceduralMap {
 
   private columns: number;
   private rows: number;
-  npcsStartInfo: {startPos: vec2, static: boolean}[] = [];
+  npcsStartInfo: { startPos: vec2; static: boolean }[] = [];
 
   constructor(
     scene: ENGINE.Scene,
@@ -346,9 +348,15 @@ export default class ProceduralMap {
           connectionRooms.push([columnNr, rowNr]);
           vec2.set(this.playerSpawnRoom, columnNr, rowNr);
         }
-        if ((row[columnNr] >= 'a' && row[columnNr] <= 'z') || (row[columnNr] >= 'A' && row[columnNr] <= 'Z')) {
+        if (
+          (row[columnNr] >= "a" && row[columnNr] <= "z") ||
+          (row[columnNr] >= "A" && row[columnNr] <= "Z")
+        ) {
           mustGoRooms.push([columnNr, rowNr]);
-          this.npcsStartInfo.push({startPos: vec2.fromValues(columnNr, rowNr), static: row[columnNr] == "s"});
+          this.npcsStartInfo.push({
+            startPos: vec2.fromValues(columnNr, rowNr),
+            static: row[columnNr] == "s",
+          });
         }
       }
       rowNr++;
@@ -381,81 +389,6 @@ export default class ProceduralMap {
     );
 
     this.createMeshes(this.scene);
-
-    // Heightmap
-    let resolutionFactor = 10;
-    let heightMapColumns = this.columns * 3 * resolutionFactor;
-    let heightMapRows = this.rows * 3 * resolutionFactor;
-    let heightmap = this.scene.addNewFlatHeightmap(
-      heightMapColumns,
-      heightMapRows,
-      roomSize / resolutionFactor,
-      roomSize / resolutionFactor,
-      "CSS:rgb(0, 0, 0)",
-      "CSS:rgb(0, 0, 0)"
-    );
-
-    const heightmapDepth = 110.0;
-    const heightmapHeight = 113.0;
-
-    vec3.set(
-      heightmap.transform.position,
-      -this.columns * roomSize + 0.5,
-      -heightmapDepth,
-      -this.rows * roomSize + 0.5
-    );
-    vec3.set(heightmap.transform.scale, 1.0, heightmapHeight, 1.0);
-    let heightsArray = [];
-
-    const getHeightmapHeight = (i: number, j: number): number => {
-      let roomX = Math.floor(i / resolutionFactor - this.columns);
-      let roomY = Math.floor(j / resolutionFactor - this.rows);
-      if (
-        roomX < 0 ||
-        roomY < 0 ||
-        roomX >= this.columns ||
-        roomY >= this.rows
-      ) {
-        return 1.0;
-      } else if (
-        // Check if this is ground and not below a bridge or a grate
-        !this.identifyGrates(roomX, roomY) &&
-        this.map[roomX * 2 + 1][roomY * 2 + 1] == 0 &&
-        this.identifyBridge(roomX, roomY) == BridgeType.NOT_A_BRIDGE
-      ) {
-        return (heightmapDepth - 0.03) / heightmapHeight; // below ground
-      } else if (
-        this.identifyGrates(roomX, roomY) &&
-        (i % resolutionFactor < 1 ||
-          i % resolutionFactor > resolutionFactor - 2 ||
-          j % resolutionFactor < 1 ||
-          j % resolutionFactor > resolutionFactor - 2)
-      ) {
-        return (heightmapDepth - 0.03) / heightmapHeight; // below grate room, but not beneath grate
-      }
-
-      return 0;
-    };
-
-    for (let j = 0; j < heightMapRows; j++) {
-      for (let i = 0; i < heightMapColumns; i++) {
-        let heightToPush = 0.0;
-        for (let altJ = -2; altJ < 3; altJ++) {
-          for (let altI = -2; altI < 3; altI++) {
-            let testHeight = getHeightmapHeight(i + altI, j + altJ);
-            if (testHeight < 1.0 || (altI == 0 && altJ == 0)) {
-              // Only allow outside of map heights if altI and altJ is 0 to avoid rising the heightmap to hide the outer walls
-              heightToPush = Math.max(heightToPush, testHeight);
-            }
-          }
-        }
-        heightsArray.push(heightToPush);
-      }
-    }
-    (<ENGINE.Heightmap>heightmap.graphicsObject).readHeightDataFromHeightArray(
-      heightsArray
-    );
-    heightmap.updateMinAndMaxPositions();
 
     this.exitRoom = this.findExitRoom(this.playerSpawnRoom);
     this.createExitLight(this.scene);
@@ -619,24 +552,24 @@ export default class ProceduralMap {
               } else if (this.map[column * 2 + 1][row * 2 + 1] == -1) {
                 // If there should be something in the voids, create it here
 
-                let mesh = this.instancedMeshes.get(
-                  "Assets/objs/dungeonPack/floor_tile_big_grate_open.obj"
-                );
-                let transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
-                vec3.set(
-                  transform.position,
-                  5.0 + 10 * column,
-                  -10.0,
-                  5.0 + 10 * row
-                );
-                ENGINE.quat.fromEuler(
-                  transform.rotation,
-                  0.0,
-                  column * 90 + row * 90,
-                  0.0
-                );
-                vec3.set(transform.scale, 2.5, 2.5, 2.5);
-                transform.calculateMatrices();
+                // let mesh = this.instancedMeshes.get(
+                //   "Assets/objs/dungeonPack/floor_tile_big_grate_open.obj"
+                // );
+                // let transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
+                // vec3.set(
+                //   transform.position,
+                //   5.0 + 10 * column,
+                //   -10.0,
+                //   5.0 + 10 * row
+                // );
+                // ENGINE.quat.fromEuler(
+                //   transform.rotation,
+                //   0.0,
+                //   column * 90 + row * 90,
+                //   0.0
+                // );
+                // vec3.set(transform.scale, 2.5, 2.5, 2.5);
+                // transform.calculateMatrices();
               }
             }
 
@@ -866,7 +799,11 @@ export default class ProceduralMap {
     // Calculate room from position
     let room = vec2.floor(
       vec2.create(),
-      vec2.scale(vec2.create(), vec2.fromValues(position[0], position[2]), 1.0 / roomSize)
+      vec2.scale(
+        vec2.create(),
+        vec2.fromValues(position[0], position[2]),
+        1.0 / roomSize
+      )
     );
 
     if (
@@ -889,7 +826,11 @@ export default class ProceduralMap {
     // Calculate room from position
     let room = vec2.floor(
       vec2.create(),
-      vec2.scale(vec2.create(), vec2.fromValues(position[0], position[2]), 1.0 / roomSize)
+      vec2.scale(
+        vec2.create(),
+        vec2.fromValues(position[0], position[2]),
+        1.0 / roomSize
+      )
     );
 
     if (
@@ -1058,7 +999,10 @@ export default class ProceduralMap {
     // Find the room farthest from player spawn
     let maxDistance = 0;
     let exitRoom = playerSpawnRoom;
-    const startRoom = vec2.fromValues(playerSpawnRoom[0] * 2 + 1, playerSpawnRoom[1] * 2 + 1);
+    const startRoom = vec2.fromValues(
+      playerSpawnRoom[0] * 2 + 1,
+      playerSpawnRoom[1] * 2 + 1
+    );
 
     for (const room of accessibleRooms) {
       const path = this.findPath(room, startRoom);

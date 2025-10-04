@@ -33,10 +33,14 @@ export default class LoadingScreen {
     document.body.removeChild(this.guiRenderer.domElement);
   }
 
-  draw(progress: {requested: number, loaded: number}) {
+  draw(progress: { requested: number; loaded: number }) {
     if (progress.requested > 0) {
-      this.text.textString = "Praccen's web engine is loading " + (100 * progress.loaded / progress.requested).toString().substring(0, 2) + "%";
-
+      this.text.textString =
+        "Praccen's web engine is loading " +
+        ((100 * progress.loaded) / progress.requested)
+          .toString()
+          .substring(0, 2) +
+        "%";
     }
     this.guiRenderer.draw(null);
   }

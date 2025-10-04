@@ -485,30 +485,32 @@ export default class Scene {
     this.stillTree.getAllContent(contentFromTree);
     for (const content of contentFromTree) {
       if (content.graphicsBundle.enabled) {
-        new ShapeGraphicsObject(this.renderer.gl, content.shape).draw(shaderProgram);
+        new ShapeGraphicsObject(this.renderer.gl, content.shape).draw(
+          shaderProgram
+        );
       }
     }
 
     const animatedContentFromTree = new Array<TreeSceneContentElement>();
-    this.animatedTree.getAllContent(
-      animatedContentFromTree
-    );
+    this.animatedTree.getAllContent(animatedContentFromTree);
 
-     for (const content of animatedContentFromTree) {
+    for (const content of animatedContentFromTree) {
       if (content.graphicsBundle.enabled) {
-        new ShapeGraphicsObject(this.renderer.gl, content.shape).draw(shaderProgram);
+        new ShapeGraphicsObject(this.renderer.gl, content.shape).draw(
+          shaderProgram
+        );
       }
     }
 
     const instancedContentFromTree =
       new Array<InstancedTreeSceneContentElement>();
-    this.instancedTree.getAllContent(
-      instancedContentFromTree
-    );
+    this.instancedTree.getAllContent(instancedContentFromTree);
 
     for (const content of instancedContentFromTree) {
       if (content.transform.enabled) {
-        new ShapeGraphicsObject(this.renderer.gl, content.shape).draw(shaderProgram);
+        new ShapeGraphicsObject(this.renderer.gl, content.shape).draw(
+          shaderProgram
+        );
       }
     }
   }

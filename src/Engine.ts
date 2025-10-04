@@ -47,7 +47,7 @@ export {
 };
 
 // Tooling
-export {WorldEditor};
+export { WorldEditor };
 
 // Global exports
 export let applicationStartTime = Date.now();

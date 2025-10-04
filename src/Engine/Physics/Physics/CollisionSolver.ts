@@ -3,7 +3,6 @@ import { IntersectionTester } from "./IntersectionTester";
 import PhysicsObject from "./Objects/PhysicsObject";
 import { mat4 } from "../../../Engine";
 
-
 const skin_width = 0.02;
 
 export namespace CollisionSolver {
@@ -15,7 +14,7 @@ export namespace CollisionSolver {
     }
 
     let final_mtv = vec3.fromValues(0, 0, 0);
-    let max_depth = 0
+    let max_depth = 0;
 
     for (let inf of intersectionInformation) {
       if (inf.depth < skin_width) {
@@ -26,11 +25,15 @@ export namespace CollisionSolver {
       if (depth > max_depth) {
         max_depth = depth;
       }
-      vec3.scaleAndAdd(final_mtv, final_mtv, vec3.normalize(vec3.create(), inf.axis), depth);
+      vec3.scaleAndAdd(
+        final_mtv,
+        final_mtv,
+        vec3.normalize(vec3.create(), inf.axis),
+        depth
+      );
     }
 
     if (vec3.length(final_mtv) > 0) {
-
       vec3.scale(final_mtv, vec3.normalize(final_mtv, final_mtv), max_depth);
     }
 
@@ -171,7 +174,9 @@ export namespace CollisionSolver {
       }
     }
 
-    let displacement = CollisionSolver.getTranslationNeeded(intersectionInformation);
+    let displacement = CollisionSolver.getTranslationNeeded(
+      intersectionInformation
+    );
     let totalMass = po1.mass + po2.mass;
     let po1Part = 0.5;
     let po2Part = 0.5;
@@ -188,30 +193,13 @@ export namespace CollisionSolver {
       po2Part = 1.0;
     }
 
-    
-    if (
-      !po1.isImmovable &&
-      !po1.isStatic
-    ) {
-      po1.transform.translate(
-        vec3.scale(
-          vec3.create(),
-          displacement,
-          po1Part
-        )
-      );
+    if (!po1.isImmovable && !po1.isStatic) {
+      po1.transform.translate(vec3.scale(vec3.create(), displacement, po1Part));
     }
 
-    if (
-      !po2.isImmovable &&
-      !po2.isStatic
-    ) {
+    if (!po2.isImmovable && !po2.isStatic) {
       po2.transform.translate(
-        vec3.scale(
-          vec3.create(),
-          displacement,
-          -po2Part
-        )
+        vec3.scale(vec3.create(), displacement, -po2Part)
       );
     }
   }

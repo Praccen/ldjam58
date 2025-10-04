@@ -385,12 +385,12 @@ export class TreeNode {
 
   getAllContent(contentArray: Array<TreeNodeContentElement>) {
     for (const child of this.children) {
-        child.getAllContent(contentArray);
-      }
+      child.getAllContent(contentArray);
+    }
 
-      for (const content of this.content) {
-        contentArray.push(content);
-      }
+    for (const content of this.content) {
+      contentArray.push(content);
+    }
   }
 }
 

@@ -62,7 +62,10 @@ export default class GameContext {
     SetCookie("cameraFollow", this.metaGui.cameraFollowCheckbox.getChecked());
   }
 
-  async loadMeshes(progress: {requested: number, loaded: number}): Promise<void> {
+  async loadMeshes(progress: {
+    requested: number;
+    loaded: number;
+  }): Promise<void> {
     return new Promise<void>((resolve, rejects) => {
       let meshes = [
         "Assets/objs/cube.obj",

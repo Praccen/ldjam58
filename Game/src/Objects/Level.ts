@@ -86,18 +86,14 @@ export default class Level {
     this.physicsScene.update(dt);
 
     this.map.updateFocusRoom(
-      vec2.fromValues(
-        camera.getPosition()[0],
-        camera.getPosition()[2]
-      )
+      vec2.fromValues(camera.getPosition()[0], camera.getPosition()[2])
     );
 
     this.scene.updateParticleSpawners(dt);
   }
 
   preRenderingUpdate(dt: number, camera: Camera) {
-      this.moodParticleSpawner.position =
-        camera.getPosition();
+    this.moodParticleSpawner.position = camera.getPosition();
 
     this.scene.getDirectionalLight().shadowFocusPos = vec3.fromValues(
       this.map.focusRoom[0] * 10.0 + 5.0,
@@ -106,7 +102,5 @@ export default class Level {
     );
   }
 
-  cleanUp() {
-
-  }
+  cleanUp() {}
 }

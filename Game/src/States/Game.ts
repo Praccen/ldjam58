@@ -102,8 +102,7 @@ export default class Game {
     this.guiRenderer.setSize(width, height);
   }
 
-  onExit() {
-  }
+  onExit() {}
 
   getLevel(): Level {
     return this.level;
@@ -171,7 +170,6 @@ export default class Game {
 
     this.camera.setPitchJawDegrees(this.pitch, this.jaw); // Update the rotation of the camera
     this.camera.getFrustum(this.dbgFrustum);
-    
 
     this.level.preRenderingUpdate(dt, this.camera);
   }
