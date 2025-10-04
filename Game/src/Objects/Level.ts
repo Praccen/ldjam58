@@ -2,6 +2,7 @@ import {
   Camera,
   ParticleSpawner,
   PhysicsScene,
+  Ray,
   Renderer3D,
   Scene,
   vec3,
@@ -25,7 +26,7 @@ export default class Level {
   private playerController: PlayerController;
   private itemHandler: ItemHandler;
 
-  constructor(renderer: Renderer3D, game: Game, levelNumber: number) {
+  constructor(renderer: Renderer3D, game: Game) {
     // Create a scene. It will automatically have a directional light, so let's set the ambient multiplier for it.
     this.scene = new Scene(renderer);
     this.scene.directionalLight.ambientMultiplier = 0.0;
@@ -37,8 +38,8 @@ export default class Level {
     this.scene.directionalLight.lightProjectionBoxSideLength = 100;
 
     this.physicsScene = new PhysicsScene();
-    this.map = new ProceduralMap(this.scene, this.physicsScene, levelNumber);
     this.itemHandler = new ItemHandler(this.scene, this.physicsScene);
+    this.map = new ProceduralMap(this.scene, this.physicsScene, [0, 1, 2]);
 
     let playerSpawnRoom = this.map.getPlayerSpawnRoom();
 
@@ -103,9 +104,7 @@ export default class Level {
     // Update physics
     this.physicsScene.update(dt);
 
-    this.map.updateFocusRoom(
-      vec2.fromValues(camera.getPosition()[0], camera.getPosition()[2])
-    );
+    this.map.updateFocusRoom(camera.getPosition());
 
     this.scene.updateParticleSpawners(dt);
   }

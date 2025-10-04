@@ -64,7 +64,7 @@ export default class Game {
     this.gui = new GameGUI(this.guiRenderer);
     this.gui.gameGuiDiv.setHidden(true);
 
-    this.createLevel(1);
+    this.createLevel();
 
     this.worldEditor = new WorldEditor(
       this.camera,
@@ -76,8 +76,8 @@ export default class Game {
     // this.worldEditor.setEnabled(true);
   }
 
-  createLevel(levelNumber: number) {
-    this.level = new Level(this.renderer, this, levelNumber);
+  createLevel() {
+    this.level = new Level(this.renderer, this);
   }
 
   resize(width: number, height: number) {
@@ -123,6 +123,8 @@ export default class Game {
 
     this.camera.getFrustum(this.dbgFrustum);
     this.level.preRenderingUpdate(dt, this.camera);
+    this.gui.floorDisplay.textString =
+      "Floor " + this.level.map.getCurrentFloor();
   }
 
   draw() {

@@ -1,4 +1,4 @@
-import { Div, GUIRenderer, Renderer3D, vec2 } from "praccen-web-engine";
+import { Div, GUIRenderer, Renderer3D } from "praccen-web-engine";
 import { wallPieceModels } from "../Generators/Map/ProceduralMapGenerator.js";
 import Game from "./Game.js";
 import MetaGUI from "../GUI/MetaGUI.js";
@@ -8,7 +8,7 @@ import { Input } from "../Input.js";
 export let sensitivity = 1.0;
 
 export default class GameContext {
-  private renderer: Renderer3D;
+  renderer: Renderer3D;
   guiRenderer: GUIRenderer;
 
   game: Game;

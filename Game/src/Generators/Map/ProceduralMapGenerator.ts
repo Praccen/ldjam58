@@ -33,6 +33,13 @@ enum BridgeType {
   VERTICAL_BRIGE,
 }
 
+export function convertCoordIncludingWallsToRoomIndex(coordWithWalls: number) {
+  return Math.round((coordWithWalls - 1) / 2);
+}
+export function convertRoomIndexToCoordIncludingWalls(roomIndex: number) {
+  return roomIndex * 2 + 1;
+}
+
 export const wallPieceModels = new Array<{
   paths: string[];
   rot: number[];
@@ -235,27 +242,29 @@ const physicsObjectScales = [
 ];
 
 export const roomSize = 10.0;
+export const roomHeight = 5.0;
 
 export default class ProceduralMap {
   private scene: ENGINE.Scene;
   private instancedMeshes: Map<string, ENGINE.GraphicsBundle>;
   private physicsScene: ENGINE.PhysicsScene;
-  private map: Array<Array<number>>;
-  private exploredAsciiMap: string;
-  private visitedRooms: Set<string>;
+  private map: Map<number, Array<Array<number>>> = new Map<
+    number,
+    Array<Array<number>>
+  >();
   private playerSpawnRoom: vec2;
-  private exitRoom: vec2;
-  private currentFloor: number = 1;
+  private floorExitRoom: Map<number, vec2> = new Map<number, vec2>();
+  private currentFloor: number = 0;
   private pointLight: PointLight | null = null;
   focusRoom: vec2;
 
-  private columns: number;
-  private rows: number;
+  private columns: Map<number, number> = new Map<number, number>();
+  private rows: Map<number, number> = new Map<number, number>();
 
   constructor(
     scene: ENGINE.Scene,
     physicsScene: ENGINE.PhysicsScene,
-    floorNumber: number
+    floorNumbers: number[]
   ) {
     this.scene = scene;
     this.physicsScene = physicsScene;
@@ -263,14 +272,14 @@ export default class ProceduralMap {
 
     this.playerSpawnRoom = vec2.fromValues(0, 0);
 
-    this.currentFloor = floorNumber;
-    this.generateFloor(this.currentFloor);
+    this.currentFloor = floorNumbers[0];
+    for (const floorNumber of floorNumbers) {
+      this.generateFloor(floorNumber);
+    }
   }
 
   private generateFloor(floorNumber: number) {
     // Clear existing map state
-    this.visitedRooms = new Set<string>();
-    this.exploredAsciiMap = "";
     this.focusRoom = vec2.fromValues(-1.0, -1.0);
 
     // Generate different layouts based on floor number
@@ -280,7 +289,7 @@ export default class ProceduralMap {
     let noGoRooms = [];
     let connectionRooms = [];
 
-    this.columns = 0;
+    this.columns.set(floorNumber, 0);
     let rowNr = 0;
     for (let row of mapLayout.split("\n")) {
       row = row.trim();
@@ -288,7 +297,10 @@ export default class ProceduralMap {
         continue;
       }
 
-      this.columns = Math.max(this.columns, row.length);
+      this.columns.set(
+        floorNumber,
+        Math.max(this.columns.get(floorNumber), row.length)
+      );
 
       for (let columnNr = 0; columnNr < row.length; columnNr++) {
         if (row[columnNr] == "0") {
@@ -319,24 +331,31 @@ export default class ProceduralMap {
       }
       rowNr++;
     }
-    this.rows = rowNr;
+    this.rows.set(floorNumber, rowNr);
 
-    this.map = LabyrinthGenerator.getLabyrinth(
-      this.columns,
-      this.rows,
-      mustGoRooms,
-      noGoRooms,
-      connectionRooms,
-      0.85
+    this.map.set(
+      floorNumber,
+      LabyrinthGenerator.getLabyrinth(
+        this.columns.get(floorNumber),
+        this.rows.get(floorNumber),
+        mustGoRooms,
+        noGoRooms,
+        connectionRooms,
+        0.85
+      )
     );
 
-    this.exitRoom = this.findExitRoom(this.playerSpawnRoom);
-    this.createMeshes(this.scene);
+    this.floorExitRoom.set(
+      floorNumber,
+      this.findExitRoom(floorNumber, this.playerSpawnRoom)
+    );
+    this.createMeshes(floorNumber, this.scene);
     // this.createExitLight(this.scene);
+
+    console.log(LabyrinthGenerator.getAsciiMap(this.map.get(floorNumber)));
   }
 
   private getMapLayoutForFloor(floorNumber: number): string {
-    floorNumber -= 1; // Floor 1 is the first floor
     if (floorNumber < floorLayouts.length) {
       return floorLayouts[floorNumber];
     }
@@ -344,30 +363,52 @@ export default class ProceduralMap {
     return floorLayouts[floorLayouts.length - 1]; // Return last floor layout
   }
 
-  private identifyBridge(mapColumn: number, mapRow: number): BridgeType {
+  private identifyBridge(
+    floorNumber: number,
+    mapColumn: number,
+    mapRow: number
+  ): BridgeType {
+    const mapFloor = this.map.get(floorNumber);
+
     if (
       mapColumn <= 1 ||
-      mapColumn >= this.columns - 1 ||
+      mapColumn >= this.columns.get(floorNumber) - 1 ||
       mapRow <= 1 ||
-      mapRow >= this.rows - 1
+      mapRow >= this.rows.get(floorNumber) - 1
     ) {
       return BridgeType.NOT_A_BRIDGE;
     }
 
     if (
-      this.map[(mapColumn - 1) * 2 + 1][mapRow * 2 + 1] == 0 &&
-      this.map[(mapColumn + 1) * 2 + 1][mapRow * 2 + 1] == 0 &&
-      this.map[mapColumn * 2 + 1][(mapRow - 1) * 2 + 1] == -1 &&
-      this.map[mapColumn * 2 + 1][(mapRow + 1) * 2 + 1] == -1
+      mapFloor[convertRoomIndexToCoordIncludingWalls(mapColumn - 1)][
+        convertRoomIndexToCoordIncludingWalls(mapRow)
+      ] == 0 &&
+      mapFloor[convertRoomIndexToCoordIncludingWalls(mapColumn + 1)][
+        convertRoomIndexToCoordIncludingWalls(mapRow)
+      ] == 0 &&
+      mapFloor[convertRoomIndexToCoordIncludingWalls(mapColumn)][
+        convertRoomIndexToCoordIncludingWalls(mapRow - 1)
+      ] == -1 &&
+      mapFloor[convertRoomIndexToCoordIncludingWalls(mapColumn)][
+        convertRoomIndexToCoordIncludingWalls(mapRow + 1)
+      ] == -1
     ) {
       return BridgeType.HORIZONTAL_BRIDGE;
     }
 
     if (
-      this.map[(mapColumn - 1) * 2 + 1][mapRow * 2 + 1] == -1 &&
-      this.map[(mapColumn + 1) * 2 + 1][mapRow * 2 + 1] == -1 &&
-      this.map[mapColumn * 2 + 1][(mapRow - 1) * 2 + 1] == 0 &&
-      this.map[mapColumn * 2 + 1][(mapRow + 1) * 2 + 1] == 0
+      mapFloor[convertRoomIndexToCoordIncludingWalls(mapColumn - 1)][
+        convertRoomIndexToCoordIncludingWalls(mapRow)
+      ] == -1 &&
+      mapFloor[convertRoomIndexToCoordIncludingWalls(mapColumn + 1)][
+        convertRoomIndexToCoordIncludingWalls(mapRow)
+      ] == -1 &&
+      mapFloor[convertRoomIndexToCoordIncludingWalls(mapColumn)][
+        convertRoomIndexToCoordIncludingWalls(mapRow - 1)
+      ] == 0 &&
+      mapFloor[convertRoomIndexToCoordIncludingWalls(mapColumn)][
+        convertRoomIndexToCoordIncludingWalls(mapRow + 1)
+      ] == 0
     ) {
       return BridgeType.VERTICAL_BRIGE;
     }
@@ -376,23 +417,44 @@ export default class ProceduralMap {
   }
 
   // Only put tiles with grates if no more than one wall is adjacent
-  private identifyGrates(mapColumn: number, mapRow: number): boolean {
+  private identifyGrates(
+    floorNumber: number,
+    mapColumn: number,
+    mapRow: number
+  ): boolean {
+    const mapFloor = this.map.get(floorNumber);
     return (
-      Number(this.map[mapColumn * 2 + 1 - 1][mapRow * 2 + 1] == 0) +
-        Number(this.map[mapColumn * 2 + 1 + 1][mapRow * 2 + 1] == 0) +
-        Number(this.map[mapColumn * 2 + 1][mapRow * 2 + 1 - 1] == 0) +
-        Number(this.map[mapColumn * 2 + 1][mapRow * 2 + 1 + 1] == 0) >=
+      Number(
+        mapFloor[convertRoomIndexToCoordIncludingWalls(mapColumn) - 1][
+          convertRoomIndexToCoordIncludingWalls(mapRow)
+        ] == 0
+      ) +
+        Number(
+          mapFloor[convertRoomIndexToCoordIncludingWalls(mapColumn) + 1][
+            convertRoomIndexToCoordIncludingWalls(mapRow)
+          ] == 0
+        ) +
+        Number(
+          mapFloor[convertRoomIndexToCoordIncludingWalls(mapColumn)][
+            convertRoomIndexToCoordIncludingWalls(mapRow) - 1
+          ] == 0
+        ) +
+        Number(
+          mapFloor[convertRoomIndexToCoordIncludingWalls(mapColumn)][
+            convertRoomIndexToCoordIncludingWalls(mapRow) + 1
+          ] == 0
+        ) >=
       3
     );
   }
 
-  createFloor(column: number, row: number) {
+  createFloorTile(floorNumber: number, column: number, row: number) {
     const paths = wallPieceModels[0].paths;
     let isBridge = false;
     let transform = null;
 
     // Make the tile a bridge if it has inaccessible spaces oposite of each other but accessible spaces in the other direction.
-    const bridgeType = this.identifyBridge(column, row);
+    const bridgeType = this.identifyBridge(floorNumber, column, row);
     if (bridgeType != BridgeType.NOT_A_BRIDGE) {
       let mesh = this.instancedMeshes.get(paths[2]);
       transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
@@ -407,7 +469,7 @@ export default class ProceduralMap {
         );
       }
       isBridge = true;
-    } else if (this.identifyGrates(column, row)) {
+    } else if (this.identifyGrates(floorNumber, column, row)) {
       let mesh = this.instancedMeshes.get(paths[1]);
       transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
       vec3.set(transform.scale, 0.9, 0.9, 0.9);
@@ -417,7 +479,12 @@ export default class ProceduralMap {
       vec3.set(transform.scale, 0.9, 0.9, 0.9);
     }
 
-    vec3.set(transform.position, 5.0 + 10 * column, 0.0, 5.0 + 10 * row);
+    vec3.set(
+      transform.position,
+      5.0 + 10 * column,
+      floorNumber * -roomHeight,
+      5.0 + 10 * row
+    );
 
     if (!isBridge) {
       ENGINE.quat.fromEuler(
@@ -434,7 +501,7 @@ export default class ProceduralMap {
     vec3.set(
       phyTrans.position,
       roomSize * 0.5 + column * roomSize,
-      -0.5,
+      floorNumber * -roomHeight - 0.5,
       roomSize * 0.5 + row * roomSize
     );
     phyTrans.scale = vec3.fromValues(roomSize, 1.0, roomSize);
@@ -443,7 +510,7 @@ export default class ProceduralMap {
     physObj.frictionCoefficient = 10.0;
   }
 
-  createCeiling(column: number, row: number) {
+  createCeilingTile(floorNumber: number, column: number, row: number) {
     const path = wallPieceModels[0].paths[3];
     let transform = null;
 
@@ -452,7 +519,12 @@ export default class ProceduralMap {
     transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
     vec3.set(transform.scale, 2.7, 2.7, 2.7);
 
-    vec3.set(transform.position, 5.0 + 10 * column, 4.1, 5.0 + 10 * row);
+    vec3.set(
+      transform.position,
+      5.0 + 10 * column,
+      floorNumber * -roomHeight + 4.1,
+      5.0 + 10 * row
+    );
 
     transform.calculateMatrices();
 
@@ -463,312 +535,336 @@ export default class ProceduralMap {
     physObj.frictionCoefficient = 0.0;
   }
 
-  async createMeshes(scene: ENGINE.Scene) {
-    let meshesToLoad = new Set<string>();
-    for (let piece of wallPieceModels) {
-      for (let path of piece.paths) {
-        meshesToLoad.add(path);
-      }
+  createTopOfTileWall(floorNumber: number, column: number, row: number) {
+    const mapFloor = this.map.get(floorNumber);
+    let isBridge = false;
+
+    const paths = wallPieceModels[mapFloor[column * 2 + 1][row * 2]].paths;
+    const rots = wallPieceModels[mapFloor[column * 2 + 1][row * 2]].rot;
+    let mesh = this.instancedMeshes.get(
+      paths[Math.floor(Math.random() * paths.length)]
+    );
+    let transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
+    vec3.set(
+      transform.position,
+      5.0 + 10 * column - 1.0,
+      floorNumber * -roomHeight,
+      5.0 + 10 * row - 5.0
+    );
+
+    if (
+      this.identifyBridge(floorNumber, column, row - 1) !=
+        BridgeType.NOT_A_BRIDGE ||
+      this.identifyBridge(floorNumber, column, row) != BridgeType.NOT_A_BRIDGE
+    ) {
+      isBridge = true;
+      vec3.set(transform.scale, 1.0, 0.3, 1.0);
+    } else {
+      vec3.set(transform.scale, 1.0, 1.0, 1.0);
     }
 
-    meshesToLoad.add("Assets/objs/dungeonPack/floor_tile_big_grate_open.obj");
-    meshesToLoad.add("Assets/objs/dungeonPack/wall_half.obj");
+    ENGINE.quat.fromEuler(
+      transform.rotation,
+      0.0,
+      rots[Math.floor(Math.random() * rots.length)],
+      0.0
+    );
+    transform.calculateMatrices();
 
-    // Load meshes before creating
-    this.scene.renderer.meshStore
-      .loadMeshes(Array.from(meshesToLoad), { loaded: 0 })
-      .then(async () => {
-        for (let piece of wallPieceModels) {
-          for (let path of piece.paths)
-            if (path != "") {
-              if (!this.instancedMeshes.has(path)) {
-                this.instancedMeshes.set(
-                  path,
-                  await Factories.createInstancedMesh(
-                    scene,
-                    path,
-                    "Assets/Textures/dungeon_texture.png",
-                    "CSS:rgb(0, 0, 0)"
-                  )
-                );
-              }
-            }
+    mesh = this.instancedMeshes.get("Assets/objs/dungeonPack/wall_half.obj");
+    transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
+    vec3.set(
+      transform.position,
+      5.0 + 10 * column + 1.0,
+      floorNumber * -roomHeight,
+      5.0 + 10 * row - 5.0
+    );
+    if (isBridge) {
+      vec3.set(transform.scale, 1.0, 0.3, 1.0);
+    } else {
+      vec3.set(transform.scale, 1.0, 1.0, 1.0);
+    }
+    ENGINE.quat.fromEuler(transform.rotation, 0.0, rots[0], 0.0);
+    transform.calculateMatrices();
+
+    let phyTrans = new ENGINE.Transform();
+    vec3.set(
+      phyTrans.position,
+      5.0 + column * roomSize,
+      floorNumber * -roomHeight,
+      5.0 + row * roomSize - 5.0
+    );
+    phyTrans.scale = vec3.clone(physicsObjectScales[1]);
+    if (isBridge) {
+      phyTrans.scale[1] *= 0.3;
+    }
+
+    let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
+    physObj.isStatic = true;
+    physObj.frictionCoefficient = 0.0;
+  }
+
+  createLeftOfTileWall(floorNumber: number, column: number, row: number) {
+    const mapFloor = this.map.get(floorNumber);
+    let isBridge = false;
+    const paths = wallPieceModels[mapFloor[column * 2][row * 2 + 1]].paths;
+    const rots = wallPieceModels[mapFloor[column * 2][row * 2 + 1]].rot;
+    let mesh = this.instancedMeshes.get(
+      paths[Math.floor(Math.random() * paths.length)]
+    );
+    let transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
+    vec3.set(
+      transform.position,
+      5.0 + 10 * column - 5.0,
+      floorNumber * -roomHeight,
+      5.0 + 10 * row + 1.0
+    );
+
+    if (
+      this.identifyBridge(floorNumber, column - 1, row) !=
+        BridgeType.NOT_A_BRIDGE ||
+      this.identifyBridge(floorNumber, column, row) != BridgeType.NOT_A_BRIDGE
+    ) {
+      vec3.set(transform.scale, 1.0, 0.3, 1.0);
+      isBridge = true;
+    } else {
+      vec3.set(transform.scale, 1.0, 1.0, 1.0);
+    }
+
+    ENGINE.quat.fromEuler(
+      transform.rotation,
+      0.0,
+      rots[Math.floor(Math.random() * rots.length)],
+      0.0
+    );
+    transform.calculateMatrices();
+
+    mesh = this.instancedMeshes.get("Assets/objs/dungeonPack/wall_half.obj");
+    transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
+    vec3.set(
+      transform.position,
+      5.0 + 10 * column - 5.0,
+      floorNumber * -roomHeight,
+      5.0 + 10 * row - 1.0
+    );
+    if (isBridge) {
+      vec3.set(transform.scale, 1.0, 0.3, 1.0);
+    } else {
+      vec3.set(transform.scale, 1.0, 1.0, 1.0);
+    }
+    ENGINE.quat.fromEuler(transform.rotation, 0.0, rots[0], 0.0);
+    transform.calculateMatrices();
+
+    let phyTrans = new ENGINE.Transform();
+    vec3.set(
+      phyTrans.position,
+      5.0 + column * roomSize - 5.0,
+      floorNumber * -roomHeight,
+      5.0 + row * roomSize
+    );
+    phyTrans.scale = vec3.clone(physicsObjectScales[2]);
+
+    if (isBridge) {
+      phyTrans.scale[1] *= 0.3;
+    }
+
+    let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
+    physObj.isStatic = true;
+    physObj.frictionCoefficient = 0.0;
+  }
+
+  createTopLeftOfTile(floorNumber: number, column: number, row: number) {
+    const mapFloor = this.map.get(floorNumber);
+    const paths = wallPieceModels[mapFloor[column * 2][row * 2]].paths;
+    const rots = wallPieceModels[mapFloor[column * 2][row * 2]].rot;
+    let path = paths[Math.floor(Math.random() * paths.length)];
+
+    // if (
+    //   identifyBridge(column, row) != BridgeType.NOT_A_BRIDGE ||
+    //   identifyBridge(column - 1, row) != BridgeType.NOT_A_BRIDGE ||
+    //   identifyBridge(column, row - 1) != BridgeType.NOT_A_BRIDGE
+    // ) {
+    //   path = "Assets/objs/dungeonPack/pillar.obj";
+    // }
+
+    let mesh = this.instancedMeshes.get(path);
+    let transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
+    vec3.set(
+      transform.position,
+      5.0 + 10 * column + -5.0,
+      floorNumber * -roomHeight,
+      5.0 + 10 * row - 5.0
+    );
+    vec3.set(transform.scale, 1.0, 1.0, 1.0);
+    ENGINE.quat.fromEuler(
+      transform.rotation,
+      0.0,
+      rots[Math.floor(Math.random() * rots.length)],
+      0.0
+    );
+    vec3.add(
+      transform.position,
+      transform.position,
+      wallPieceModels[mapFloor[column * 2][row * 2]].posOffset
+    );
+    transform.calculateMatrices();
+
+    // Only add a physics object for crossings if it's not a end piece
+    if (
+      mapFloor[column * 2][row * 2] % 16 < 12 ||
+      mapFloor[column * 2][row * 2] % 16 > 15
+    ) {
+      let physObj = this.physicsScene.addNewPhysicsObject(transform);
+      physObj.setupBoundingBoxFromGraphicsBundle(mesh);
+      physObj.setupInternalTreeFromGraphicsObject(mesh.graphicsObject, path);
+      physObj.isStatic = true;
+      physObj.frictionCoefficient = 0.0;
+    }
+  }
+
+  async createMeshes(floorNumber: number, scene: ENGINE.Scene) {
+    if (this.instancedMeshes.size == 0) {
+      let meshesToLoad = new Set<string>();
+      for (let piece of wallPieceModels) {
+        for (let path of piece.paths) {
+          meshesToLoad.add(path);
         }
+      }
 
-        this.instancedMeshes.set(
-          "Assets/objs/dungeonPack/floor_tile_big_grate_open.obj",
-          await Factories.createInstancedMesh(
-            scene,
-            "Assets/objs/dungeonPack/floor_tile_big_grate_open.obj",
-            "CSS:rgb(40, 40, 40)",
-            "CSS:rgb(0, 0, 0)"
-          )
-        );
+      meshesToLoad.add("Assets/objs/dungeonPack/floor_tile_big_grate_open.obj");
+      meshesToLoad.add("Assets/objs/dungeonPack/wall_half.obj");
 
-        this.instancedMeshes.set(
-          "Assets/objs/dungeonPack/wall_half.obj",
-          await Factories.createInstancedMesh(
-            scene,
-            "Assets/objs/dungeonPack/wall_half.obj",
-            "Assets/Textures/dungeon_texture.png",
-            "CSS:rgb(0, 0, 0)"
-          )
-        );
-
-        for (let column = 0; column < this.columns + 1; column++) {
-          for (let row = 0; row < this.rows + 1; row++) {
-            // Tile filling (floor or blocked)
-            if (column < this.columns && row < this.rows) {
-              if (this.map[column * 2 + 1][row * 2 + 1] == 0) {
-                if (
-                  !(
-                    column * 2 + 1 == this.getExitRoom()[0] &&
-                    row * 2 + 1 == this.getExitRoom()[1]
-                  )
-                ) {
-                  this.createFloor(column, row);
+      // Load meshes before creating
+      await this.scene.renderer.meshStore
+        .loadMeshes(Array.from(meshesToLoad), { loaded: 0 })
+        .then(async () => {
+          for (let piece of wallPieceModels) {
+            for (let path of piece.paths)
+              if (path != "") {
+                if (!this.instancedMeshes.has(path)) {
+                  this.instancedMeshes.set(
+                    path,
+                    await Factories.createInstancedMesh(
+                      scene,
+                      path,
+                      "Assets/Textures/dungeon_texture.png",
+                      "CSS:rgb(0, 0, 0)"
+                    )
+                  );
                 }
-                this.createCeiling(column, row);
-              } else if (this.map[column * 2 + 1][row * 2 + 1] == -1) {
-                // If there should be something in the voids, create it here
-                // let mesh = this.instancedMeshes.get(
-                //   "Assets/objs/dungeonPack/floor_tile_big_grate_open.obj"
-                // );
-                // let transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
-                // vec3.set(
-                //   transform.position,
-                //   5.0 + 10 * column,
-                //   -10.0,
-                //   5.0 + 10 * row
-                // );
-                // ENGINE.quat.fromEuler(
-                //   transform.rotation,
-                //   0.0,
-                //   column * 90 + row * 90,
-                //   0.0
-                // );
-                // vec3.set(transform.scale, 2.5, 2.5, 2.5);
-                // transform.calculateMatrices();
               }
-            }
+          }
 
-            // Top of tile wall
+          this.instancedMeshes.set(
+            "Assets/objs/dungeonPack/floor_tile_big_grate_open.obj",
+            await Factories.createInstancedMesh(
+              scene,
+              "Assets/objs/dungeonPack/floor_tile_big_grate_open.obj",
+              "CSS:rgb(40, 40, 40)",
+              "CSS:rgb(0, 0, 0)"
+            )
+          );
+
+          this.instancedMeshes.set(
+            "Assets/objs/dungeonPack/wall_half.obj",
+            await Factories.createInstancedMesh(
+              scene,
+              "Assets/objs/dungeonPack/wall_half.obj",
+              "Assets/Textures/dungeon_texture.png",
+              "CSS:rgb(0, 0, 0)"
+            )
+          );
+        });
+    }
+
+    const columns = this.columns.get(floorNumber);
+    const rows = this.rows.get(floorNumber);
+    const mapFloor = this.map.get(floorNumber);
+
+    for (let column = 0; column < columns + 1; column++) {
+      for (let row = 0; row < rows + 1; row++) {
+        // Tile filling (floor or blocked)
+        if (column < columns && row < rows) {
+          if (
+            mapFloor[convertRoomIndexToCoordIncludingWalls(column)][
+              convertRoomIndexToCoordIncludingWalls(row)
+            ] == 0
+          ) {
             if (
-              column < this.columns &&
-              this.map[column * 2 + 1][row * 2] > 0 &&
-              this.map[column * 2 + 1][row * 2] < wallPieceModels.length
+              !(
+                column * 2 + 1 == this.getExitRoom(floorNumber)[0] &&
+                row * 2 + 1 == this.getExitRoom(floorNumber)[1]
+              )
             ) {
-              let isBridge = false;
-
-              const paths =
-                wallPieceModels[this.map[column * 2 + 1][row * 2]].paths;
-              const rots =
-                wallPieceModels[this.map[column * 2 + 1][row * 2]].rot;
-              let mesh = this.instancedMeshes.get(
-                paths[Math.floor(Math.random() * paths.length)]
-              );
-              let transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
-              vec3.set(
-                transform.position,
-                5.0 + 10 * column - 1.0,
-                0.0,
-                5.0 + 10 * row - 5.0
-              );
-
-              if (
-                this.identifyBridge(column, row - 1) !=
-                  BridgeType.NOT_A_BRIDGE ||
-                this.identifyBridge(column, row) != BridgeType.NOT_A_BRIDGE
-              ) {
-                isBridge = true;
-                vec3.set(transform.scale, 1.0, 0.3, 1.0);
-              } else {
-                vec3.set(transform.scale, 1.0, 1.0, 1.0);
-              }
-
-              ENGINE.quat.fromEuler(
-                transform.rotation,
-                0.0,
-                rots[Math.floor(Math.random() * rots.length)],
-                0.0
-              );
-              transform.calculateMatrices();
-
-              mesh = this.instancedMeshes.get(
-                "Assets/objs/dungeonPack/wall_half.obj"
-              );
-              transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
-              vec3.set(
-                transform.position,
-                5.0 + 10 * column + 1.0,
-                0.0,
-                5.0 + 10 * row - 5.0
-              );
-              if (isBridge) {
-                vec3.set(transform.scale, 1.0, 0.3, 1.0);
-              } else {
-                vec3.set(transform.scale, 1.0, 1.0, 1.0);
-              }
-              ENGINE.quat.fromEuler(transform.rotation, 0.0, rots[0], 0.0);
-              transform.calculateMatrices();
-
-              let phyTrans = new ENGINE.Transform();
-              vec3.set(
-                phyTrans.position,
-                5.0 + column * roomSize,
-                0.0,
-                5.0 + row * roomSize - 5.0
-              );
-              phyTrans.scale = vec3.clone(physicsObjectScales[1]);
-              if (isBridge) {
-                phyTrans.scale[1] *= 0.3;
-              }
-
-              let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
-              physObj.isStatic = true;
-              physObj.frictionCoefficient = 0.0;
+              this.createFloorTile(floorNumber, column, row);
             }
 
-            // Left of tile wall
+            let aboveFloor = floorNumber;
+            for (
+              let searchFloor = aboveFloor - 1;
+              searchFloor >= 0;
+              searchFloor--
+            ) {
+              if (this.map.has(searchFloor)) {
+                aboveFloor = searchFloor;
+                break;
+              }
+            }
+
             if (
-              row < this.rows &&
-              this.map[column * 2][row * 2 + 1] > 0 &&
-              this.map[column * 2][row * 2 + 1] < wallPieceModels.length
+              aboveFloor == floorNumber ||
+              convertCoordIncludingWallsToRoomIndex(
+                this.getExitRoom(aboveFloor)[0]
+              ) != column ||
+              convertCoordIncludingWallsToRoomIndex(
+                this.getExitRoom(aboveFloor)[1]
+              ) != row
             ) {
-              let isBridge = false;
-              const paths =
-                wallPieceModels[this.map[column * 2][row * 2 + 1]].paths;
-              const rots =
-                wallPieceModels[this.map[column * 2][row * 2 + 1]].rot;
-              let mesh = this.instancedMeshes.get(
-                paths[Math.floor(Math.random() * paths.length)]
-              );
-              let transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
-              vec3.set(
-                transform.position,
-                5.0 + 10 * column - 5.0,
-                0.0,
-                5.0 + 10 * row + 1.0
-              );
-
-              if (
-                this.identifyBridge(column - 1, row) !=
-                  BridgeType.NOT_A_BRIDGE ||
-                this.identifyBridge(column, row) != BridgeType.NOT_A_BRIDGE
-              ) {
-                vec3.set(transform.scale, 1.0, 0.3, 1.0);
-                isBridge = true;
-              } else {
-                vec3.set(transform.scale, 1.0, 1.0, 1.0);
-              }
-
-              ENGINE.quat.fromEuler(
-                transform.rotation,
-                0.0,
-                rots[Math.floor(Math.random() * rots.length)],
-                0.0
-              );
-              transform.calculateMatrices();
-
-              mesh = this.instancedMeshes.get(
-                "Assets/objs/dungeonPack/wall_half.obj"
-              );
-              transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
-              vec3.set(
-                transform.position,
-                5.0 + 10 * column - 5.0,
-                0.0,
-                5.0 + 10 * row - 1.0
-              );
-              if (isBridge) {
-                vec3.set(transform.scale, 1.0, 0.3, 1.0);
-              } else {
-                vec3.set(transform.scale, 1.0, 1.0, 1.0);
-              }
-              ENGINE.quat.fromEuler(transform.rotation, 0.0, rots[0], 0.0);
-              transform.calculateMatrices();
-
-              let phyTrans = new ENGINE.Transform();
-              vec3.set(
-                phyTrans.position,
-                5.0 + column * roomSize - 5.0,
-                0.0,
-                5.0 + row * roomSize
-              );
-              phyTrans.scale = vec3.clone(physicsObjectScales[2]);
-
-              if (isBridge) {
-                phyTrans.scale[1] *= 0.3;
-              }
-
-              let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
-              physObj.isStatic = true;
-              physObj.frictionCoefficient = 0.0;
+              this.createCeilingTile(floorNumber, column, row);
             }
-
-            // Top left of tile corner
-            if (
-              this.map[column * 2][row * 2] > 0 &&
-              this.map[column * 2][row * 2] < wallPieceModels.length
-            ) {
-              const paths =
-                wallPieceModels[this.map[column * 2][row * 2]].paths;
-              const rots = wallPieceModels[this.map[column * 2][row * 2]].rot;
-              let path = paths[Math.floor(Math.random() * paths.length)];
-
-              // if (
-              //   identifyBridge(column, row) != BridgeType.NOT_A_BRIDGE ||
-              //   identifyBridge(column - 1, row) != BridgeType.NOT_A_BRIDGE ||
-              //   identifyBridge(column, row - 1) != BridgeType.NOT_A_BRIDGE
-              // ) {
-              //   path = "Assets/objs/dungeonPack/pillar.obj";
-              // }
-
-              let mesh = this.instancedMeshes.get(path);
-              let transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
-              vec3.set(
-                transform.position,
-                5.0 + 10 * column + -5.0,
-                0.0,
-                5.0 + 10 * row - 5.0
-              );
-              vec3.set(transform.scale, 1.0, 1.0, 1.0);
-              ENGINE.quat.fromEuler(
-                transform.rotation,
-                0.0,
-                rots[Math.floor(Math.random() * rots.length)],
-                0.0
-              );
-              vec3.add(
-                transform.position,
-                transform.position,
-                wallPieceModels[this.map[column * 2][row * 2]].posOffset
-              );
-              transform.calculateMatrices();
-
-              // Only add a physics object for crossings if it's not a end piece
-              if (
-                this.map[column * 2][row * 2] % 16 < 12 ||
-                this.map[column * 2][row * 2] % 16 > 15
-              ) {
-                let physObj = this.physicsScene.addNewPhysicsObject(transform);
-                physObj.setupBoundingBoxFromGraphicsBundle(mesh);
-                physObj.setupInternalTreeFromGraphicsObject(
-                  mesh.graphicsObject,
-                  path
-                );
-                physObj.isStatic = true;
-                physObj.frictionCoefficient = 0.0;
-              }
-            }
+          } else if (
+            mapFloor[convertRoomIndexToCoordIncludingWalls(column)][
+              convertRoomIndexToCoordIncludingWalls(row)
+            ] == -1
+          ) {
+            // If there should be something in the voids, create it here
           }
         }
-        this.physicsScene.update(0.0, true, false); // Update static objects (all walls) so octree is updated
-      });
+
+        // Top of tile wall
+        if (
+          column < columns &&
+          mapFloor[column * 2 + 1][row * 2] > 0 &&
+          mapFloor[column * 2 + 1][row * 2] < wallPieceModels.length
+        ) {
+          this.createTopOfTileWall(floorNumber, column, row);
+        }
+
+        // Left of tile wall
+        if (
+          row < rows &&
+          mapFloor[column * 2][row * 2 + 1] > 0 &&
+          mapFloor[column * 2][row * 2 + 1] < wallPieceModels.length
+        ) {
+          this.createLeftOfTileWall(floorNumber, column, row);
+        }
+
+        // Top left of tile corner
+        if (
+          mapFloor[column * 2][row * 2] > 0 &&
+          mapFloor[column * 2][row * 2] < wallPieceModels.length
+        ) {
+          this.createTopLeftOfTile(floorNumber, column, row);
+        }
+      }
+    }
+    this.physicsScene.update(0.0, true, false); // Update static objects (all walls) so octree is updated
   }
 
   checkIfVoid(position: vec3): boolean {
     // Calculate room from position
+    let floorNumber = Math.max(0, Math.floor(-(position[1] + 0.1) / 5.0));
+
     let room = vec2.floor(
       vec2.create(),
       vec2.scale(
@@ -779,15 +875,21 @@ export default class ProceduralMap {
     );
 
     if (
+      !this.columns.has(floorNumber) ||
+      !this.rows.has(floorNumber) ||
       room[0] < 0 ||
-      room[0] >= this.columns ||
+      room[0] >= this.columns.get(floorNumber) ||
       room[1] < 0 ||
-      room[1] >= this.rows
+      room[1] >= this.rows.get(floorNumber)
     ) {
       return true;
     }
 
-    if (this.map[room[0] * 2 + 1][room[1] * 2 + 1] == -1) {
+    if (
+      this.map.get(floorNumber)[convertRoomIndexToCoordIncludingWalls(room[0])][
+        convertRoomIndexToCoordIncludingWalls(room[1])
+      ] == -1
+    ) {
       return true;
     }
 
@@ -796,6 +898,8 @@ export default class ProceduralMap {
 
   checkIfOutsideOfMap(position: vec3): boolean {
     // Calculate room from position
+    let floorNumber = Math.max(0, Math.floor(-(position[1] + 0.1) / 5.0));
+
     let room = vec2.floor(
       vec2.create(),
       vec2.scale(
@@ -806,40 +910,43 @@ export default class ProceduralMap {
     );
 
     if (
+      !this.columns.has(floorNumber) ||
+      !this.rows.has(floorNumber) ||
       room[0] < 0 ||
-      room[0] >= this.columns ||
+      room[0] >= this.columns.get(floorNumber) ||
       room[1] < 0 ||
-      room[1] >= this.rows
+      room[1] >= this.rows.get(floorNumber)
     ) {
       return true;
     }
     return false;
   }
 
-  updateFocusRoom(characterPosition: vec2) {
+  updateFocusRoom(position: vec3) {
     // Calculate room from characterPosition
+    let floorNumber = Math.max(0, Math.floor(-(position[1] + 0.1) / 5.0));
+
     let room = vec2.floor(
       vec2.create(),
-      vec2.scale(vec2.create(), characterPosition, 1.0 / roomSize)
+      vec2.scale(
+        vec2.create(),
+        vec2.fromValues(position[0], position[2]),
+        1.0 / roomSize
+      )
     );
     if (
+      !this.columns.has(floorNumber) ||
+      !this.rows.has(floorNumber) ||
       room[0] < 0 ||
-      room[0] >= this.columns ||
+      room[0] >= this.columns.get(floorNumber) ||
       room[1] < 0 ||
-      room[1] >= this.rows
+      room[1] >= this.rows.get(floorNumber)
     ) {
       return;
     }
 
-    // If it's not the same as the current focus room, add the new room to visited and update the focus room
-    if (!vec2.equals(room, this.focusRoom)) {
-      this.focusRoom = room;
-      this.visitedRooms.add(room[0] + ";" + room[1]);
-      this.exploredAsciiMap = LabyrinthGenerator.getAsciiMap(
-        this.map,
-        this.visitedRooms
-      );
-    }
+    // If it's not the same as the current focus room, update the focus room
+    this.focusRoom = room;
   }
 
   reconstructPath(previous: (vec2 | null)[][], target: vec2): vec2[] {
@@ -854,9 +961,10 @@ export default class ProceduralMap {
     return path.reverse();
   }
 
-  findPath(start: vec2, target: vec2): vec2[] {
-    const rows = this.map.length;
-    const cols = this.map[0].length;
+  findPath(floorNumber: number, start: vec2, target: vec2): vec2[] {
+    const mapFloor = this.map.get(floorNumber);
+    const rows = mapFloor.length;
+    const cols = mapFloor[0].length;
     const directions: vec2[] = [
       vec2.fromValues(0, 1), // Right
       vec2.fromValues(1, 0), // Down
@@ -909,7 +1017,7 @@ export default class ProceduralMap {
           nx < rows &&
           ny >= 0 &&
           ny < cols &&
-          this.map[nx][ny] == 0
+          mapFloor[nx][ny] == 0
         ) {
           const newDist = distance[x][y] + 1;
 
@@ -925,11 +1033,12 @@ export default class ProceduralMap {
     return null; // No path found
   }
 
-  getRandomAccessibleRoomCoords(): vec2 {
+  getRandomAccessibleRoomCoords(floorNumber: number): vec2 {
+    const mapFloor = this.map.get(floorNumber);
     let coordsSet = new Array<vec2>();
-    for (let x = 0; x < this.map.length; x++) {
-      for (let y = 0; y < this.map[x].length; y++) {
-        if (this.map[x][y] == 0) {
+    for (let x = 0; x < mapFloor.length; x++) {
+      for (let y = 0; y < mapFloor[x].length; y++) {
+        if (mapFloor[x][y] == 0) {
           coordsSet.push(vec2.fromValues(x, y));
         }
       }
@@ -937,32 +1046,22 @@ export default class ProceduralMap {
     return coordsSet[Math.floor(Math.random() * coordsSet.length)];
   }
 
-  getRoomCenterWorldPos(room: vec2): vec3 {
-    let x = ((room[0] - 1) / 2) * roomSize + roomSize / 2;
-    let y = ((room[1] - 1) / 2) * roomSize + roomSize / 2;
-    return vec3.fromValues(x, 1, y);
-  }
-
-  getAsciiMapOfVisitedRooms(): string {
-    return this.exploredAsciiMap;
-  }
-
-  getMapSize(): vec2 {
-    return vec2.fromValues(
-      ((this.map.length - 1) / 2.0) * roomSize,
-      ((this.map[0].length - 1) / 2.0) * roomSize
-    );
+  getRoomCenterWorldPos(floorNumber: number, room: vec2): vec3 {
+    let x =
+      convertCoordIncludingWallsToRoomIndex(room[0]) * roomSize + roomSize / 2;
+    let y =
+      convertCoordIncludingWallsToRoomIndex(room[1]) * roomSize + roomSize / 2;
+    return vec3.fromValues(x, floorNumber * -roomHeight, y);
   }
 
   // Find avalible spawn as far away from player as possible
-  // TODO Right now it will always be the same position (bottom right corner)
-  // figure out a more fun exit finder that is also not too close to spawn
-  private findExitRoom(playerSpawnRoom: vec2): vec2 {
+  private findExitRoom(floorNumber: number, playerSpawnRoom: vec2): vec2 {
+    const mapFloor = this.map.get(floorNumber);
     const accessibleRooms: vec2[] = [];
 
-    for (let x = 1; x < this.map.length; x += 2) {
-      for (let y = 1; y < this.map[0].length; y += 2) {
-        if (this.map[x][y] === 0) {
+    for (let x = 1; x < mapFloor.length; x += 2) {
+      for (let y = 1; y < mapFloor[0].length; y += 2) {
+        if (mapFloor[x][y] === 0) {
           accessibleRooms.push(vec2.fromValues(x, y));
         }
       }
@@ -972,12 +1071,12 @@ export default class ProceduralMap {
     let maxDistance = 0;
     let exitRoom = playerSpawnRoom;
     const startRoom = vec2.fromValues(
-      playerSpawnRoom[0] * 2 + 1,
-      playerSpawnRoom[1] * 2 + 1
+      convertRoomIndexToCoordIncludingWalls(playerSpawnRoom[0]),
+      convertRoomIndexToCoordIncludingWalls(playerSpawnRoom[1])
     );
 
     for (const room of accessibleRooms) {
-      const path = this.findPath(room, startRoom);
+      const path = this.findPath(floorNumber, room, startRoom);
       if (path == undefined) {
         continue;
       }
@@ -998,18 +1097,21 @@ export default class ProceduralMap {
     return this.playerSpawnRoom;
   }
 
-  getExitRoom(): vec2 {
-    return this.exitRoom;
+  getExitRoom(floorNumber: number): vec2 {
+    return this.floorExitRoom.get(floorNumber);
   }
 
-  getExitRoomPos(): vec3 {
-    return this.getRoomCenterWorldPos(this.exitRoom);
+  getExitRoomPos(floorNumber: number): vec3 {
+    return this.getRoomCenterWorldPos(
+      floorNumber,
+      this.floorExitRoom.get(floorNumber)
+    );
   }
 
-  private createExitLight(scene: Scene) {
+  private createExitLight(floorNumber: number, scene: Scene) {
     this.pointLight = scene.addNewPointLight();
     if (this.pointLight) {
-      vec3.copy(this.pointLight.position, this.getExitRoomPos());
+      vec3.copy(this.pointLight.position, this.getExitRoomPos(floorNumber));
       this.pointLight.position[1] = 2.0;
 
       vec3.set(this.pointLight.colour, 0.0, 1.5, 0.0);
