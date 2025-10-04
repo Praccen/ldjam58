@@ -15,7 +15,7 @@ export let gameContext = new GameContext();
 enum GameState {
   MAIN_MENU,
   LOADING,
-  PLAYING
+  PLAYING,
 }
 
 let currentState = GameState.MAIN_MENU;

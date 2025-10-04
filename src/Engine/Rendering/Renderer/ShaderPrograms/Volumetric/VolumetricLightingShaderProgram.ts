@@ -213,7 +213,7 @@ function getFragSrc() {
         vec4 lightResult = CalcPointLight(pointLights[i], pos, dir);
         if (lightResult.a > 0.0) {
           effectedCounter += 1.0;
-          tempResult += lightResult * fogMultiplier * 1.4;
+          tempResult += lightResult * fogMultiplier * 2.5;
         }
       }
 

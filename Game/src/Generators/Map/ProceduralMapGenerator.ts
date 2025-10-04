@@ -17,11 +17,11 @@ import { LabyrinthGenerator } from "../LabyrinthGenerator.js";
 
 const floorLayouts: string[] = [
   `
+  5111111
   1111111
-  1111111
-  1111111
-  1110111
-  1111111
+  1112111
+  1120211
+  1112111
   1111111
   1111111
   `,
@@ -43,6 +43,7 @@ export const wallPieceModels = new Array<{
       "Assets/objs/MyDungeon/FloorNoGrate.obj",
       "Assets/objs/MyDungeon/FloorGrate.obj",
       "Assets/objs/MyDungeon/Bridge.obj",
+      "Assets/objs/dungeonPack/ceiling_tile.obj",
     ],
     rot: [0],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
@@ -331,7 +332,7 @@ export default class ProceduralMap {
 
     this.exitRoom = this.findExitRoom(this.playerSpawnRoom);
     this.createMeshes(this.scene);
-    this.createExitLight(this.scene);
+    // this.createExitLight(this.scene);
   }
 
   private getMapLayoutForFloor(floorNumber: number): string {
@@ -383,6 +384,83 @@ export default class ProceduralMap {
         Number(this.map[mapColumn * 2 + 1][mapRow * 2 + 1 + 1] == 0) >=
       3
     );
+  }
+
+  createFloor(column: number, row: number) {
+    const paths = wallPieceModels[0].paths;
+    let isBridge = false;
+    let transform = null;
+
+    // Make the tile a bridge if it has inaccessible spaces oposite of each other but accessible spaces in the other direction.
+    const bridgeType = this.identifyBridge(column, row);
+    if (bridgeType != BridgeType.NOT_A_BRIDGE) {
+      let mesh = this.instancedMeshes.get(paths[2]);
+      transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
+      vec3.set(transform.scale, 0.83, 0.83, 0.83);
+
+      if (bridgeType == BridgeType.VERTICAL_BRIGE) {
+        ENGINE.quat.fromEuler(
+          transform.rotation,
+          0.0,
+          column * 90 + row * 90,
+          0.0
+        );
+      }
+      isBridge = true;
+    } else if (this.identifyGrates(column, row)) {
+      let mesh = this.instancedMeshes.get(paths[1]);
+      transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
+      vec3.set(transform.scale, 0.9, 0.9, 0.9);
+    } else {
+      let mesh = this.instancedMeshes.get(paths[0]);
+      transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
+      vec3.set(transform.scale, 0.9, 0.9, 0.9);
+    }
+
+    vec3.set(transform.position, 5.0 + 10 * column, 0.0, 5.0 + 10 * row);
+
+    if (!isBridge) {
+      ENGINE.quat.fromEuler(
+        transform.rotation,
+        0.0,
+        column * 90 + row * 90,
+        0.0
+      );
+    }
+
+    transform.calculateMatrices();
+
+    let phyTrans = new ENGINE.Transform();
+    vec3.set(
+      phyTrans.position,
+      roomSize * 0.5 + column * roomSize,
+      -0.5,
+      roomSize * 0.5 + row * roomSize
+    );
+    phyTrans.scale = vec3.fromValues(roomSize, 1.0, roomSize);
+    let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
+    physObj.isStatic = true;
+    physObj.frictionCoefficient = 0.0;
+  }
+
+  createCeiling(column: number, row: number) {
+    const path = wallPieceModels[0].paths[3];
+    let transform = null;
+
+    // Make the tile a bridge if it has inaccessible spaces oposite of each other but accessible spaces in the other direction.
+    let mesh = this.instancedMeshes.get(path);
+    transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
+    vec3.set(transform.scale, 2.7, 2.7, 2.7);
+
+    vec3.set(transform.position, 5.0 + 10 * column, 4.1, 5.0 + 10 * row);
+
+    transform.calculateMatrices();
+
+    let physObj = this.physicsScene.addNewPhysicsObject(transform);
+    physObj.setupBoundingBoxFromGraphicsBundle(mesh);
+    physObj.setupInternalTreeFromGraphicsObject(mesh.graphicsObject, path);
+    physObj.isStatic = true;
+    physObj.frictionCoefficient = 0.0;
   }
 
   async createMeshes(scene: ENGINE.Scene) {
@@ -441,72 +519,16 @@ export default class ProceduralMap {
           for (let row = 0; row < this.rows + 1; row++) {
             // Tile filling (floor or blocked)
             if (column < this.columns && row < this.rows) {
-              if (
-                this.map[column * 2 + 1][row * 2 + 1] == 0 &&
-                !(
-                  column * 2 + 1 == this.getExitRoom()[0] &&
-                  row * 2 + 1 == this.getExitRoom()[1]
-                )
-              ) {
-                const paths = wallPieceModels[0].paths;
-                let isBridge = false;
-                let transform = null;
-
-                // Make the tile a bridge if it has inaccessible spaces oposite of each other but accessible spaces in the other direction.
-                const bridgeType = this.identifyBridge(column, row);
-                if (bridgeType != BridgeType.NOT_A_BRIDGE) {
-                  let mesh = this.instancedMeshes.get(paths[2]);
-                  transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
-                  vec3.set(transform.scale, 0.83, 0.83, 0.83);
-
-                  if (bridgeType == BridgeType.VERTICAL_BRIGE) {
-                    ENGINE.quat.fromEuler(
-                      transform.rotation,
-                      0.0,
-                      column * 90 + row * 90,
-                      0.0
-                    );
-                  }
-                  isBridge = true;
-                } else if (this.identifyGrates(column, row)) {
-                  let mesh = this.instancedMeshes.get(paths[1]);
-                  transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
-                  vec3.set(transform.scale, 0.9, 0.9, 0.9);
-                } else {
-                  let mesh = this.instancedMeshes.get(paths[0]);
-                  transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
-                  vec3.set(transform.scale, 0.9, 0.9, 0.9);
+              if (this.map[column * 2 + 1][row * 2 + 1] == 0) {
+                if (
+                  !(
+                    column * 2 + 1 == this.getExitRoom()[0] &&
+                    row * 2 + 1 == this.getExitRoom()[1]
+                  )
+                ) {
+                  this.createFloor(column, row);
                 }
-
-                vec3.set(
-                  transform.position,
-                  5.0 + 10 * column,
-                  0.0,
-                  5.0 + 10 * row
-                );
-
-                if (!isBridge) {
-                  ENGINE.quat.fromEuler(
-                    transform.rotation,
-                    0.0,
-                    column * 90 + row * 90,
-                    0.0
-                  );
-                }
-
-                transform.calculateMatrices();
-
-                let phyTrans = new ENGINE.Transform();
-                vec3.set(
-                  phyTrans.position,
-                  roomSize * 0.5 + column * roomSize,
-                  -0.5,
-                  roomSize * 0.5 + row * roomSize
-                );
-                phyTrans.scale = vec3.fromValues(roomSize, 1.0, roomSize);
-                let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
-                physObj.isStatic = true;
-                physObj.frictionCoefficient = 0.0;
+                this.createCeiling(column, row);
               } else if (this.map[column * 2 + 1][row * 2 + 1] == -1) {
                 // If there should be something in the voids, create it here
                 // let mesh = this.instancedMeshes.get(
@@ -730,11 +752,7 @@ export default class ProceduralMap {
                 this.map[column * 2][row * 2] % 16 > 15
               ) {
                 let physObj = this.physicsScene.addNewPhysicsObject(transform);
-                mesh.updateMinAndMaxPositions();
-                physObj.boundingBox.setMinAndMaxVectors(
-                  mesh.getMinAndMaxPositions().min,
-                  mesh.getMinAndMaxPositions().max
-                );
+                physObj.setupBoundingBoxFromGraphicsBundle(mesh);
                 physObj.setupInternalTreeFromGraphicsObject(
                   mesh.graphicsObject,
                   path

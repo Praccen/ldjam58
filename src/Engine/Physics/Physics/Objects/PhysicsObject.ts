@@ -1,4 +1,4 @@
-import { mat4, vec3 } from "../../../../Engine";
+import { GraphicsBundle, mat4, vec3 } from "../../../../Engine";
 import GraphicsObject from "../../../Rendering/Objects/GraphicsObjects/GraphicsObject";
 import Transform from "../../../Shared/Transform";
 import Tree, {
@@ -73,6 +73,14 @@ export default class PhysicsObject {
     this.boundingBox.setTransformMatrix(this.transform.matrix);
   }
 
+  setupBoundingBoxFromGraphicsBundle(bundle: GraphicsBundle) {
+    bundle.updateMinAndMaxPositions();
+    this.boundingBox.setMinAndMaxVectors(
+      bundle.getMinAndMaxPositions().min,
+      bundle.getMinAndMaxPositions().max
+    );
+  }
+
   setupInternalTree(shapes: Array<Shape>) {
     this.internalTree = new Tree(
       new TreeNode(1.0, vec3.create(), 0.05, 10, [true, true, true])
@@ -93,7 +101,7 @@ export default class PhysicsObject {
       return;
     }
 
-    let positions = graphicsObject.getVertexPositions(); // This assumes that the vec3 array is built with every three positions being one triangl
+    let positions = graphicsObject.getVertexPositions(); // This assumes that the vec3 array is built with every three positions being one triangle
     let treeNodes: TreeNodeContentElement[] = [];
     for (let i = 0; i < positions.length; i += 3) {
       let index =
