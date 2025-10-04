@@ -88,13 +88,13 @@ export default class Scene {
     // ------------------
 
     this.stillTree = new Tree(
-      new TreeNode(200, vec3.fromValues(0, 0, 0), 100, 200, [true, false, true])
+      new TreeNode(200, vec3.fromValues(0, 0, 0), 100, 100, [true, true, true])
     );
     this.instancedTree = new Tree(
-      new TreeNode(200, vec3.fromValues(0, 0, 0), 100, 200, [true, false, true])
+      new TreeNode(200, vec3.fromValues(0, 0, 0), 100, 100, [true, true, true])
     );
     this.animatedTree = new Tree(
-      new TreeNode(200, vec3.fromValues(0, 0, 0), 100, 200, [true, false, true])
+      new TreeNode(200, vec3.fromValues(0, 0, 0), 100, 100, [true, true, true])
     );
   }
 

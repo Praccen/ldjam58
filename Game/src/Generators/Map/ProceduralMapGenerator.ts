@@ -553,9 +553,9 @@ export default class ProceduralMap {
     );
 
     if (
-      this.identifyBridge(floorNumber, column, row - 1) !=
-        BridgeType.NOT_A_BRIDGE ||
-      this.identifyBridge(floorNumber, column, row) != BridgeType.NOT_A_BRIDGE
+      this.identifyBridge(floorNumber, column, row - 1) == 
+        BridgeType.HORIZONTAL_BRIDGE ||
+      this.identifyBridge(floorNumber, column, row) == BridgeType.HORIZONTAL_BRIDGE
     ) {
       isBridge = true;
       vec3.set(transform.scale, 1.0, 0.3, 1.0);
@@ -594,6 +594,10 @@ export default class ProceduralMap {
       floorNumber * -roomHeight,
       5.0 + row * roomSize - 5.0
     );
+    vec3.set(
+      phyTrans.origin,
+      0.0, -0.5, 0.0
+    );
     phyTrans.scale = vec3.clone(physicsObjectScales[1]);
     if (isBridge) {
       phyTrans.scale[1] *= 0.3;
@@ -621,9 +625,8 @@ export default class ProceduralMap {
     );
 
     if (
-      this.identifyBridge(floorNumber, column - 1, row) !=
-        BridgeType.NOT_A_BRIDGE ||
-      this.identifyBridge(floorNumber, column, row) != BridgeType.NOT_A_BRIDGE
+      this.identifyBridge(floorNumber, column - 1, row) == BridgeType.VERTICAL_BRIGE ||
+      this.identifyBridge(floorNumber, column, row) == BridgeType.VERTICAL_BRIGE
     ) {
       vec3.set(transform.scale, 1.0, 0.3, 1.0);
       isBridge = true;
@@ -663,7 +666,11 @@ export default class ProceduralMap {
       5.0 + row * roomSize
     );
     phyTrans.scale = vec3.clone(physicsObjectScales[2]);
-
+    vec3.set(
+      phyTrans.origin,
+      0.0, -0.5, 0.0
+    );
+    
     if (isBridge) {
       phyTrans.scale[1] *= 0.3;
     }

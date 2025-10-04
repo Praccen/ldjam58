@@ -42,7 +42,7 @@ export default class Game {
     // Create a camera and set it's starting position
     this.camera = new Camera();
     this.camera.setPosition(vec3.fromValues(4.0, 4.0, 7.0));
-    this.camera.setFarPlaneDistance(150);
+    this.camera.setFarPlaneDistance(75);
     this.camera.setFOV(50);
 
     this.dbgFrustum = new Frustum();

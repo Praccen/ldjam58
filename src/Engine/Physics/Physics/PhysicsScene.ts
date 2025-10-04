@@ -28,7 +28,7 @@ export default class PhysicsScene {
     this.gravity = vec3.fromValues(0.0, -9.8, 0.0);
     this.physicsObjects = new Array<PhysicsObject>();
     this.tree = new Tree(
-      new TreeNode(200, vec3.fromValues(0, 0, 0), 40, 50, [true, false, true])
+      new TreeNode(200, vec3.fromValues(0, 0, 0), 40, 50, [true, true, true])
     );
   }
 
