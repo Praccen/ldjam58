@@ -52,6 +52,19 @@ function startGame() {
 (window as any).startGame = startGame;
 
 /**
+ * Function to close the inventory - called from the inventory iframe
+ */
+function closeInventory() {
+  // Access the inventory through gameContext and close it
+  if (gameContext && gameContext.game && gameContext.game.inventory) {
+    gameContext.game.inventory.hide();
+  }
+}
+
+// Make closeInventory available globally for the HTML
+(window as any).closeInventory = closeInventory;
+
+/**
  * Our update function, this will run every frame, and is responsible for moving the camera based on input.
  * This is where game logic would go if this was a complete game
  * @param dt - time elapsed since last frame.

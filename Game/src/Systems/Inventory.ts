@@ -1,17 +1,15 @@
-import { ItemType } from "../Objects/Item";
+import Item, { ItemType } from "../Objects/Item";
 
-export interface InventoryItem {
-    id: string;
+export interface Curse {
     name: string;
-    type: ItemType;
-    description?: string;
-    quantity: number;
-    rarity?: "common" | "rare" | "epic" | "legendary";
+    description: string;
+    severity?: "minor" | "major" | "critical";
 }
 
 export default class Inventory {
     private inventoryElement: HTMLElement;
-    private items: InventoryItem[] = [];
+    private items: Item[] = [];
+    private curses: Curse[] = [];
     private isVisible: boolean = false;
     private maxSlots: number = 24;
 
@@ -30,10 +28,7 @@ export default class Inventory {
         this.inventoryElement.setAttribute("src", "Assets/html/inventory.html");
     }
 
-    /**
-     * Add an item to the inventory
-     */
-    addItem(item: InventoryItem): boolean {
+    addItem(item: Item): boolean {
         // Check if inventory is full
         if (this.items.length >= this.maxSlots) {
             console.warn("Inventory is full!");
@@ -46,10 +41,9 @@ export default class Inventory {
         );
 
         if (existingItem) {
+            // TODO only stack coins?
             existingItem.quantity += item.quantity;
         } else {
-            // Generate unique ID
-            item.id = this.generateItemId();
             this.items.push(item);
         }
 
@@ -57,11 +51,8 @@ export default class Inventory {
         return true;
     }
 
-    /**
-     * Remove an item from the inventory
-     */
-    removeItem(itemId: string): boolean {
-        const index = this.items.findIndex((item) => item.id === itemId);
+    removeItem(name: string): boolean {
+        const index = this.items.findIndex((item) => item.name === name);
         if (index === -1) return false;
 
         this.items.splice(index, 1);
@@ -69,59 +60,21 @@ export default class Inventory {
         return true;
     }
 
-    /**
-     * Get all items in inventory
-     */
-    getItems(): InventoryItem[] {
-        return [...this.items];
-    }
-
-    /**
-     * Check if inventory has space
-     */
-    hasSpace(): boolean {
-        return this.items.length < this.maxSlots;
-    }
-
-    /**
-     * Toggle inventory visibility
-     */
     toggle(): void {
         this.isVisible = !this.isVisible;
         this.inventoryElement.style.display = this.isVisible ? "block" : "none";
 
         if (this.isVisible) {
             this.updateInventoryDisplay();
+        } else {
+            // Refocus the game canvas when closing
+            const canvas = document.querySelector("canvas");
+            if (canvas instanceof HTMLElement) {
+                canvas.focus();
+            }
         }
     }
 
-    /**
-     * Show inventory
-     */
-    show(): void {
-        this.isVisible = true;
-        this.inventoryElement.style.display = "block";
-        this.updateInventoryDisplay();
-    }
-
-    /**
-     * Hide inventory
-     */
-    hide(): void {
-        this.isVisible = false;
-        this.inventoryElement.style.display = "none";
-    }
-
-    /**
-     * Check if inventory is visible
-     */
-    isOpen(): boolean {
-        return this.isVisible;
-    }
-
-    /**
-     * Update the inventory display in the iframe
-     */
     private updateInventoryDisplay(): void {
         const iframe = this.inventoryElement as HTMLIFrameElement;
         const contentWindow = iframe.contentWindow;
@@ -129,66 +82,45 @@ export default class Inventory {
         if (contentWindow && (contentWindow as any).updateInventory) {
             (contentWindow as any).updateInventory(this.items);
         }
+
+        if (contentWindow && (contentWindow as any).updateCurses) {
+            (contentWindow as any).updateCurses(this.curses);
+        }
     }
 
-    /**
-     * Generate a unique ID for items
-     */
-    private generateItemId(): string {
-        return (
-            "item_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9)
-        );
+    addCurse(curse: Curse): void {
+        this.curses.push(curse);
+        this.updateInventoryDisplay();
     }
 
-    /**
-     * Clear all items from inventory
-     */
+    removeCurse(curseName: string): boolean {
+        const index = this.curses.findIndex((c) => c.name === curseName);
+        if (index === -1) return false;
+
+        this.curses.splice(index, 1);
+        this.updateInventoryDisplay();
+        return true;
+    }
+
+    getCurses(): Curse[] {
+        return [...this.curses];
+    }
+
+    clearCurses(): void {
+        this.curses = [];
+        this.updateInventoryDisplay();
+    }
+
     clear(): void {
         this.items = [];
         this.updateInventoryDisplay();
     }
 
-    /**
-     * Get item count
-     */
     getItemCount(): number {
         return this.items.reduce((total, item) => total + item.quantity, 0);
     }
 
-    /**
-     * Find items by type
-     */
-    findItemsByType(type: ItemType): InventoryItem[] {
+    findItemsByType(type: ItemType): Item[] {
         return this.items.filter((item) => item.type === type);
-    }
-
-    /**
-     * Create an inventory item from game item
-     */
-    static createInventoryItem(
-        name: string,
-        type: ItemType,
-        quantity: number = 1,
-        description?: string
-    ): InventoryItem {
-        const rarityMap: {
-            [key in ItemType]: "common" | "rare" | "epic" | "legendary";
-        } = {
-            [ItemType.COIN]: "common",
-            [ItemType.RING]: "rare",
-            [ItemType.WEAPON]: "epic",
-            [ItemType.SKULL]: "rare",
-            [ItemType.SCEPTER]: "legendary",
-            [ItemType.GRAIL]: "legendary",
-        };
-
-        return {
-            id: "", // Will be set when added to inventory
-            name,
-            type,
-            description: description || `En mystisk ${name.toLowerCase()}`,
-            quantity,
-            rarity: rarityMap[type],
-        };
     }
 }

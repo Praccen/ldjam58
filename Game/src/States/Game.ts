@@ -10,6 +10,8 @@ import { GetCookie, SetCookie } from "../Utils/WebUtils.js";
 import GameGUI from "../GUI/GameGUI.js";
 import Level from "../Objects/Level.js";
 import PlayerController from "../Objects/PlayerController.js";
+import Inventory from "../Systems/Inventory.js";
+import { Input } from "../Input.js";
 
 export default class Game {
   private renderer: Renderer3D;
@@ -19,6 +21,7 @@ export default class Game {
   dbgFrustum: Frustum;
 
   gui: GameGUI;
+  inventory: Inventory;
 
   private level: Level;
   private worldEditor: WorldEditor;
@@ -26,6 +29,7 @@ export default class Game {
   private gameTimer = 0.0;
 
   private saveScreenshot = false;
+  private iWasPressed = false;
 
   constructor(renderer: Renderer3D, guiRenderer: GUIRenderer) {
     this.renderer = renderer;
@@ -64,6 +68,7 @@ export default class Game {
     this.gui = new GameGUI(this.guiRenderer);
     this.gui.gameGuiDiv.setHidden(true);
 
+    this.inventory = new Inventory();
     this.createLevel();
 
     this.worldEditor = new WorldEditor(
@@ -100,6 +105,14 @@ export default class Game {
       return;
     }
     this.gameTimer += dt;
+
+    // Handle inventory toggle (I key)
+    if (Input.keys["I"] && !this.iWasPressed) {
+      this.inventory.toggle();
+      this.iWasPressed = true;
+    } else if (!Input.keys["I"]) {
+      this.iWasPressed = false;
+    }
 
     this.level.update(this.camera, dt);
   }

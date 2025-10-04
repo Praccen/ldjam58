@@ -38,7 +38,11 @@ export default class Level {
     this.scene.directionalLight.lightProjectionBoxSideLength = 100;
 
     this.physicsScene = new PhysicsScene();
-    this.itemHandler = new ItemHandler(this.scene, this.physicsScene);
+    this.itemHandler = new ItemHandler(
+      this.scene,
+      this.physicsScene,
+      game.inventory
+    );
     this.map = new ProceduralMap(this.scene, this.physicsScene, [0, 1, 2]);
 
     let playerSpawnRoom = this.map.getPlayerSpawnRoom();

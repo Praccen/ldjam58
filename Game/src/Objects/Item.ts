@@ -19,10 +19,14 @@ export default class Item {
     private scene: Scene;
     private physicsScene: PhysicsScene;
     private physicsObject: PhysicsObject;
-    private name: string;
-    private type: ItemType;
+    name: string;
+    type: ItemType;
     private graphicsBundle: GraphicsBundle;
     startPosition: vec3;
+
+    description?: string;
+    quantity: number;
+    rarity?: "common" | "rare" | "epic" | "legendary";
 
     constructor(
         scene: Scene,

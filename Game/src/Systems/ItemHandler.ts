@@ -6,15 +6,23 @@ import {
     vec3,
     Ray,
 } from "praccen-web-engine";
+import Inventory from "./Inventory";
 
 export default class ItemHandler {
     private items = new Map<number, Item>();
 
     private scene: Scene;
     private physicsScene: PhysicsScene;
-    constructor(scene: Scene, physicsScene: PhysicsScene) {
+    private inventory: Inventory;
+
+    constructor(
+        scene: Scene,
+        physicsScene: PhysicsScene,
+        inventory: Inventory
+    ) {
         this.scene = scene;
         this.physicsScene = physicsScene;
+        this.inventory = inventory;
     }
 
     //TODO spawn random item
@@ -34,6 +42,7 @@ export default class ItemHandler {
         if (hit.distance != Infinity) {
             const item = this.items.get(hit.object.physicsObjectId);
             if (item) {
+                this.inventory.addItem(item);
                 item.destroy();
                 this.items.delete(hit.object.physicsObjectId);
             }
