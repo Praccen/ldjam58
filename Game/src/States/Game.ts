@@ -4,6 +4,7 @@ import {
   GUIRenderer,
   Renderer3D,
   vec3,
+  WorldEditor,
 } from "praccen-web-engine";
 import { GetCookie, SetCookie } from "../Utils/WebUtils.js";
 import GameGUI from "../GUI/GameGUI.js";
@@ -11,6 +12,7 @@ import { Input } from "../Input.js";
 import { sensitivity } from "./GameContext.js";
 import Level from "../Objects/Level.js";
 import { roomSize } from "../Generators/Map/ProceduralMapGenerator.js";
+import PlayerController from "../Objects/PlayerController.js";
 
 type TriggerCallback = (triggerName: string) => void;
 
@@ -33,9 +35,9 @@ export default class Game {
   gui: GameGUI;
 
   private level: Level;
+  private worldEditor: WorldEditor;
+  private playerController: PlayerController;
 
-  private pitch = -30.0;
-  private jaw = 210.0;
   private gameTimer = 0.0;
 
   private saveScreenshot = false;
@@ -69,14 +71,16 @@ export default class Game {
       );
     }
     if (camDirCookie != "") {
-      this.pitch = parseFloat(camDirCookie.split(":")[0]);
-      this.jaw = parseFloat(camDirCookie.split(":")[1]);
+      this.camera.setPitchJawDegrees(parseFloat(camDirCookie.split(":")[0]), parseFloat(camDirCookie.split(":")[1]));
     }
 
     this.gui = new GameGUI(this.guiRenderer);
     this.gui.gameGuiDiv.setHidden(true);
 
     this.createLevel(1);
+
+    this.worldEditor = new WorldEditor(this.camera, this.level.scene, this.level.physicsScene, this.guiRenderer);
+    this.playerController = new PlayerController(this.level.scene, this.level.physicsScene, this.renderer, this, vec3.fromValues(5.0, 1.0, 5.0));
   }
 
   createLevel(levelNumber: number) {
@@ -109,35 +113,16 @@ export default class Game {
   }
 
   update(dt: number) {
+    if (this.worldEditor.interacting()) {
+      return;
+    }
     this.gameTimer += dt;
 
     this.level.update(this.camera, dt);
+    this.playerController.update(dt);
   }
 
   preRenderingUpdate(dt: number) {
-    // Move camera with WASD (W and S will move along the direction of the camera, not along the xz plane)
-    const cameraSpeed = 10.0;
-    if (Input.keys["W"]) {
-      this.camera.translate(
-        vec3.scale(vec3.create(), this.camera.getDir(), cameraSpeed * dt)
-      );
-    }
-    if (Input.keys["S"]) {
-      this.camera.translate(
-        vec3.scale(vec3.create(), this.camera.getDir(), -cameraSpeed * dt)
-      );
-    }
-    if (Input.keys["D"]) {
-      this.camera.translate(
-        vec3.scale(vec3.create(), this.camera.getRight(), cameraSpeed * dt)
-      );
-    }
-    if (Input.keys["A"]) {
-      this.camera.translate(
-        vec3.scale(vec3.create(), this.camera.getRight(), -cameraSpeed * dt)
-      );
-    }
-
     SetCookie(
       "camPos",
       this.camera.getPosition()[0] +
@@ -147,30 +132,9 @@ export default class Game {
         this.camera.getPosition()[2]
     );
 
-    // Rotate camera with mouse click and drag
-    let mouseDiff = Input.getMouseMovement();
-    if (Input.mouseClicked) {
-      // Make sure the user is not changing a slider
-      this.pitch -= mouseDiff[1] * sensitivity;
-      this.jaw -= mouseDiff[0] * sensitivity;
-    }
+    SetCookie("camDir", this.camera.getPitchJawDegrees()[0] + ":" + this.camera.getPitchJawDegrees()[1]);
 
-    SetCookie("camDir", this.pitch + ":" + this.jaw);
-
-    // Move camera up and down with spacebar and shift
-    if (Input.keys[" "]) {
-      this.camera.translate(vec3.fromValues(0.0, 10.0 * dt, 0.0));
-    }
-    if (Input.keys["SHIFT"]) {
-      this.camera.translate(vec3.fromValues(0.0, -10.0 * dt, 0.0));
-    }
-
-    this.pitch = Math.max(Math.min(this.pitch, 89), -89); // Don't allow the camera to go past 89 degrees
-    this.jaw = this.jaw % 360;
-
-    this.camera.setPitchJawDegrees(this.pitch, this.jaw); // Update the rotation of the camera
     this.camera.getFrustum(this.dbgFrustum);
-
     this.level.preRenderingUpdate(dt, this.camera);
   }
 

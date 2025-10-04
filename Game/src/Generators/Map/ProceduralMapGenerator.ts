@@ -13,6 +13,8 @@ import { LabyrinthGenerator } from "../LabyrinthGenerator.js";
  * "a-z || A-Z" -> NPC start room, automatically a must go room. "s" specifically will create a static NPC
  */
 
+// I want the end room for one floor to be the start room for the next. It has to be possible to reach the shaft,
+
 const floorLayouts: string[] = [
   `
   1111111
@@ -22,44 +24,7 @@ const floorLayouts: string[] = [
   1111111
   1111111
   1111111
-  `,
   `
-  54s44
-  `,
-  `
-  54011
-  444s1
-  01a11
-  11111
-  `,
-  `
-  000111121111000
-  523211111112321
-  110001111100011
-  111000111000111
-  1c11000100011a1
-  111110444011111
-  2111114441b1112
-  11d110444011111
-  111110010011111
-  111000111000111
-  110001111100011
-  123211111112321
-  000111121111000
-  `,
-  `
-  11111331111111011011111111111111111111111111111
-  11011011110131111111110133101111131111101110111
-  11111011111333111111011033111111101111111331111
-  11111111110131111111011111011011111111111331111
-  11111111111111110111133111111111113101110110111
-  11133111111101111111333311111110111111111111111
-  11101110111111111111133111111111111111011110111
-  11111111111111011111111111110131111110110111111
-  11010111101111111110111101111111111101111111111
-  11111311111011111111111111111113311110101111111
-  11111111111111111111111111111113111111111111111
-  `,
 ];
 
 enum BridgeType {
@@ -274,7 +239,6 @@ export default class ProceduralMap {
   private scene: ENGINE.Scene;
   private instancedMeshes: Map<string, ENGINE.GraphicsBundle>;
   private physicsScene: ENGINE.PhysicsScene;
-  private floorPhysicsObject: ENGINE.PhysicsObject;
   private map: Array<Array<number>>;
   private exploredAsciiMap: string;
   private visitedRooms: Set<string>;
@@ -282,12 +246,10 @@ export default class ProceduralMap {
   private exitRoom: vec2;
   private currentFloor: number = 1;
   private pointLight: PointLight | null = null;
-  private floorPhysicsObjects: ENGINE.PhysicsObject[] = [];
   focusRoom: vec2;
 
   private columns: number;
   private rows: number;
-  npcsStartInfo: { startPos: vec2; static: boolean }[] = [];
 
   constructor(
     scene: ENGINE.Scene,
@@ -316,7 +278,6 @@ export default class ProceduralMap {
     let mustGoRooms = [];
     let noGoRooms = [];
     let connectionRooms = [];
-    this.npcsStartInfo.length = 0;
 
     this.columns = 0;
     let rowNr = 0;
@@ -353,10 +314,6 @@ export default class ProceduralMap {
           (row[columnNr] >= "A" && row[columnNr] <= "Z")
         ) {
           mustGoRooms.push([columnNr, rowNr]);
-          this.npcsStartInfo.push({
-            startPos: vec2.fromValues(columnNr, rowNr),
-            static: row[columnNr] == "s",
-          });
         }
       }
       rowNr++;
@@ -372,25 +329,8 @@ export default class ProceduralMap {
       0.85
     );
 
-    this.floorPhysicsObject = this.physicsScene.addNewPhysicsObject();
-    this.floorPhysicsObject.isStatic = true;
-    this.floorPhysicsObject.frictionCoefficient = 10.0;
-    vec3.set(
-      this.floorPhysicsObject.transform.position,
-      (this.columns * roomSize) / 2.0,
-      -0.5,
-      (this.rows * roomSize) / 2.0
-    );
-    vec3.set(
-      this.floorPhysicsObject.transform.scale,
-      this.columns * roomSize * 2.0,
-      1.0,
-      this.rows * roomSize * 2.0
-    );
-
-    this.createMeshes(this.scene);
-
     this.exitRoom = this.findExitRoom(this.playerSpawnRoom);
+    this.createMeshes(this.scene);
     this.createExitLight(this.scene);
   }
 
@@ -501,7 +441,7 @@ export default class ProceduralMap {
           for (let row = 0; row < this.rows + 1; row++) {
             // Tile filling (floor or blocked)
             if (column < this.columns && row < this.rows) {
-              if (this.map[column * 2 + 1][row * 2 + 1] == 0) {
+              if (this.map[column * 2 + 1][row * 2 + 1] == 0 && !(column * 2 + 1 == this.getExitRoom()[0] && row * 2 + 1 == this.getExitRoom()[1])) {
                 const paths = wallPieceModels[0].paths;
                 let isBridge = false;
                 let transform = null;
@@ -549,6 +489,18 @@ export default class ProceduralMap {
                 }
 
                 transform.calculateMatrices();
+
+                let phyTrans = new ENGINE.Transform();
+                vec3.set(
+                  phyTrans.position,
+                  roomSize * 0.5 + column * roomSize,
+                  -0.5,
+                  roomSize * 0.5 + row * roomSize
+                );
+                phyTrans.scale = vec3.fromValues(roomSize, 1.0, roomSize);
+                let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
+                physObj.isStatic = true;
+                physObj.frictionCoefficient = 0.0;
               } else if (this.map[column * 2 + 1][row * 2 + 1] == -1) {
                 // If there should be something in the voids, create it here
 
@@ -648,7 +600,6 @@ export default class ProceduralMap {
               let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
               physObj.isStatic = true;
               physObj.frictionCoefficient = 0.0;
-              this.floorPhysicsObjects.push(physObj);
             }
 
             // Left of tile wall
@@ -726,7 +677,6 @@ export default class ProceduralMap {
               let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
               physObj.isStatic = true;
               physObj.frictionCoefficient = 0.0;
-              this.floorPhysicsObjects.push(physObj);
             }
 
             // Top left of tile corner
@@ -786,7 +736,6 @@ export default class ProceduralMap {
                 let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
                 physObj.isStatic = true;
                 physObj.frictionCoefficient = 0.0;
-                this.floorPhysicsObjects.push(physObj);
               }
             }
           }
