@@ -1,571 +1,572 @@
 <!DOCTYPE html>
 <html lang="sv">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>ARKEOLOG - Inventory</title>
-        <style>
-            @import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600&display=swap");
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARKEOLOG - Inventory</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600&display=swap");
 
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+      }
 
-            html,
-            body {
-                width: 100%;
-                height: 100%;
-                overflow: hidden;
-                font-family: "Crimson Text", serif;
-                color: #d4c5a9;
-            }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: "Crimson Text", serif;
+        color: #d4c5a9;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+      }
 
-            body {
-                background: transparent;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                position: relative;
-            }
+      body {
+        background: transparent;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+      }
 
-            /* Main container - centered bag view */
-            .inventory-container {
-                position: relative;
-                width: 90%;
-                max-width: 1200px;
-                height: 85%;
-                max-height: 800px;
-                display: flex;
-                gap: 20px;
-                padding: 20px;
-            }
+      /* Main container - centered bag view */
+      .inventory-container {
+        position: relative;
+        width: 90%;
+        max-width: 1200px;
+        height: 85%;
+        max-height: 800px;
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+      }
 
-            /* Bag of artifacts - main section */
-            .bag-section {
-                flex: 1;
-                background: radial-gradient(
-                        ellipse at 50% 30%,
-                        rgba(60, 45, 30, 0.95) 0%,
-                        rgba(30, 20, 15, 0.98) 100%
-                    ),
-                    linear-gradient(
-                        135deg,
-                        rgba(40, 30, 20, 0.9),
-                        rgba(20, 15, 10, 0.95)
-                    );
-                border: 3px solid rgba(139, 115, 85, 0.6);
-                border-radius: 15px;
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8),
-                    inset 0 2px 4px rgba(255, 147, 41, 0.1),
-                    0 0 40px rgba(255, 147, 41, 0.15);
-                backdrop-filter: blur(10px);
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-            }
+      /* Bag of artifacts - main section */
+      .bag-section {
+        flex: 1;
+        background: radial-gradient(
+            ellipse at 50% 30%,
+            rgba(60, 45, 30, 0.95) 0%,
+            rgba(30, 20, 15, 0.98) 100%
+          ),
+          linear-gradient(135deg, rgba(40, 30, 20, 0.9), rgba(20, 15, 10, 0.95));
+        border: 3px solid rgba(139, 115, 85, 0.6);
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8),
+          inset 0 2px 4px rgba(255, 147, 41, 0.1),
+          0 0 40px rgba(255, 147, 41, 0.15);
+        backdrop-filter: blur(10px);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
 
-            /* Bag header */
-            .bag-header {
-                padding: 20px;
-                border-bottom: 2px solid rgba(139, 115, 85, 0.4);
-                text-align: center;
-                background: linear-gradient(
-                    180deg,
-                    rgba(60, 45, 30, 0.6) 0%,
-                    transparent 100%
-                );
-            }
+      /* Bag header */
+      .bag-header {
+        padding: 20px;
+        border-bottom: 2px solid rgba(139, 115, 85, 0.4);
+        text-align: center;
+        background: linear-gradient(
+          180deg,
+          rgba(60, 45, 30, 0.6) 0%,
+          transparent 100%
+        );
+      }
 
-            .bag-title {
-                font-family: "Cinzel", serif;
-                font-size: 2rem;
-                font-weight: 700;
-                color: #d4c5a9;
-                text-shadow: 0 0 15px rgba(255, 147, 41, 0.4),
-                    2px 2px 4px rgba(0, 0, 0, 0.8);
-                letter-spacing: 4px;
-                margin-bottom: 8px;
-            }
+      .bag-title {
+        font-family: "Cinzel", serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #d4c5a9;
+        text-shadow: 0 0 15px rgba(255, 147, 41, 0.4),
+          2px 2px 4px rgba(0, 0, 0, 0.8);
+        letter-spacing: 4px;
+        margin-bottom: 8px;
+      }
 
-            .bag-subtitle {
-                font-size: 0.95rem;
-                color: #8b7355;
-                font-style: italic;
-                letter-spacing: 2px;
-            }
+      .bag-subtitle {
+        font-size: 0.95rem;
+        color: #8b7355;
+        font-style: italic;
+        letter-spacing: 2px;
+      }
 
-            /* Item grid */
-            .items-grid {
-                flex: 1;
-                padding: 20px;
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-                grid-auto-rows: 120px;
-                gap: 15px;
-                overflow-y: auto;
-                overflow-x: hidden;
-            }
+      /* Item grid */
+      .items-grid {
+        flex: 1;
+        padding: 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        grid-auto-rows: 120px;
+        gap: 15px;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
 
-            /* Custom scrollbar */
-            .items-grid::-webkit-scrollbar {
-                width: 10px;
-            }
+      /* Custom scrollbar */
+      .items-grid::-webkit-scrollbar {
+        width: 10px;
+      }
 
-            .items-grid::-webkit-scrollbar-track {
-                background: rgba(20, 15, 10, 0.5);
-                border-radius: 5px;
-            }
+      .items-grid::-webkit-scrollbar-track {
+        background: rgba(20, 15, 10, 0.5);
+        border-radius: 5px;
+      }
 
-            .items-grid::-webkit-scrollbar-thumb {
-                background: rgba(139, 115, 85, 0.6);
-                border-radius: 5px;
-                border: 2px solid rgba(20, 15, 10, 0.5);
-            }
+      .items-grid::-webkit-scrollbar-thumb {
+        background: rgba(139, 115, 85, 0.6);
+        border-radius: 5px;
+        border: 2px solid rgba(20, 15, 10, 0.5);
+      }
 
-            .items-grid::-webkit-scrollbar-thumb:hover {
-                background: rgba(139, 115, 85, 0.8);
-            }
+      .items-grid::-webkit-scrollbar-thumb:hover {
+        background: rgba(139, 115, 85, 0.8);
+      }
 
-            /* Item slot */
-            .item-slot {
-                background: linear-gradient(
-                    135deg,
-                    rgba(40, 30, 20, 0.6) 0%,
-                    rgba(25, 18, 12, 0.7) 100%
-                );
-                border: 2px solid rgba(139, 115, 85, 0.4);
-                border-radius: 8px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                padding: 10px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                position: relative;
-                overflow: hidden;
-            }
+      /* Item slot */
+      .item-slot {
+        background: linear-gradient(
+          135deg,
+          rgba(40, 30, 20, 0.6) 0%,
+          rgba(25, 18, 12, 0.7) 100%
+        );
+        border: 2px solid rgba(139, 115, 85, 0.4);
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
 
-            .item-slot.empty {
-                border-style: dashed;
-                opacity: 0.4;
-                cursor: default;
-            }
+      .item-slot.empty {
+        border-style: dashed;
+        opacity: 0.4;
+        cursor: default;
+      }
 
-            .item-slot:not(.empty):hover {
-                border-color: rgba(255, 147, 41, 0.7);
-                background: linear-gradient(
-                    135deg,
-                    rgba(60, 45, 30, 0.7) 0%,
-                    rgba(35, 25, 18, 0.8) 100%
-                );
-                box-shadow: 0 0 15px rgba(255, 147, 41, 0.3),
-                    inset 0 0 10px rgba(255, 147, 41, 0.1);
-                transform: translateY(-2px);
-            }
+      .item-slot:not(.empty):hover {
+        border-color: rgba(255, 147, 41, 0.7);
+        background: linear-gradient(
+          135deg,
+          rgba(60, 45, 30, 0.7) 0%,
+          rgba(35, 25, 18, 0.8) 100%
+        );
+        box-shadow: 0 0 15px rgba(255, 147, 41, 0.3),
+          inset 0 0 10px rgba(255, 147, 41, 0.1);
+        transform: translateY(-2px);
+      }
 
-            /* Item icon placeholder */
-            .item-icon {
-                width: 50px;
-                height: 50px;
-                margin-bottom: 8px;
-                font-size: 2.5rem;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
-            }
+      /* Item icon placeholder */
+      .item-icon {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 8px;
+        font-size: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+      }
 
-            .item-name {
-                font-family: "Cinzel", serif;
-                font-size: 0.75rem;
-                font-weight: 600;
-                color: #d4c5a9;
-                text-align: center;
-                line-height: 1.2;
-                margin-bottom: 4px;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-            }
+      .item-name {
+        font-family: "Cinzel", serif;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #d4c5a9;
+        text-align: center;
+        line-height: 1.2;
+        margin-bottom: 4px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+      }
 
-            .item-quantity {
-                position: absolute;
-                bottom: 8px;
-                right: 8px;
-                background: rgba(0, 0, 0, 0.8);
-                color: #ffd89b;
-                padding: 2px 6px;
-                border-radius: 10px;
-                font-size: 0.75rem;
-                font-weight: 700;
-                border: 1px solid rgba(255, 147, 41, 0.5);
-            }
+      .item-quantity {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.8);
+        color: #ffd89b;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border: 1px solid rgba(255, 147, 41, 0.5);
+      }
 
-            /* Rarity colors */
-            .item-slot[data-rarity="common"] {
-                border-color: rgba(139, 115, 85, 0.4);
-            }
+      /* Rarity colors */
+      .item-slot[data-rarity="common"] {
+        border-color: rgba(139, 115, 85, 0.4);
+      }
 
-            .item-slot[data-rarity="rare"] {
-                border-color: rgba(65, 105, 225, 0.5);
-            }
+      .item-slot[data-rarity="rare"] {
+        border-color: rgba(65, 105, 225, 0.5);
+      }
 
-            .item-slot[data-rarity="rare"]:hover {
-                border-color: rgba(65, 105, 225, 0.8);
-                box-shadow: 0 0 15px rgba(65, 105, 225, 0.4);
-            }
+      .item-slot[data-rarity="rare"]:hover {
+        border-color: rgba(65, 105, 225, 0.8);
+        box-shadow: 0 0 15px rgba(65, 105, 225, 0.4);
+      }
 
-            .item-slot[data-rarity="epic"] {
-                border-color: rgba(138, 43, 226, 0.5);
-            }
+      .item-slot[data-rarity="epic"] {
+        border-color: rgba(138, 43, 226, 0.5);
+      }
 
-            .item-slot[data-rarity="epic"]:hover {
-                border-color: rgba(138, 43, 226, 0.8);
-                box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
-            }
+      .item-slot[data-rarity="epic"]:hover {
+        border-color: rgba(138, 43, 226, 0.8);
+        box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
+      }
 
-            .item-slot[data-rarity="legendary"] {
-                border-color: rgba(255, 140, 0, 0.6);
-                background: linear-gradient(
-                    135deg,
-                    rgba(60, 45, 20, 0.6) 0%,
-                    rgba(40, 30, 15, 0.7) 100%
-                );
-            }
+      .item-slot[data-rarity="legendary"] {
+        border-color: rgba(255, 140, 0, 0.6);
+        background: linear-gradient(
+          135deg,
+          rgba(60, 45, 20, 0.6) 0%,
+          rgba(40, 30, 15, 0.7) 100%
+        );
+      }
 
-            .item-slot[data-rarity="legendary"]:hover {
-                border-color: rgba(255, 140, 0, 0.9);
-                box-shadow: 0 0 20px rgba(255, 140, 0, 0.5);
-            }
+      .item-slot[data-rarity="legendary"]:hover {
+        border-color: rgba(255, 140, 0, 0.9);
+        box-shadow: 0 0 20px rgba(255, 140, 0, 0.5);
+      }
 
-            /* Curse panel - side section */
-            .curse-panel {
-                width: 320px;
-                background: radial-gradient(
-                        ellipse at 50% 20%,
-                        rgba(80, 20, 20, 0.95) 0%,
-                        rgba(30, 15, 15, 0.98) 100%
-                    ),
-                    linear-gradient(
-                        135deg,
-                        rgba(50, 20, 20, 0.9),
-                        rgba(20, 10, 10, 0.95)
-                    );
-                border: 3px solid rgba(180, 60, 60, 0.6);
-                border-radius: 15px;
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8),
-                    inset 0 2px 4px rgba(220, 60, 60, 0.1),
-                    0 0 40px rgba(180, 20, 20, 0.2);
-                backdrop-filter: blur(10px);
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-            }
+      /* Curse panel - side section */
+      .curse-panel {
+        width: 320px;
+        background: radial-gradient(
+            ellipse at 50% 20%,
+            rgba(80, 20, 20, 0.95) 0%,
+            rgba(30, 15, 15, 0.98) 100%
+          ),
+          linear-gradient(135deg, rgba(50, 20, 20, 0.9), rgba(20, 10, 10, 0.95));
+        border: 3px solid rgba(180, 60, 60, 0.6);
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8),
+          inset 0 2px 4px rgba(220, 60, 60, 0.1),
+          0 0 40px rgba(180, 20, 20, 0.2);
+        backdrop-filter: blur(10px);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
 
-            .curse-header {
-                padding: 20px;
-                border-bottom: 2px solid rgba(180, 60, 60, 0.4);
-                text-align: center;
-                background: linear-gradient(
-                    180deg,
-                    rgba(80, 20, 20, 0.6) 0%,
-                    transparent 100%
-                );
-            }
+      .curse-header {
+        padding: 20px;
+        border-bottom: 2px solid rgba(180, 60, 60, 0.4);
+        text-align: center;
+        background: linear-gradient(
+          180deg,
+          rgba(80, 20, 20, 0.6) 0%,
+          transparent 100%
+        );
+      }
 
-            .curse-title {
-                font-family: "Cinzel", serif;
-                font-size: 1.5rem;
-                font-weight: 700;
-                color: #e8b4b4;
-                text-shadow: 0 0 15px rgba(220, 60, 60, 0.6),
-                    2px 2px 4px rgba(0, 0, 0, 0.8);
-                letter-spacing: 3px;
-            }
+      .curse-title {
+        font-family: "Cinzel", serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8b4b4;
+        text-shadow: 0 0 15px rgba(220, 60, 60, 0.6),
+          2px 2px 4px rgba(0, 0, 0, 0.8);
+        letter-spacing: 3px;
+      }
 
-            .curse-subtitle {
-                font-size: 0.85rem;
-                color: #c88888;
-                font-style: italic;
-                margin-top: 5px;
-                letter-spacing: 1px;
-            }
+      .curse-subtitle {
+        font-size: 0.85rem;
+        color: #c88888;
+        font-style: italic;
+        margin-top: 5px;
+        letter-spacing: 1px;
+      }
 
-            /* Curse list */
-            .curse-list {
-                flex: 1;
-                padding: 20px;
-                overflow-y: auto;
-                overflow-x: hidden;
-            }
+      /* Curse list */
+      .curse-list {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
 
-            .curse-list::-webkit-scrollbar {
-                width: 8px;
-            }
+      .curse-list::-webkit-scrollbar {
+        width: 8px;
+      }
 
-            .curse-list::-webkit-scrollbar-track {
-                background: rgba(20, 10, 10, 0.5);
-                border-radius: 5px;
-            }
+      .curse-list::-webkit-scrollbar-track {
+        background: rgba(20, 10, 10, 0.5);
+        border-radius: 5px;
+      }
 
-            .curse-list::-webkit-scrollbar-thumb {
-                background: rgba(180, 60, 60, 0.6);
-                border-radius: 5px;
-            }
+      .curse-list::-webkit-scrollbar-thumb {
+        background: rgba(180, 60, 60, 0.6);
+        border-radius: 5px;
+      }
 
-            .curse-item {
-                background: rgba(40, 20, 20, 0.6);
-                border: 2px solid rgba(180, 60, 60, 0.4);
-                border-radius: 8px;
-                padding: 12px;
-                margin-bottom: 12px;
-                transition: all 0.3s ease;
-            }
+      .curse-item {
+        background: rgba(40, 20, 20, 0.6);
+        border: 2px solid rgba(180, 60, 60, 0.4);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 12px;
+        transition: all 0.3s ease;
+      }
 
-            .curse-item:hover {
-                border-color: rgba(220, 60, 60, 0.7);
-                background: rgba(50, 25, 25, 0.7);
-                box-shadow: 0 0 12px rgba(220, 60, 60, 0.3);
-            }
+      .curse-item:hover {
+        border-color: rgba(220, 60, 60, 0.7);
+        background: rgba(50, 25, 25, 0.7);
+        box-shadow: 0 0 12px rgba(220, 60, 60, 0.3);
+      }
 
-            .curse-name {
-                font-family: "Cinzel", serif;
-                font-size: 1rem;
-                font-weight: 600;
-                color: #e8b4b4;
-                margin-bottom: 6px;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-            }
+      .curse-name {
+        font-family: "Cinzel", serif;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8b4b4;
+        margin-bottom: 6px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+      }
 
-            .curse-description {
-                font-size: 0.85rem;
-                color: #c88888;
-                line-height: 1.4;
-                font-style: italic;
-            }
+      .curse-description {
+        font-size: 0.85rem;
+        color: #c88888;
+        line-height: 1.4;
+        font-style: italic;
+      }
 
-            .curse-empty {
-                text-align: center;
-                color: #8b7355;
-                font-style: italic;
-                padding: 40px 20px;
-                opacity: 0.6;
-            }
+      .curse-empty {
+        text-align: center;
+        color: #8b7355;
+        font-style: italic;
+        padding: 40px 20px;
+        opacity: 0.6;
+      }
 
-            /* Close button */
-            .close-button {
-                position: absolute;
-                top: 20px;
-                right: 20px;
-                width: 40px;
-                height: 40px;
-                background: rgba(40, 30, 20, 0.9);
-                border: 2px solid rgba(139, 115, 85, 0.6);
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                font-size: 1.5rem;
-                color: #d4c5a9;
-                transition: all 0.3s ease;
-                z-index: 100;
-            }
+      /* Close button */
+      .close-button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        background: rgba(40, 30, 20, 0.9);
+        border: 2px solid rgba(139, 115, 85, 0.6);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: #d4c5a9;
+        transition: all 0.3s ease;
+        z-index: 100;
+      }
 
-            .close-button:hover {
-                background: rgba(60, 45, 30, 0.95);
-                border-color: rgba(255, 147, 41, 0.8);
-                color: #ffd89b;
-                box-shadow: 0 0 15px rgba(255, 147, 41, 0.4);
-                transform: scale(1.1);
-            }
+      .close-button:hover {
+        background: rgba(60, 45, 30, 0.95);
+        border-color: rgba(255, 147, 41, 0.8);
+        color: #ffd89b;
+        box-shadow: 0 0 15px rgba(255, 147, 41, 0.4);
+        transform: scale(1.1);
+      }
 
-            /* Torch flicker overlay */
-            .torch-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: radial-gradient(
-                    ellipse at 50% 40%,
-                    rgba(255, 147, 41, 0.03) 0%,
-                    transparent 60%
-                );
-                animation: torchFlicker 3s ease-in-out infinite;
-                pointer-events: none;
-                z-index: 1;
-            }
+      /* Torch flicker overlay */
+      .torch-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+          ellipse at 50% 40%,
+          rgba(255, 147, 41, 0.03) 0%,
+          transparent 60%
+        );
+        animation: torchFlicker 3s ease-in-out infinite;
+        pointer-events: none;
+        z-index: 1;
+      }
 
-            @keyframes torchFlicker {
-                0%,
-                100% {
-                    opacity: 1;
-                }
-                25% {
-                    opacity: 0.85;
-                }
-                50% {
-                    opacity: 0.95;
-                }
-                75% {
-                    opacity: 0.9;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <div class="torch-overlay"></div>
+      @keyframes torchFlicker {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        25% {
+          opacity: 0.85;
+        }
+        50% {
+          opacity: 0.95;
+        }
+        75% {
+          opacity: 0.9;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="torch-overlay"></div>
 
-        <button class="close-button" onclick="closeInventory()">✕</button>
+    <button class="close-button" onclick="closeInventory()">✕</button>
 
-        <div class="inventory-container">
-            <!-- Bag of artifacts section -->
-            <div class="bag-section">
-                <div class="bag-header">
-                    <h1 class="bag-title">ARTEFAKTER</h1>
-                    <p class="bag-subtitle">Din samling av förbannelser</p>
-                </div>
-                <div class="items-grid" id="itemsGrid">
-                    <!-- Items will be dynamically added here -->
-                </div>
-            </div>
-
-            <!-- Curse information panel -->
-            <div class="curse-panel">
-                <div class="curse-header">
-                    <h2 class="curse-title">FÖRBANNELSER</h2>
-                    <p class="curse-subtitle">Aktiva effekter</p>
-                </div>
-                <div class="curse-list" id="curseList">
-                    <div class="curse-empty">
-                        Inga aktiva förbannelser... ännu.
-                    </div>
-                </div>
-            </div>
+    <div class="inventory-container">
+      <!-- Bag of artifacts section -->
+      <div class="bag-section">
+        <div class="bag-header">
+          <h1 class="bag-title">ARTEFAKTER</h1>
+          <p class="bag-subtitle">Din samling av förbannelser</p>
         </div>
+        <div class="items-grid" id="itemsGrid">
+          <!-- Items will be dynamically added here -->
+        </div>
+      </div>
 
-        <script>
-            // Item type to emoji mapping
-            const itemIcons = {
-                0: "🏆", // GRAIL
-                1: "💍", // RING
-                2: "🪙", // COIN
-                3: "⚔️", // WEAPON
-                4: "💀", // SKULL
-                5: "👑", // SCEPTER
-            };
+      <!-- Curse information panel -->
+      <div class="curse-panel">
+        <div class="curse-header">
+          <h2 class="curse-title">FÖRBANNELSER</h2>
+          <p class="curse-subtitle">Aktiva effekter</p>
+        </div>
+        <div class="curse-list" id="curseList">
+          <div class="curse-empty">Inga aktiva förbannelser... ännu.</div>
+        </div>
+      </div>
+    </div>
 
-            // Update inventory display
-            function updateInventory(items) {
-                const grid = document.getElementById("itemsGrid");
-                grid.innerHTML = "";
+    <script>
+      // Item type to emoji mapping
+      const itemIcons = {
+        0: "🏆", // GRAIL
+        1: "💍", // RING
+        2: "🪙", // COIN
+        3: "⚔️", // WEAPON
+        4: "💀", // SKULL
+        5: "👑", // SCEPTER
+      };
 
-                // Add actual items
-                items.forEach((item) => {
-                    const slot = createItemSlot(item);
-                    grid.appendChild(slot);
-                });
+      // Update inventory display
+      function updateInventory(items) {
+        const grid = document.getElementById("itemsGrid");
+        grid.innerHTML = "";
 
-                // Add empty slots to fill the grid (24 total slots)
-                const maxSlots = 24;
-                const emptySlots = maxSlots - items.length;
-                for (let i = 0; i < emptySlots; i++) {
-                    const emptySlot = createEmptySlot();
-                    grid.appendChild(emptySlot);
-                }
-            }
+        // Add actual items
+        items.forEach((item) => {
+          const slot = createItemSlot(item);
+          grid.appendChild(slot);
+        });
 
-            function createItemSlot(item) {
-                const slot = document.createElement("div");
-                slot.className = "item-slot";
-                slot.setAttribute("data-rarity", item.rarity || "common");
+        // Add empty slots to fill the grid (24 total slots)
+        const maxSlots = 24;
+        const emptySlots = maxSlots - items.length;
+        for (let i = 0; i < emptySlots; i++) {
+          const emptySlot = createEmptySlot();
+          grid.appendChild(emptySlot);
+        }
+      }
 
-                const icon = document.createElement("div");
-                icon.className = "item-icon";
-                icon.textContent = itemIcons[item.type] || "📦";
+      function createItemSlot(item) {
+        const slot = document.createElement("div");
+        slot.className = "item-slot";
+        slot.setAttribute("data-rarity", item.rarity || "common");
 
-                const name = document.createElement("div");
-                name.className = "item-name";
-                name.textContent = item.name;
+        const icon = document.createElement("div");
+        icon.className = "item-icon";
+        icon.textContent = itemIcons[item.type] || "📦";
 
-                slot.appendChild(icon);
-                slot.appendChild(name);
+        const name = document.createElement("div");
+        name.className = "item-name";
+        name.textContent = item.name;
 
-                // Add quantity badge if more than 1
-                if (item.quantity > 1) {
-                    const quantity = document.createElement("div");
-                    quantity.className = "item-quantity";
-                    quantity.textContent = item.quantity;
-                    slot.appendChild(quantity);
-                }
+        slot.appendChild(icon);
+        slot.appendChild(name);
 
-                // Add hover tooltip (could be expanded)
-                slot.title = item.description || item.name;
+        // Add quantity badge if more than 1
+        if (item.quantity > 1) {
+          const quantity = document.createElement("div");
+          quantity.className = "item-quantity";
+          quantity.textContent = item.quantity;
+          slot.appendChild(quantity);
+        }
 
-                return slot;
-            }
+        // Add hover tooltip (could be expanded)
+        slot.title = item.description || item.name;
 
-            function createEmptySlot() {
-                const slot = document.createElement("div");
-                slot.className = "item-slot empty";
-                return slot;
-            }
+        return slot;
+      }
 
-            // Update curse display
-            function updateCurses(curses) {
-                const curseList = document.getElementById("curseList");
+      function createEmptySlot() {
+        const slot = document.createElement("div");
+        slot.className = "item-slot empty";
+        return slot;
+      }
 
-                if (!curses || curses.length === 0) {
-                    curseList.innerHTML = `
+      // Update curse display
+      function updateCurses(curses) {
+        const curseList = document.getElementById("curseList");
+
+        if (!curses || curses.length === 0) {
+          curseList.innerHTML = `
                         <div class="curse-empty">
                             Inga aktiva förbannelser... ännu.
                         </div>
                     `;
-                    return;
-                }
+          return;
+        }
 
-                curseList.innerHTML = "";
-                curses.forEach((curse) => {
-                    const curseItem = document.createElement("div");
-                    curseItem.className = "curse-item";
+        curseList.innerHTML = "";
+        curses.forEach((curse) => {
+          const curseItem = document.createElement("div");
+          curseItem.className = "curse-item";
 
-                    const curseName = document.createElement("div");
-                    curseName.className = "curse-name";
-                    curseName.textContent = curse.name;
+          const curseName = document.createElement("div");
+          curseName.className = "curse-name";
+          curseName.textContent = curse.name;
 
-                    const curseDesc = document.createElement("div");
-                    curseDesc.className = "curse-description";
-                    curseDesc.textContent = curse.description;
+          const curseDesc = document.createElement("div");
+          curseDesc.className = "curse-description";
+          curseDesc.textContent = curse.description;
 
-                    curseItem.appendChild(curseName);
-                    curseItem.appendChild(curseDesc);
-                    curseList.appendChild(curseItem);
-                });
-            }
+          curseItem.appendChild(curseName);
+          curseItem.appendChild(curseDesc);
+          curseList.appendChild(curseItem);
+        });
+      }
 
-            // Close inventory
-            function closeInventory() {
-                // Call parent window function to close inventory
-                if (window.parent && window.parent.closeInventory) {
-                    window.parent.closeInventory();
-                }
-            }
+      // Close inventory
+      function closeInventory() {
+        // Call parent window function to close inventory
+        if (window.parent && window.parent.closeInventory) {
+          window.parent.closeInventory();
+        }
+      }
 
-            // Make functions available to parent window
-            window.updateInventory = updateInventory;
-            window.updateCurses = updateCurses;
+      // Make functions available to parent window
+      window.updateInventory = updateInventory;
+      window.updateCurses = updateCurses;
 
-            // Initialize with empty inventory
-            updateInventory([]);
+      // Initialize with empty inventory
+      updateInventory([]);
 
-            // Refocus parent window when clicking inside inventory
-            document.addEventListener("click", function () {
-                if (window.parent && window.parent.focus) {
-                    window.parent.focus();
-                }
-            });
-        </script>
-    </body>
+      // Refocus parent window when clicking inside inventory
+      document.addEventListener("click", function () {
+        if (window.parent && window.parent.focus) {
+          window.parent.focus();
+        }
+      });
+    </script>
+  </body>
 </html>

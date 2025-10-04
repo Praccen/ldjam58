@@ -54,6 +54,17 @@ export default class Inventory {
         return true;
     }
 
+    hide(): void {
+        this.isVisible = false;
+        this.inventoryElement.style.display = "none";
+
+        // Refocus the game canvas to restore keyboard controls
+        const canvas = document.querySelector("canvas");
+        if (canvas instanceof HTMLElement) {
+            canvas.focus();
+        }
+    }
+
     toggle(): void {
         this.isVisible = !this.isVisible;
         this.inventoryElement.style.display = this.isVisible ? "block" : "none";
