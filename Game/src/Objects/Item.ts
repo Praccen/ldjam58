@@ -54,19 +54,23 @@ export default class Item {
                 break;
         }
 
+        this.physicsObject = this.physicsScene.addNewPhysicsObject();
+        this.physicsObject.mass = 0.3;
+        this.physicsObject.frictionCoefficient = 1.0;
+
         this.scene
             .addNewMesh(model, "CSS:rgb(0, 0, 0)", "CSS:rgb(0, 0, 0)")
             .then((bundle: GraphicsBundle) => {
                 this.graphicsBundle = bundle;
                 this.graphicsBundle.transform.position = this.startPosition;
-                this.physicsObject = this.physicsScene.addNewPhysicsObject(
-                    this.graphicsBundle.transform
-                );
+
                 this.physicsObject.setupBoundingBoxFromGraphicsBundle(
                     this.graphicsBundle
                 );
-                this.physicsObject.mass = 0.3;
-                this.physicsObject.frictionCoefficient = 1.0;
+                this.physicsObject.transform = this.graphicsBundle.transform;
+                this.physicsObject.boundingBox.setTransformMatrix(
+                    this.graphicsBundle.transform.matrix
+                );
             });
     }
 
