@@ -35,7 +35,7 @@ function startGame() {
     // Assets not ready, show loading screen
     currentState = GameState.LOADING;
     mainMenu.mainMenu.style.display = "none";
-    splashScreen.guiRenderer.domElement.style.display = "block";
+    splashScreen.splashScreen.style.display = "block";
     loadingScreenAnimate();
   }
 }
@@ -71,7 +71,6 @@ function resize() {
   let width = window.innerWidth;
   let height = window.innerHeight;
 
-  splashScreen.guiRenderer.setSize(width, height);
   gameContext.resize(width, height);
 }
 
@@ -138,7 +137,7 @@ function animate() {
 let progress = { requested: 0, loaded: 0 };
 
 // Initialize: Hide splash screen initially, show main menu
-splashScreen.guiRenderer.domElement.style.display = "none";
+splashScreen.splashScreen.style.display = "none";
 mainMenu.mainMenu.style.display = "block";
 
 // Start asset loading in background
