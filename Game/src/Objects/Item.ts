@@ -15,6 +15,12 @@ export enum ItemType {
     SCEPTER,
 }
 
+export interface Curse {
+    name: string;
+    description: string;
+    severity?: "minor" | "major" | "critical";
+}
+
 export default class Item {
     private scene: Scene;
     private physicsScene: PhysicsScene;
@@ -23,6 +29,7 @@ export default class Item {
     type: ItemType;
     private graphicsBundle: GraphicsBundle;
     startPosition: vec3;
+    curse: Curse;
 
     description?: string;
     quantity: number;
@@ -33,13 +40,19 @@ export default class Item {
         physicsScene: PhysicsScene,
         spawnPosition: vec3,
         type: ItemType,
-        name: string
+        name: string,
+        rarity: "common" | "rare" | "epic" | "legendary",
+        description: string,
+        curse: Curse
     ) {
         this.scene = scene;
         this.physicsScene = physicsScene;
         this.startPosition = vec3.clone(spawnPosition);
         this.type = type;
         this.name = name;
+        this.curse = curse;
+        this.rarity = rarity;
+        this.description = description;
 
         var model: string = "Assets/objs/cube.obj";
         // TODO: Add models

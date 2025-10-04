@@ -1,4 +1,4 @@
-import Item, { ItemType } from "../Objects/Item";
+import Item, { ItemType, Curse } from "../Objects/Item";
 import {
     PhysicsObject,
     PhysicsScene,
@@ -32,7 +32,10 @@ export default class ItemHandler {
             this.physicsScene,
             position,
             ItemType.GRAIL,
-            "Test Grail"
+            "Test Grail",
+            "legendary",
+            "A really fancy grail",
+            { name: "Curse of DEATH", description: "", severity: "minor" }
         );
         this.items.set(item.getPhysicsObject().physicsObjectId, item);
     }
@@ -43,6 +46,8 @@ export default class ItemHandler {
             const item = this.items.get(hit.object.physicsObjectId);
             if (item) {
                 this.inventory.addItem(item);
+                // TODO: Also apply curse modifiers to player
+                this.inventory.addCurse(item.curse);
                 item.destroy();
                 this.items.delete(hit.object.physicsObjectId);
             }

@@ -1,10 +1,4 @@
-import Item, { ItemType } from "../Objects/Item";
-
-export interface Curse {
-    name: string;
-    description: string;
-    severity?: "minor" | "major" | "critical";
-}
+import Item, { ItemType, Curse } from "../Objects/Item";
 
 export default class Inventory {
     private inventoryElement: HTMLElement;
