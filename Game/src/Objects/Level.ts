@@ -45,8 +45,6 @@ export default class Level {
     );
     this.map = new ProceduralMap(this.scene, this.physicsScene, [0, 1, 2]);
 
-    let playerSpawnRoom = this.map.getPlayerSpawnRoom();
-
     this.moodParticleSpawner = this.scene.addNewParticleSpawner(
       "Assets/Textures/Lava1.png",
       1000
@@ -94,7 +92,7 @@ export default class Level {
       this.scene,
       this.physicsScene,
       renderer,
-      vec3.fromValues(5.0, 1.0, 5.0),
+      vec3.fromValues(this.map.getPlayerSpawnRoom()[0] * roomSize + roomSize / 2, 0.2, this.map.getPlayerSpawnRoom()[1] * roomSize + roomSize / 2),
       this.itemHandler
     );
 

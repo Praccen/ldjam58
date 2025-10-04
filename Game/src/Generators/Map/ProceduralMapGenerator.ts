@@ -16,6 +16,11 @@ import { LabyrinthGenerator } from "../LabyrinthGenerator.js";
 // I want the end room for one floor to be the start room for the next. It has to be possible to reach the shaft,
 
 const floorLayouts: string[] = [
+  // `
+  // 511
+  // 202
+  // 121
+  // `,
   `
   5111111
   1111111
@@ -25,6 +30,15 @@ const floorLayouts: string[] = [
   1111111
   1111111
   `,
+  `
+  1111111
+  1111111
+  1112111
+  1120211
+  1112111
+  1111111
+  1111111
+  `
 ];
 
 enum BridgeType {
@@ -289,6 +303,8 @@ export default class ProceduralMap {
     let noGoRooms = [];
     let connectionRooms = [];
 
+    let startRoom = vec2.create();
+
     this.columns.set(floorNumber, 0);
     let rowNr = 0;
     for (let row of mapLayout.split("\n")) {
@@ -320,7 +336,10 @@ export default class ProceduralMap {
         if (row[columnNr] == "5") {
           mustGoRooms.push([columnNr, rowNr]);
           connectionRooms.push([columnNr, rowNr]);
-          vec2.set(this.playerSpawnRoom, columnNr, rowNr);
+          vec2.set(startRoom, columnNr, rowNr);
+          if (floorNumber == 0) {
+            vec2.set(this.playerSpawnRoom, columnNr, rowNr);
+          }
         }
         if (
           (row[columnNr] >= "a" && row[columnNr] <= "z") ||
@@ -332,6 +351,14 @@ export default class ProceduralMap {
       rowNr++;
     }
     this.rows.set(floorNumber, rowNr);
+
+    let aboveFloor = this.getAboveFloorNumber(floorNumber);
+    if (aboveFloor != -1) {
+      let aboveFloorExitRoom = [convertCoordIncludingWallsToRoomIndex(this.floorExitRoom.get(aboveFloor)[0]), convertCoordIncludingWallsToRoomIndex(this.floorExitRoom.get(aboveFloor)[1])];
+
+      vec2.set(startRoom, aboveFloorExitRoom[0], aboveFloorExitRoom[1]);
+      mustGoRooms.push(aboveFloorExitRoom);
+    }
 
     this.map.set(
       floorNumber,
@@ -347,7 +374,7 @@ export default class ProceduralMap {
 
     this.floorExitRoom.set(
       floorNumber,
-      this.findExitRoom(floorNumber, this.playerSpawnRoom)
+      this.findExitRoom(floorNumber, startRoom)
     );
     this.createMeshes(floorNumber, this.scene);
     // this.createExitLight(this.scene);
@@ -361,6 +388,25 @@ export default class ProceduralMap {
     }
 
     return floorLayouts[floorLayouts.length - 1]; // Return last floor layout
+  }
+
+  private getAboveFloorNumber(floorNumber: number): number {
+    let aboveFloor = floorNumber;
+    for (
+      let searchFloor = aboveFloor - 1;
+      searchFloor >= 0;
+      searchFloor--
+    ) {
+      if (this.map.has(searchFloor)) {
+        aboveFloor = searchFloor;
+        break;
+      }
+    }
+
+    if (aboveFloor == floorNumber) {
+      return -1
+    }
+    return aboveFloor;
   }
 
   private identifyBridge(
@@ -806,20 +852,10 @@ export default class ProceduralMap {
               this.createFloorTile(floorNumber, column, row);
             }
 
-            let aboveFloor = floorNumber;
-            for (
-              let searchFloor = aboveFloor - 1;
-              searchFloor >= 0;
-              searchFloor--
-            ) {
-              if (this.map.has(searchFloor)) {
-                aboveFloor = searchFloor;
-                break;
-              }
-            }
+            let aboveFloor = this.getAboveFloorNumber(floorNumber);
 
             if (
-              aboveFloor == floorNumber ||
+              aboveFloor == -1 ||
               convertCoordIncludingWallsToRoomIndex(
                 this.getExitRoom(aboveFloor)[0]
               ) != column ||
@@ -931,7 +967,9 @@ export default class ProceduralMap {
 
   updateFocusRoom(position: vec3) {
     // Calculate room from characterPosition
-    let floorNumber = Math.max(0, Math.floor(-(position[1] + 0.1) / 5.0));
+    let floorNumber = Math.max(0, Math.ceil(-(position[1] + 0.1) / 5.0));
+
+    this.currentFloor = floorNumber;
 
     let room = vec2.floor(
       vec2.create(),
