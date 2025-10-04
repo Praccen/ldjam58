@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": false,
+    "target": "ES2015",
+    "allowJs": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "rootDir": "./src",
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*"]
+}
