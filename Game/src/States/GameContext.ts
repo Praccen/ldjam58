@@ -76,7 +76,7 @@ export default class GameContext {
         "Assets/gltf/NPCS/Ghost Skull.glb",
 
         "Assets/objs/dungeonPack/wall_half.obj",
-        "Assets/objs/dungeonPack/floor_tile_big_grate_open.obj",
+        "Assets/objs/dungeonPack/wall_doorway.obj",
       ];
       for (const mapPieces of wallPieceModels) {
         for (const path of mapPieces.paths) {

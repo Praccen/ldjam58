@@ -25,7 +25,7 @@ const floorLayouts: string[] = [
   5111111
   1111111
   1112111
-  1120211
+  112X211
   1112111
   1111111
   1111111
@@ -34,7 +34,7 @@ const floorLayouts: string[] = [
   1111111
   1111111
   1112111
-  1120211
+  112X211
   1112111
   1111111
   1111111
@@ -62,7 +62,7 @@ export const wallPieceModels = new Array<{
   {
     paths: [
       "Assets/objs/MyDungeon/FloorNoGrate.obj",
-      "Assets/objs/MyDungeon/FloorGrate.obj",
+      "Assets/objs/MyDungeon/FloorNoGrate.obj",
       "Assets/objs/MyDungeon/Bridge.obj",
       "Assets/objs/dungeonPack/ceiling_tile.obj",
     ],
@@ -268,6 +268,7 @@ export default class ProceduralMap {
   >();
   private playerSpawnRoom: vec2;
   private floorExitRoom: Map<number, vec2> = new Map<number, vec2>();
+  private floorShaftRoom: Map<number, vec2> = new Map<number, vec2>();
   private currentFloor: number = 0;
   private pointLight: PointLight | null = null;
   focusRoom: vec2;
@@ -341,11 +342,9 @@ export default class ProceduralMap {
             vec2.set(this.playerSpawnRoom, columnNr, rowNr);
           }
         }
-        if (
-          (row[columnNr] >= "a" && row[columnNr] <= "z") ||
-          (row[columnNr] >= "A" && row[columnNr] <= "Z")
-        ) {
-          mustGoRooms.push([columnNr, rowNr]);
+        if (row[columnNr] == "X") {
+          noGoRooms.push([columnNr, rowNr]);
+          this.floorShaftRoom.set(floorNumber, vec2.fromValues(columnNr, rowNr));
         }
       }
       rowNr++;
@@ -497,6 +496,9 @@ export default class ProceduralMap {
     );
   }
 
+  /**
+   * Creates the floor for every room
+   */
   createFloorTile(floorNumber: number, column: number, row: number) {
     const paths = wallPieceModels[0].paths;
     let isBridge = false;
@@ -559,6 +561,9 @@ export default class ProceduralMap {
     physObj.frictionCoefficient = 10.0;
   }
 
+  /**
+   * Creates ceiling for every room
+   */
   createCeilingTile(floorNumber: number, column: number, row: number) {
     const path = wallPieceModels[0].paths[3];
     let transform = null;
@@ -584,14 +589,23 @@ export default class ProceduralMap {
     physObj.frictionCoefficient = 0.0;
   }
 
+  /**
+   * Creates tile wall at the lowest z value wall for every room
+   */
   createTopOfTileWall(floorNumber: number, column: number, row: number) {
     const mapFloor = this.map.get(floorNumber);
     let isBridge = false;
 
     const paths = wallPieceModels[mapFloor[column * 2 + 1][row * 2]].paths;
+    let path = paths[Math.floor(Math.random() * paths.length)];
+
+    if (this.floorShaftRoom.get(floorNumber)[0] == column && this.floorShaftRoom.get(floorNumber)[1] == row) {
+      path = "Assets/objs/dungeonPack/wall_doorway.obj";
+    }
+
     const rots = wallPieceModels[mapFloor[column * 2 + 1][row * 2]].rot;
     let mesh = this.instancedMeshes.get(
-      paths[Math.floor(Math.random() * paths.length)]
+      path
     );
     let transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
     vec3.set(
@@ -620,6 +634,16 @@ export default class ProceduralMap {
       0.0
     );
     transform.calculateMatrices();
+
+    // This is leading into the shaft, add collision for the dorway leading into it
+    if (this.floorShaftRoom.get(floorNumber)[0] == column && this.floorShaftRoom.get(floorNumber)[1] == row) {
+      let doorwayPhysObj = this.physicsScene.addNewPhysicsObject(transform);
+      doorwayPhysObj.setupBoundingBoxFromGraphicsBundle(mesh);
+      doorwayPhysObj.setupInternalTreeFromGraphicsObject(mesh.graphicsObject);
+      doorwayPhysObj.isStatic = true;
+      doorwayPhysObj.frictionCoefficient = 0.0;
+    }
+
 
     mesh = this.instancedMeshes.get("Assets/objs/dungeonPack/wall_half.obj");
     transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
@@ -650,11 +674,20 @@ export default class ProceduralMap {
       phyTrans.scale[1] *= 0.3;
     }
 
+    // Since this is leading into the shaft and has a doorway it should not have the collisionobject all the way, only the half wall side of the wall.
+    if (this.floorShaftRoom.get(floorNumber)[0] == column && this.floorShaftRoom.get(floorNumber)[1] == row) { 
+      phyTrans.scale[0] *= 0.5;
+      phyTrans.position[0] += roomSize * 0.25;
+    }
+
     let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
     physObj.isStatic = true;
     physObj.frictionCoefficient = 0.0;
   }
 
+  /**
+   * Creates tile wall at the lowest x value wall for every room
+   */
   createLeftOfTileWall(floorNumber: number, column: number, row: number) {
     const mapFloor = this.map.get(floorNumber);
     let isBridge = false;
@@ -725,6 +758,9 @@ export default class ProceduralMap {
     physObj.frictionCoefficient = 0.0;
   }
 
+  /**
+   * Creates crossings and pillars etc
+   */
   createTopLeftOfTile(floorNumber: number, column: number, row: number) {
     const mapFloor = this.map.get(floorNumber);
     const paths = wallPieceModels[mapFloor[column * 2][row * 2]].paths;
@@ -774,6 +810,9 @@ export default class ProceduralMap {
     }
   }
 
+  /**
+   * Loads meshes and populates instancedMeshes if empty. Then creates the mesh instances needed for the floor
+   */
   async createMeshes(floorNumber: number, scene: ENGINE.Scene) {
     if (this.instancedMeshes.size == 0) {
       let meshesToLoad = new Set<string>();
@@ -783,8 +822,8 @@ export default class ProceduralMap {
         }
       }
 
-      meshesToLoad.add("Assets/objs/dungeonPack/floor_tile_big_grate_open.obj");
       meshesToLoad.add("Assets/objs/dungeonPack/wall_half.obj");
+      meshesToLoad.add("Assets/objs/dungeonPack/wall_doorway.obj");
 
       // Load meshes before creating
       await this.scene.renderer.meshStore
@@ -808,20 +847,20 @@ export default class ProceduralMap {
           }
 
           this.instancedMeshes.set(
-            "Assets/objs/dungeonPack/floor_tile_big_grate_open.obj",
+            "Assets/objs/dungeonPack/wall_half.obj",
             await Factories.createInstancedMesh(
               scene,
-              "Assets/objs/dungeonPack/floor_tile_big_grate_open.obj",
-              "CSS:rgb(40, 40, 40)",
+              "Assets/objs/dungeonPack/wall_half.obj",
+              "Assets/Textures/dungeon_texture.png",
               "CSS:rgb(0, 0, 0)"
             )
           );
 
           this.instancedMeshes.set(
-            "Assets/objs/dungeonPack/wall_half.obj",
-            await Factories.createInstancedMesh(
+            "Assets/objs/dungeonPack/wall_doorway.obj",
+             await Factories.createInstancedMesh(
               scene,
-              "Assets/objs/dungeonPack/wall_half.obj",
+              "Assets/objs/dungeonPack/wall_doorway.obj",
               "Assets/Textures/dungeon_texture.png",
               "CSS:rgb(0, 0, 0)"
             )
