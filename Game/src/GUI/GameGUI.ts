@@ -1,26 +1,46 @@
-import {
-  GUIRenderer,
-  TextObject2D,
-  TextObject3D,
-  Div,
-} from "praccen-web-engine";
+import { TextObject3D } from "praccen-web-engine";
 
 export default class GameGUI {
-  gameGuiDiv: Div;
   mapDisplay: TextObject3D;
   characterDisplay: TextObject3D;
-  floorDisplay: TextObject2D;
-  constructor(guiRenderer: GUIRenderer) {
-    this.gameGuiDiv = guiRenderer.getNewDiv();
-    this.gameGuiDiv.getElement().style.width = "100%";
-    this.gameGuiDiv.getElement().style.height = "100%";
+  private hudElement: HTMLElement;
 
-    // Add floor display
-    this.floorDisplay = guiRenderer.getNew2DText(this.gameGuiDiv);
-    this.floorDisplay.position[0] = 0.91;
-    this.floorDisplay.position[1] = 0.92;
-    this.floorDisplay.getElement().style.color = "white";
-    this.floorDisplay.textString = "Floor 1";
-    this.floorDisplay.getElement().style.zIndex = "1";
+  constructor() {
+    // Create HUD iframe
+    this.hudElement = document.getElementById("game-hud");
+    if (!this.hudElement) {
+      this.hudElement = document.createElement("iframe");
+      this.hudElement.id = "game-hud";
+      document.body.appendChild(this.hudElement);
+    }
+
+    this.hudElement.style.width = "100%";
+    this.hudElement.style.height = "100%";
+    this.hudElement.style.position = "fixed";
+    this.hudElement.style.top = "0";
+    this.hudElement.style.left = "0";
+    this.hudElement.style.border = "none";
+    this.hudElement.style.pointerEvents = "none";
+    this.hudElement.style.zIndex = "500";
+    this.hudElement.style.display = "block";
+    this.hudElement.setAttribute("src", "Assets/html/game-hud.html");
+  }
+
+  updateFloor(floorNumber: number): void {
+    const iframe = this.hudElement as HTMLIFrameElement;
+    const contentWindow = iframe.contentWindow;
+
+    if (contentWindow && (contentWindow as any).updateFloor) {
+      (contentWindow as any).updateFloor(floorNumber);
+    }
+  }
+
+  updateCharms(current: number, max: number): void {
+    const iframe = this.hudElement as HTMLIFrameElement;
+    const contentWindow = iframe.contentWindow;
+
+    if (contentWindow && (contentWindow as any).updateCharms) {
+      (contentWindow as any).updateCharms(current, max);
+    }
   }
 }

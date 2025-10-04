@@ -91,9 +91,7 @@ export default class GameContext {
     });
   }
 
-  start() {
-    this.game.gui.gameGuiDiv.setHidden(false);
-  }
+  start() {}
 
   update(dt: number) {
     this.game.update(dt);

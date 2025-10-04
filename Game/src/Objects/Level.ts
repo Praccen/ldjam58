@@ -153,6 +153,10 @@ export default class Level {
 
   cleanUp() {}
 
+  getPlayerController(): PlayerController {
+    return this.playerController;
+  }
+
   private isPlayerInArea(trigger: AreaTrigger): boolean {
     return (
       this.playerController.getPhysicsObject().transform.position[0] >=

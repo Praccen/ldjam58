@@ -65,8 +65,7 @@ export default class Game {
       );
     }
 
-    this.gui = new GameGUI(this.guiRenderer);
-    this.gui.gameGuiDiv.setHidden(true);
+    this.gui = new GameGUI();
 
     this.inventory = new Inventory();
     this.createLevel();
@@ -136,8 +135,13 @@ export default class Game {
 
     this.camera.getFrustum(this.dbgFrustum);
     this.level.preRenderingUpdate(dt, this.camera);
-    this.gui.floorDisplay.textString =
-      "Floor " + this.level.map.getCurrentFloor();
+
+    // Update HUD
+    this.gui.updateFloor(this.level.map.getCurrentFloor());
+    this.gui.updateCharms(
+      this.level.getPlayerController().getProtectionCharms(),
+      this.level.getPlayerController().getMaxProtectionCharms()
+    );
   }
 
   draw() {

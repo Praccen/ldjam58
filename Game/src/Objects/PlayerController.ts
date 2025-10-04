@@ -33,6 +33,8 @@ export default class PlayerController {
 
   private itemHandler: ItemHandler;
 
+  private protectionCharms: number = 3;
+
   startPosition: vec3;
 
   constructor(
@@ -104,6 +106,21 @@ export default class PlayerController {
   }
   getPhysicsObject(): PhysicsObject {
     return this.physicsObject;
+  }
+
+  getProtectionCharms(): number {
+    return this.protectionCharms;
+  }
+
+  getMaxProtectionCharms(): number {
+    return 3; // Max charms
+  }
+
+  setProtectionCharms(value: number): void {
+    this.protectionCharms = Math.max(
+      0,
+      Math.min(value, this.getMaxProtectionCharms())
+    );
   }
 
   update(camera: Camera, dt: number) {
