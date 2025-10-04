@@ -440,7 +440,7 @@ export default class ProceduralMap {
     phyTrans.scale = vec3.fromValues(roomSize, 1.0, roomSize);
     let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
     physObj.isStatic = true;
-    physObj.frictionCoefficient = 0.0;
+    physObj.frictionCoefficient = 10.0;
   }
 
   createCeiling(column: number, row: number) {

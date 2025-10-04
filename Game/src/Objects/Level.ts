@@ -12,6 +12,7 @@ import ProceduralMap, {
 import Game from "../States/Game";
 import { vec2 } from "gl-matrix";
 import PlayerController from "./PlayerController";
+import ItemHandler from "../Systems/ItemHandler";
 
 export default class Level {
   scene: Scene;
@@ -22,6 +23,7 @@ export default class Level {
   private moodParticleSpawner: ParticleSpawner;
 
   private playerController: PlayerController;
+  private itemHandler: ItemHandler;
 
   constructor(renderer: Renderer3D, game: Game, levelNumber: number) {
     // Create a scene. It will automatically have a directional light, so let's set the ambient multiplier for it.
@@ -36,6 +38,7 @@ export default class Level {
 
     this.physicsScene = new PhysicsScene();
     this.map = new ProceduralMap(this.scene, this.physicsScene, levelNumber);
+    this.itemHandler = new ItemHandler(this.scene, this.physicsScene);
 
     let playerSpawnRoom = this.map.getPlayerSpawnRoom();
 
@@ -86,9 +89,11 @@ export default class Level {
       this.scene,
       this.physicsScene,
       renderer,
-      vec3.fromValues(5.0, 1.0, 5.0)
+      vec3.fromValues(5.0, 1.0, 5.0),
+      this.itemHandler
     );
 
+    this.itemHandler.spawnItem(vec3.fromValues(7.0, 2.0, 5.0));
     this.physicsScene.update(0.0, true);
   }
 

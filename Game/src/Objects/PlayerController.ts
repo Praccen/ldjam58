@@ -8,8 +8,10 @@ import {
   Scene,
   vec2,
   vec3,
+  Ray,
 } from "praccen-web-engine";
 import { Input } from "../Input";
+import ItemHandler from "../Systems/ItemHandler";
 
 const sensitivity = 0.4;
 const accelerationForce = 75.0;
@@ -29,17 +31,21 @@ export default class PlayerController {
 
   private light: PointLight;
 
+  private itemHandler: ItemHandler;
+
   startPosition: vec3;
 
   constructor(
     scene: Scene,
     physicsScene: PhysicsScene,
     rendering: Renderer3D,
-    spawnPosition: vec3
+    spawnPosition: vec3,
+    itemHandler: ItemHandler
   ) {
     this.scene = scene;
     this.phyiscsScene = physicsScene;
     this.rendering = rendering;
+    this.itemHandler = itemHandler;
 
     this.mouseMovement = vec2.create();
     Input.mouseMoveCallBack = (event: MouseEvent) => {
@@ -60,7 +66,8 @@ export default class PlayerController {
 
     this.physicsObject = this.phyiscsScene.addNewPhysicsObject();
     this.physicsObject.frictionCoefficient = 0.0;
-    this.physicsObject.collisionCoefficient = 0.1;
+    this.physicsObject.drag = 0.0;
+    this.physicsObject.collisionCoefficient = 0.0;
 
     this.physicsObject.boundingBox.setMinAndMaxVectors(
       vec3.fromValues(-0.5, 0.0, -0.5),
@@ -173,6 +180,12 @@ export default class PlayerController {
 
       if (Input.keys["D"]) {
         vec3.add(accVec, accVec, camera.getRight());
+      }
+      if (Input.keys["E"]) {
+        let ray = new Ray();
+        ray.setDir(vec3.clone(camera.getDir()));
+        ray.setStart(vec3.clone(camera.getPosition()));
+        this.itemHandler.pickupItem(ray, this.physicsObject);
       }
     }
 
