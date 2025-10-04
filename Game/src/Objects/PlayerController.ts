@@ -1,13 +1,14 @@
 import {
+  Camera,
   mat4,
   PhysicsObject,
   PhysicsScene,
+  PointLight,
   Renderer3D,
   Scene,
   vec2,
   vec3,
 } from "praccen-web-engine";
-import Game from "../States/Game";
 import { Input } from "../Input";
 
 const sensitivity = 0.4;
@@ -17,7 +18,6 @@ const jumpForce = 5.0;
 export default class PlayerController {
   private scene: Scene;
   private rendering: Renderer3D;
-  private game: Game;
 
   private mouseMovement: vec2;
 
@@ -27,20 +27,19 @@ export default class PlayerController {
   private phyiscsScene: PhysicsScene;
   private physicsObject: PhysicsObject;
 
+  private light: PointLight;
+
   startPosition: vec3;
 
   constructor(
     scene: Scene,
     physicsScene: PhysicsScene,
     rendering: Renderer3D,
-    game: Game,
     spawnPosition: vec3
   ) {
     this.scene = scene;
     this.phyiscsScene = physicsScene;
     this.rendering = rendering;
-
-    this.game = game;
 
     this.mouseMovement = vec2.create();
     Input.mouseMoveCallBack = (event: MouseEvent) => {
@@ -67,6 +66,14 @@ export default class PlayerController {
       vec3.fromValues(-0.5, 0.0, -0.5),
       vec3.fromValues(0.5, 1.8, 0.5)
     );
+
+    this.light = scene.addNewPointLight();
+    this.light.castShadow = true;
+    vec3.set(this.light.colour, 1.0, 0.4, 0.1);
+    // vec3.scale(this.light.colour, this.light.colour, 0.5);
+    this.light.quadratic = 0.5;
+    this.light.position = this.physicsObject.transform.position;
+
     this.startPosition = spawnPosition;
     this.respawn();
   }
@@ -77,7 +84,7 @@ export default class PlayerController {
     vec3.zero(this.physicsObject.force);
     vec3.zero(this.physicsObject.impulse);
     this.pitch = 0.0;
-    this.jaw = 180.0;
+    this.jaw = 0.0;
     vec2.set(this.mouseMovement, 0.0, 0.0);
   }
 
@@ -89,9 +96,7 @@ export default class PlayerController {
     return this.physicsObject.velocity;
   }
 
-  update(dt: number) {
-    const camera = this.game.camera;
-
+  update(camera: Camera, dt: number) {
     // Rotate camera with mouse
     let mouseDiff = Input.getMouseMovement();
 
@@ -198,12 +203,20 @@ export default class PlayerController {
     );
 
     // Update camera
-    this.game.camera.setPosition(
+    camera.setPosition(
       vec3.fromValues(
         this.physicsObject.transform.position[0],
         this.physicsObject.transform.position[1] + 1.7,
         this.physicsObject.transform.position[2]
       )
+    );
+
+    vec3.scaleAndAdd(this.light.offset, vec3.create(), camera.getRight(), -0.5);
+    vec3.scaleAndAdd(this.light.offset, this.light.offset, forward, 1.0);
+    vec3.add(
+      this.light.offset,
+      this.light.offset,
+      vec3.fromValues(0.0, 1.0, 0.0)
     );
   }
 }

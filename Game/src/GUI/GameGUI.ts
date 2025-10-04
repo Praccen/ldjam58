@@ -22,23 +22,5 @@ export default class GameGUI {
     this.floorDisplay.getElement().style.color = "white";
     this.floorDisplay.textString = "Floor 1";
     this.floorDisplay.getElement().style.zIndex = "1";
-
-    this.mapDisplay = guiRenderer.getNew3DText(this.gameGuiDiv);
-    this.mapDisplay.getElement().style.color = "#ffffff30";
-    // this.mapDisplay.getElement().style.background = "#00000050";
-    this.mapDisplay.getElement().style.whiteSpace = "pre";
-    this.mapDisplay.scaleWithWindow = true;
-    this.mapDisplay.scaleFontWithDistance = true;
-    this.mapDisplay.size = 800;
-    this.mapDisplay.getElement().style.zIndex = "1";
-
-    this.characterDisplay = guiRenderer.getNew3DText(this.gameGuiDiv);
-    this.characterDisplay.getElement().style.color = "#00FF0040";
-    this.characterDisplay.textString = "o";
-    this.characterDisplay.scaleWithWindow = true;
-    this.characterDisplay.scaleFontWithDistance = true;
-    this.characterDisplay.center = true;
-    this.characterDisplay.size = 400;
-    this.characterDisplay.getElement().style.zIndex = "0";
   }
 }

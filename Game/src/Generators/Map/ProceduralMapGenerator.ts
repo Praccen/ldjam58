@@ -729,16 +729,16 @@ export default class ProceduralMap {
                 this.map[column * 2][row * 2] % 16 < 12 ||
                 this.map[column * 2][row * 2] % 16 > 15
               ) {
-                let phyTrans = new ENGINE.Transform();
-                vec3.set(
-                  phyTrans.position,
-                  5.0 + column * roomSize - 5.0,
-                  0.0,
-                  5.0 + row * roomSize - 5.0
+                let physObj = this.physicsScene.addNewPhysicsObject(transform);
+                mesh.updateMinAndMaxPositions();
+                physObj.boundingBox.setMinAndMaxVectors(
+                  mesh.getMinAndMaxPositions().min,
+                  mesh.getMinAndMaxPositions().max
                 );
-                phyTrans.scale = vec3.clone(physicsObjectScales[0]);
-
-                let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
+                physObj.setupInternalTreeFromGraphicsObject(
+                  mesh.graphicsObject,
+                  path
+                );
                 physObj.isStatic = true;
                 physObj.frictionCoefficient = 0.0;
               }

@@ -269,6 +269,10 @@ export default class Renderer3D extends RendererBase {
     this.volumetricLightingPass.setRenderScale(scale);
   }
 
+  setFogMaxDistance(distance: number) {
+    this.volumetricLightingPass.fogMaxDistance = distance;
+  }
+
   setFogBlur(blur: boolean) {
     this.volumetricLightingPass.blur = blur;
   }

@@ -243,6 +243,10 @@ export default class WorldEditor {
     this.guiDiv.setHidden(true);
   }
 
+  setEnabled(enabled: boolean) {
+    this.guiDiv.setHidden(!enabled);
+  }
+
   interacting(): boolean {
     // return this.guiElements.findIndex((element) => {return element == document.activeElement}) > -1;
     return !this.guiDiv.getHidden();

@@ -8,22 +8,8 @@ import {
 } from "praccen-web-engine";
 import { GetCookie, SetCookie } from "../Utils/WebUtils.js";
 import GameGUI from "../GUI/GameGUI.js";
-import { Input } from "../Input.js";
-import { sensitivity } from "./GameContext.js";
 import Level from "../Objects/Level.js";
-import { roomSize } from "../Generators/Map/ProceduralMapGenerator.js";
 import PlayerController from "../Objects/PlayerController.js";
-
-type TriggerCallback = (triggerName: string) => void;
-
-interface AreaTrigger {
-  name: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  callback: TriggerCallback;
-}
 
 export default class Game {
   private renderer: Renderer3D;
@@ -36,13 +22,10 @@ export default class Game {
 
   private level: Level;
   private worldEditor: WorldEditor;
-  private playerController: PlayerController;
 
   private gameTimer = 0.0;
 
   private saveScreenshot = false;
-
-  private triggers: AreaTrigger[] = [];
 
   constructor(renderer: Renderer3D, guiRenderer: GUIRenderer) {
     this.renderer = renderer;
@@ -50,6 +33,7 @@ export default class Game {
 
     this.renderer.useVolumetric = true;
     this.renderer.setFogTexture("Assets/Textures/Fog.png");
+    this.renderer.setFogMaxDistance(20);
 
     // Create a camera and set it's starting position
     this.camera = new Camera();
@@ -88,27 +72,12 @@ export default class Game {
       this.level.physicsScene,
       this.guiRenderer
     );
-    this.playerController = new PlayerController(
-      this.level.scene,
-      this.level.physicsScene,
-      this.renderer,
-      this,
-      vec3.fromValues(5.0, 1.0, 5.0)
-    );
+
+    // this.worldEditor.setEnabled(true);
   }
 
   createLevel(levelNumber: number) {
-    this.triggers.length = 0;
     this.level = new Level(this.renderer, this, levelNumber);
-
-    this.triggers.push({
-      name: "exit",
-      x: this.getLevel().map.getExitRoomPos()[0],
-      y: this.getLevel().map.getExitRoomPos()[2],
-      width: roomSize * 0.5,
-      height: roomSize * 0.5,
-      callback: this.onExitLevel,
-    });
   }
 
   resize(width: number, height: number) {
@@ -133,7 +102,6 @@ export default class Game {
     this.gameTimer += dt;
 
     this.level.update(this.camera, dt);
-    this.playerController.update(dt);
   }
 
   preRenderingUpdate(dt: number) {
@@ -173,9 +141,4 @@ export default class Game {
 
     this.guiRenderer.draw(this.camera);
   }
-
-  private onExitLevel: TriggerCallback = () => {
-    this.level.cleanUp();
-    this.createLevel(this.level.map.getCurrentFloor() + 1);
-  };
 }

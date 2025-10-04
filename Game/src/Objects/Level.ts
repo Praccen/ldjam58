@@ -11,6 +11,7 @@ import ProceduralMap, {
 } from "../Generators/Map/ProceduralMapGenerator";
 import Game from "../States/Game";
 import { vec2 } from "gl-matrix";
+import PlayerController from "./PlayerController";
 
 export default class Level {
   scene: Scene;
@@ -20,12 +21,15 @@ export default class Level {
 
   private moodParticleSpawner: ParticleSpawner;
 
+  private playerController: PlayerController;
+
   constructor(renderer: Renderer3D, game: Game, levelNumber: number) {
     // Create a scene. It will automatically have a directional light, so let's set the ambient multiplier for it.
     this.scene = new Scene(renderer);
     this.scene.directionalLight.ambientMultiplier = 0.0;
-    vec3.set(this.scene.directionalLight.colour, 1.0, 0.3, 0.0);
-    vec3.set(this.scene.directionalLight.direction, 0.001, 1.0, 0.0);
+    // vec3.set(this.scene.directionalLight.colour, 0.2, 0.2, 0.2);
+    vec3.set(this.scene.directionalLight.colour, 0.0, 0.0, 0.0);
+    vec3.set(this.scene.directionalLight.direction, 1.1, -1.0, 0.3);
 
     this.scene.directionalLight.shadowCameraDistance = 100;
     this.scene.directionalLight.lightProjectionBoxSideLength = 100;
@@ -78,10 +82,19 @@ export default class Level {
       }
     );
 
+    this.playerController = new PlayerController(
+      this.scene,
+      this.physicsScene,
+      renderer,
+      vec3.fromValues(5.0, 1.0, 5.0)
+    );
+
     this.physicsScene.update(0.0, true);
   }
 
   update(camera: Camera, dt: number) {
+    this.playerController.update(camera, dt);
+
     // Update physics
     this.physicsScene.update(dt);
 
