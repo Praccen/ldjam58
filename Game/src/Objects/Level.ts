@@ -92,7 +92,11 @@ export default class Level {
       this.scene,
       this.physicsScene,
       renderer,
-      vec3.fromValues(this.map.getPlayerSpawnRoom()[0] * roomSize + roomSize / 2, 0.2, this.map.getPlayerSpawnRoom()[1] * roomSize + roomSize / 2),
+      vec3.fromValues(
+        this.map.getPlayerSpawnRoom()[0] * roomSize + roomSize / 2,
+        0.2,
+        this.map.getPlayerSpawnRoom()[1] * roomSize + roomSize / 2
+      ),
       this.itemHandler
     );
 
