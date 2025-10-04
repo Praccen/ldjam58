@@ -30,6 +30,14 @@ function startGame() {
     currentState = GameState.PLAYING;
     mainMenu.mainMenu.style.display = "none";
     gameContext.start();
+
+    // Focus the main document to enable keyboard input
+    if (gameContext.renderer && gameContext.renderer.domElement) {
+      gameContext.renderer.domElement.focus();
+    } else {
+      document.body.focus();
+    }
+
     animate();
   } else {
     // Assets not ready, show loading screen
@@ -148,6 +156,14 @@ gameContext.loadMeshes(progress).then(() => {
     splashScreen.destroy();
     currentState = GameState.PLAYING;
     gameContext.start();
+
+    // Focus the main document to enable keyboard input
+    if (gameContext.renderer && gameContext.renderer.domElement) {
+      gameContext.renderer.domElement.focus();
+    } else {
+      document.body.focus();
+    }
+
     animate();
   }
 });
@@ -165,6 +181,14 @@ function loadingScreenAnimate() {
     splashScreen.destroy();
     currentState = GameState.PLAYING;
     gameContext.start();
+
+    // Focus the main document to enable keyboard input
+    if (gameContext.renderer && gameContext.renderer.domElement) {
+      gameContext.renderer.domElement.focus();
+    } else {
+      document.body.focus();
+    }
+
     animate();
   }
 }

@@ -22,6 +22,10 @@ export default class GameContext {
     this.renderer = new Renderer3D();
     document.body.appendChild(this.renderer.domElement);
 
+    // Make the renderer canvas focusable for keyboard input
+    this.renderer.domElement.setAttribute("tabindex", "0");
+    this.renderer.domElement.style.outline = "none"; // Remove focus outline
+
     this.renderer.useVolumetric = true;
     this.renderer.setFogTexture("Assets/Textures/Fog.png");
 
