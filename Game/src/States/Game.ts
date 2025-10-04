@@ -71,7 +71,10 @@ export default class Game {
       );
     }
     if (camDirCookie != "") {
-      this.camera.setPitchJawDegrees(parseFloat(camDirCookie.split(":")[0]), parseFloat(camDirCookie.split(":")[1]));
+      this.camera.setPitchJawDegrees(
+        parseFloat(camDirCookie.split(":")[0]),
+        parseFloat(camDirCookie.split(":")[1])
+      );
     }
 
     this.gui = new GameGUI(this.guiRenderer);
@@ -79,8 +82,19 @@ export default class Game {
 
     this.createLevel(1);
 
-    this.worldEditor = new WorldEditor(this.camera, this.level.scene, this.level.physicsScene, this.guiRenderer);
-    this.playerController = new PlayerController(this.level.scene, this.level.physicsScene, this.renderer, this, vec3.fromValues(5.0, 1.0, 5.0));
+    this.worldEditor = new WorldEditor(
+      this.camera,
+      this.level.scene,
+      this.level.physicsScene,
+      this.guiRenderer
+    );
+    this.playerController = new PlayerController(
+      this.level.scene,
+      this.level.physicsScene,
+      this.renderer,
+      this,
+      vec3.fromValues(5.0, 1.0, 5.0)
+    );
   }
 
   createLevel(levelNumber: number) {
@@ -132,7 +146,12 @@ export default class Game {
         this.camera.getPosition()[2]
     );
 
-    SetCookie("camDir", this.camera.getPitchJawDegrees()[0] + ":" + this.camera.getPitchJawDegrees()[1]);
+    SetCookie(
+      "camDir",
+      this.camera.getPitchJawDegrees()[0] +
+        ":" +
+        this.camera.getPitchJawDegrees()[1]
+    );
 
     this.camera.getFrustum(this.dbgFrustum);
     this.level.preRenderingUpdate(dt, this.camera);

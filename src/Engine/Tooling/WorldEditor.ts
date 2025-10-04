@@ -550,14 +550,12 @@ export default class WorldEditor {
           }
 
           const index =
-            this.placementsMap
-              .get(mesh.name)
-              .push({
-                gb: bundle,
-                po: null,
-                jsonMesh: mesh,
-                placmentIndex: i,
-              }) - 1;
+            this.placementsMap.get(mesh.name).push({
+              gb: bundle,
+              po: null,
+              jsonMesh: mesh,
+              placmentIndex: i,
+            }) - 1;
           let placementsMapEntry = this.placementsMap.get(mesh.name)[index];
 
           if (mesh.emission != undefined && mesh.emission.length > 0) {

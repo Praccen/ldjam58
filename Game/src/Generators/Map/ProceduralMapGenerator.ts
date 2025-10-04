@@ -24,7 +24,7 @@ const floorLayouts: string[] = [
   1111111
   1111111
   1111111
-  `
+  `,
 ];
 
 enum BridgeType {
@@ -441,7 +441,13 @@ export default class ProceduralMap {
           for (let row = 0; row < this.rows + 1; row++) {
             // Tile filling (floor or blocked)
             if (column < this.columns && row < this.rows) {
-              if (this.map[column * 2 + 1][row * 2 + 1] == 0 && !(column * 2 + 1 == this.getExitRoom()[0] && row * 2 + 1 == this.getExitRoom()[1])) {
+              if (
+                this.map[column * 2 + 1][row * 2 + 1] == 0 &&
+                !(
+                  column * 2 + 1 == this.getExitRoom()[0] &&
+                  row * 2 + 1 == this.getExitRoom()[1]
+                )
+              ) {
                 const paths = wallPieceModels[0].paths;
                 let isBridge = false;
                 let transform = null;
@@ -503,7 +509,6 @@ export default class ProceduralMap {
                 physObj.frictionCoefficient = 0.0;
               } else if (this.map[column * 2 + 1][row * 2 + 1] == -1) {
                 // If there should be something in the voids, create it here
-
                 // let mesh = this.instancedMeshes.get(
                 //   "Assets/objs/dungeonPack/floor_tile_big_grate_open.obj"
                 // );
