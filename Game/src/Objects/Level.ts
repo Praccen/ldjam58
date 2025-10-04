@@ -15,6 +15,17 @@ import { vec2 } from "gl-matrix";
 import PlayerController from "./PlayerController";
 import ItemHandler from "../Systems/ItemHandler";
 
+type TriggerCallback = (triggerName: string) => void;
+
+export interface AreaTrigger {
+  name: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  callback: TriggerCallback;
+}
+
 export default class Level {
   scene: Scene;
   physicsScene: PhysicsScene;
@@ -25,6 +36,8 @@ export default class Level {
 
   private playerController: PlayerController;
   private itemHandler: ItemHandler;
+
+  triggers: AreaTrigger[] = [];
 
   constructor(renderer: Renderer3D, game: Game) {
     // Create a scene. It will automatically have a directional light, so let's set the ambient multiplier for it.
@@ -102,6 +115,17 @@ export default class Level {
 
     this.itemHandler.spawnItem(vec3.fromValues(7.0, 2.0, 5.0));
     this.physicsScene.update(0.0, true);
+
+    this.triggers.push({
+      name: "exit",
+      x: this.map.getExitRoomPos(this.map.getCurrentFloor())[0],
+      y: this.map.getExitRoomPos(this.map.getCurrentFloor())[2],
+      width: roomSize * 0.5,
+      height: roomSize * 0.5,
+      callback: () => {
+        console.log("Exited!");
+      },
+    });
   }
 
   update(camera: Camera, dt: number) {
@@ -113,6 +137,8 @@ export default class Level {
     this.map.updateFocusRoom(camera.getPosition());
 
     this.scene.updateParticleSpawners(dt);
+
+    this.checkTriggers();
   }
 
   preRenderingUpdate(dt: number, camera: Camera) {
@@ -126,4 +152,25 @@ export default class Level {
   }
 
   cleanUp() {}
+
+  private isPlayerInArea(trigger: AreaTrigger): boolean {
+    return (
+      this.playerController.getPhysicsObject().transform.position[0] >=
+        trigger.x - trigger.width &&
+      this.playerController.getPhysicsObject().transform.position[0] <=
+        trigger.x + trigger.width &&
+      this.playerController.getPhysicsObject().transform.position[1] >=
+        trigger.y - trigger.height &&
+      this.playerController.getPhysicsObject().transform.position[1] <=
+        trigger.y + trigger.height
+    );
+  }
+
+  private checkTriggers(): void {
+    this.triggers.forEach((trigger: AreaTrigger) => {
+      if (this.isPlayerInArea(trigger)) {
+        trigger.callback(trigger.name);
+      }
+    });
+  }
 }

@@ -102,6 +102,9 @@ export default class PlayerController {
   getVelocity(): vec3 {
     return this.physicsObject.velocity;
   }
+  getPhysicsObject(): PhysicsObject {
+    return this.physicsObject;
+  }
 
   update(camera: Camera, dt: number) {
     // Rotate camera with mouse
