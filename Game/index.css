@@ -1,8 +1,16 @@
-* {font-family:'Courier New', Courier, monospace;}
-			
-body { margin: 0; overflow: hidden; position: absolute}
-			
-canvas {position: absolute; }
+* {
+	font-family: "Courier New", Courier, monospace;
+}
+
+body {
+	margin: 0;
+	overflow: hidden;
+	position: absolute;
+}
+
+canvas {
+	position: absolute;
+}
 
 .inventoryCanvas {
 	position: relative;
@@ -16,8 +24,10 @@ canvas {position: absolute; }
 	background-color: rgba(0, 0, 0, 0.1);
 	padding: 0.25em;
 }
-			
-.guiContainer {position: relative;}
+
+.guiContainer {
+	position: relative;
+}
 
 .button {
 	font-size: inherit;
@@ -28,22 +38,20 @@ canvas {position: absolute; }
 	border: 2px solid black;
 	border-radius: 5px;
 	font-weight: bold;
-	box-shadow: inset 0 0.7em 0 rgba(255,255,255, .2);
+	box-shadow: inset 0 0.7em 0 rgba(255, 255, 255, 0.2);
 	padding: 5px 20px;
 	transition: all 0.1s;
 	cursor: pointer;
 }
-  
+
 .button:hover {
-	box-shadow: 
-	  inset 0 0.7em 0 rgba(255,255,255, .2),
-	  inset 0 0 0.5em rgba(0,0,255, .2);
+	box-shadow: inset 0 0.7em 0 rgba(255, 255, 255, 0.2),
+		inset 0 0 0.5em rgba(0, 0, 255, 0.2);
 }
-  
+
 .button:active {
-	box-shadow: 
-	  inset 0 0.1em 0 rgba(255,255,255, .2),
-	  inset 0 0 0.5em rgba(0,0,255, .2);
+	box-shadow: inset 0 0.1em 0 rgba(255, 255, 255, 0.2),
+		inset 0 0 0.5em rgba(0, 0, 255, 0.2);
 }
 
 .listButton {
@@ -76,7 +84,7 @@ canvas {position: absolute; }
 	cursor: pointer;
 	height: 0;
 	width: 0;
-  }
+}
 
 .checkmark {
 	position: absolute;
@@ -113,9 +121,9 @@ canvas {position: absolute; }
 
 .checkboxContainer input:checked ~ .checkmark:before {
 	position: relative;
-    content: "ON";
-    color: black;
-    left: 1.2em;
+	content: "ON";
+	color: black;
+	left: 1.2em;
 	font-size: 0.6em;
 }
 
@@ -123,38 +131,65 @@ canvas {position: absolute; }
 	-webkit-appearance: none;
 	font-size: inherit;
 	height: 0.5em;
-	width: 10.0em;
-	border-radius: 10%;  
+	width: 10em;
+	border-radius: 10%;
 	background: rgba(0, 255, 255, 0.2);
 	outline: none;
-	-webkit-transition: all .2s;
-	transition: all .2s;
-  }
+	-webkit-transition: all 0.2s;
+	transition: all 0.2s;
+}
 
-  .slider:hover {
+.slider:hover {
 	background: rgba(0, 255, 255, 0.4);
-  }
-  
-  .slider::-webkit-slider-thumb {
+}
+
+.slider::-webkit-slider-thumb {
 	-webkit-appearance: none;
 	appearance: none;
-	width: 1.0em;
-	height: 1.0em;
-	border-radius: 50%; 
-	background: cyan;
-	cursor: pointer;
-  }
-  
-  .slider::-moz-range-thumb {
-	width: 1.0em;
-	height: 1.0em;
+	width: 1em;
+	height: 1em;
 	border-radius: 50%;
 	background: cyan;
 	cursor: pointer;
-  }
+}
 
+.slider::-moz-range-thumb {
+	width: 1em;
+	height: 1em;
+	border-radius: 50%;
+	background: cyan;
+	cursor: pointer;
+}
 
 .sliderLabel {
 	font-size: inherit;
 	color: cyan;
+}
+
+/* Replace the fixed sizing in the HTML with: */
+html,
+body {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+.container {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 90%;
+	max-width: 600px;
+}
+
+/* Make title responsive */
+.title {
+	font-size: clamp(2rem, 8vw, 5rem); /* Scales between 2rem and 5rem */
+}
+
+.menu-button {
+	font-size: clamp(1rem, 2vw, 1.4rem);
+	padding: clamp(12px, 2vh, 18px) clamp(20px, 4vw, 40px);
 }

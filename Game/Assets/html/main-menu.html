@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARKEOLOG</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600&display=swap");
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        font-family: "Crimson Text", serif;
+        background: #0a0a0a;
+        color: #d4c5a9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+      }
+
+      /* Background layers */
+      .background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+            ellipse at 50% 20%,
+            rgba(139, 90, 43, 0.15) 0%,
+            transparent 50%
+          ),
+          linear-gradient(180deg, #0a0a0a 0%, #1a1410 50%, #0a0a0a 100%);
+        z-index: 1;
+      }
+
+      .fog {
+        position: fixed;
+        width: 200%;
+        height: 200%;
+        top: -50%;
+        left: -50%;
+        background: radial-gradient(
+            circle at 30% 40%,
+            rgba(40, 35, 30, 0.3) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 70% 60%,
+            rgba(40, 35, 30, 0.2) 0%,
+            transparent 40%
+          );
+        animation: fogDrift 20s ease-in-out infinite;
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      @keyframes fogDrift {
+        0%,
+        100% {
+          transform: translate(0, 0);
+        }
+        50% {
+          transform: translate(-50px, -30px);
+        }
+      }
+
+      .torch-light {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+          ellipse at 50% 30%,
+          rgba(255, 147, 41, 0.08) 0%,
+          transparent 60%
+        );
+        animation: torchFlicker 3s ease-in-out infinite;
+        z-index: 3;
+        pointer-events: none;
+      }
+
+      @keyframes torchFlicker {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        25% {
+          opacity: 0.85;
+        }
+        50% {
+          opacity: 0.95;
+        }
+        75% {
+          opacity: 0.9;
+        }
+      }
+
+      /* Particle system */
+      .dust-particle {
+        position: fixed;
+        width: 3px;
+        height: 3px;
+        background: #d4c5a9;
+        border-radius: 50%;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 4;
+        box-shadow: 0 0 3px rgba(212, 197, 169, 0.5);
+      }
+
+      /* Content */
+      .container {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+        padding: 40px;
+        max-width: 600px;
+        width: 90%;
+      }
+
+      .title {
+        font-family: "Cinzel", serif;
+        font-size: clamp(2.5rem, 8vw, 5rem);
+        font-weight: 700;
+        color: #d4c5a9;
+        text-shadow: 0 0 20px rgba(255, 147, 41, 0.5),
+          0 0 40px rgba(255, 147, 41, 0.3), 2px 2px 4px rgba(0, 0, 0, 0.8);
+        margin-bottom: 10px;
+        letter-spacing: clamp(4px, 1vw, 8px);
+        animation: titlePulse 4s ease-in-out infinite;
+      }
+
+      @keyframes titlePulse {
+        0%,
+        100% {
+          text-shadow: 0 0 20px rgba(255, 147, 41, 0.5),
+            0 0 40px rgba(255, 147, 41, 0.3), 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+        50% {
+          text-shadow: 0 0 30px rgba(255, 147, 41, 0.6),
+            0 0 50px rgba(255, 147, 41, 0.4), 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+      }
+
+      .subtitle {
+        font-size: 1.2rem;
+        color: #8b7355;
+        margin-bottom: 50px;
+        letter-spacing: 3px;
+        font-style: italic;
+      }
+
+      .warning {
+        font-size: 0.9rem;
+        color: #a8846f;
+        margin-bottom: 40px;
+        padding: 15px;
+        border-top: 1px solid rgba(139, 115, 85, 0.3);
+        border-bottom: 1px solid rgba(139, 115, 85, 0.3);
+        font-style: italic;
+        line-height: 1.6;
+      }
+
+      .menu {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-top: 40px;
+      }
+
+      .menu-button {
+        font-family: "Cinzel", serif;
+        font-size: clamp(1rem, 2vw, 1.4rem);
+        padding: clamp(12px, 2vh, 18px) clamp(20px, 4vw, 40px);
+        background: linear-gradient(
+          135deg,
+          rgba(40, 30, 20, 0.8) 0%,
+          rgba(30, 20, 15, 0.9) 100%
+        );
+        border: 2px solid rgba(139, 115, 85, 0.5);
+        color: #d4c5a9;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: clamp(2px, 0.5vw, 3px);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      }
+
+      .menu-button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 147, 41, 0.2),
+          transparent
+        );
+        transition: left 0.5s ease;
+      }
+
+      .menu-button:hover::before {
+        left: 100%;
+      }
+
+      .menu-button:hover {
+        background: linear-gradient(
+          135deg,
+          rgba(60, 45, 30, 0.9) 0%,
+          rgba(40, 30, 20, 0.95) 100%
+        );
+        border-color: rgba(255, 147, 41, 0.8);
+        color: #ffd89b;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7),
+          0 0 20px rgba(255, 147, 41, 0.3);
+        transform: translateY(-2px);
+      }
+
+      .menu-button:active {
+        transform: translateY(0);
+      }
+
+      .menu-button.primary {
+        border-color: rgba(255, 147, 41, 0.6);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5),
+          0 0 15px rgba(255, 147, 41, 0.2);
+      }
+
+      .footer {
+        position: fixed;
+        bottom: 20px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 0.8rem;
+        color: #6b5d4f;
+        z-index: 10;
+        letter-spacing: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="background"></div>
+    <div class="fog"></div>
+    <div class="torch-light"></div>
+
+    <div class="container">
+      <h1 class="title">ARKEOLOG</h1>
+      <p class="subtitle">Utforska. Samla. Fly.</p>
+
+      <div class="warning">
+        Varje artefakt bär en förbannelse.<br />
+        Hur mycket kan du bära innan mörkret tar dig?
+      </div>
+
+      <div class="menu">
+        <button class="menu-button primary" onclick="startGame()">
+          Börja Expedition
+        </button>
+        <button class="menu-button" onclick="showOptions()">
+          Inställningar
+        </button>
+        <button class="menu-button" onclick="showCredits()">Om Spelet</button>
+        <button class="menu-button" onclick="quitGame()">Avsluta</button>
+      </div>
+    </div>
+
+    <div class="footer">EN RES IN I DET OKÄNDA</div>
+
+    <script>
+      // Particle system - continuously spawns falling dust particles
+      let particleInterval;
+
+      function startParticleSystem() {
+        // Spawn a new particle every 800ms
+        particleInterval = setInterval(() => {
+          createParticle();
+        }, 800);
+
+        // Create initial batch
+        for (let i = 0; i < 15; i++) {
+          setTimeout(() => createParticle(), i * 500);
+        }
+      }
+
+      function createParticle() {
+        const particle = document.createElement("div");
+        particle.className = "dust-particle";
+
+        // Random horizontal position
+        const startX = Math.random() * 100;
+        particle.style.left = startX + "%";
+        particle.style.top = "-10px";
+
+        document.body.appendChild(particle);
+
+        // Animate and auto-remove when done
+        animateParticle(particle);
+      }
+
+      function animateParticle(particle) {
+        const duration = 10000 + Math.random() * 10000; // 10-20 seconds
+        const drift = (Math.random() - 0.5) * 50; // Horizontal drift in px
+        const startTime = Date.now();
+        let animationFrame;
+
+        function animate() {
+          const elapsed = Date.now() - startTime;
+          const progress = elapsed / duration;
+
+          if (progress < 1 && document.body.contains(particle)) {
+            // Calculate position
+            const y = progress * (window.innerHeight + 20);
+            const x = drift * progress;
+
+            // Calculate opacity (fade in and out)
+            let opacity;
+            if (progress < 0.15) {
+              opacity = progress / 0.15; // Fade in
+            } else if (progress > 0.85) {
+              opacity = (1 - progress) / 0.15; // Fade out
+            } else {
+              opacity = 0.6;
+            }
+
+            particle.style.transform = `translate(${x}px, ${y}px)`;
+            particle.style.opacity = opacity;
+
+            animationFrame = requestAnimationFrame(animate);
+          } else {
+            // Clean up - remove particle from DOM
+            if (document.body.contains(particle)) {
+              particle.remove();
+            }
+            cancelAnimationFrame(animationFrame);
+          }
+        }
+
+        animate();
+      }
+
+      // Start particle system
+      startParticleSystem();
+
+      // Menu button functions
+      function startGame() {
+        console.log("Starting game...");
+        // Call the parent window's startGame function
+        if (window.parent && window.parent.startGame) {
+          window.parent.startGame();
+        }
+      }
+
+      function showOptions() {
+        console.log("Opening options...");
+        alert("Inställningar kommer snart...");
+      }
+
+      function showCredits() {
+        console.log("Showing credits...");
+        alert("ARKEOLOG\n\nSkapad för Game Jam 2024\n\nVåga du gå djupare?");
+      }
+
+      function quitGame() {
+        if (confirm("Är du säker på att du vill lämna ruinerna?")) {
+          console.log("Quitting game...");
+        }
+      }
+    </script>
+  </body>
+</html>

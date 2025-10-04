@@ -1,4 +1,5 @@
 import GameContext from "./States/GameContext.js";
+import MainMenu from "./States/Menu.js";
 import SplashScreen from "./States/SplashScreen.js";
 
 window.addEventListener("contextmenu", function (e: Event) {
@@ -6,8 +7,41 @@ window.addEventListener("contextmenu", function (e: Event) {
 });
 
 let splashScreen = new SplashScreen();
+let mainMenu = new MainMenu();
 
 export let gameContext = new GameContext();
+
+// Game state management
+enum GameState {
+  MAIN_MENU,
+  LOADING,
+  PLAYING
+}
+
+let currentState = GameState.MAIN_MENU;
+let assetsLoaded = false;
+
+/**
+ * Function to start the game - called from the main menu
+ */
+function startGame() {
+  if (assetsLoaded) {
+    // Assets are ready, start game immediately
+    currentState = GameState.PLAYING;
+    mainMenu.mainMenu.style.display = "none";
+    gameContext.start();
+    animate();
+  } else {
+    // Assets not ready, show loading screen
+    currentState = GameState.LOADING;
+    mainMenu.mainMenu.style.display = "none";
+    splashScreen.guiRenderer.domElement.style.display = "block";
+    loadingScreenAnimate();
+  }
+}
+
+// Make startGame available globally for the HTML
+(window as any).startGame = startGame;
 
 /**
  * Our update function, this will run every frame, and is responsible for moving the camera based on input.
@@ -15,7 +49,9 @@ export let gameContext = new GameContext();
  * @param dt - time elapsed since last frame.
  */
 function update(dt: number) {
-  gameContext.update(dt);
+  if (currentState === GameState.PLAYING) {
+    gameContext.update(dt);
+  }
 }
 
 /**
@@ -25,7 +61,9 @@ function update(dt: number) {
  * @param dt Time since last render call
  */
 function preRendereringUpdate(dt: number) {
-  gameContext.preRendereringUpdate(dt);
+  if (currentState === GameState.PLAYING) {
+    gameContext.preRendereringUpdate(dt);
+  }
 }
 
 // Resize function to that will update the size of our game window when the browser window is resized
@@ -63,6 +101,10 @@ const maxUpdatesPerFrame = 20;
  * Animation function that takes care of requesting animation frames, calculating frame time and calls both update and render functions.
  */
 function animate() {
+  if (currentState !== GameState.PLAYING) {
+    return;
+  }
+
   requestAnimationFrame(animate);
   let now = Date.now();
   let dt = (now - lastUpdateTime) * 0.001;
@@ -94,18 +136,36 @@ function animate() {
 }
 
 let progress = { requested: 0, loaded: 0 };
-// Start animating!
+
+// Initialize: Hide splash screen initially, show main menu
+splashScreen.guiRenderer.domElement.style.display = "none";
+mainMenu.mainMenu.style.display = "block";
+
+// Start asset loading in background
 gameContext.loadMeshes(progress).then(() => {
-  splashScreen.destroy();
-  gameContext.start();
-  animate();
+  assetsLoaded = true;
+  if (currentState === GameState.LOADING) {
+    // If user clicked start and we're showing loading screen, start game now
+    splashScreen.destroy();
+    currentState = GameState.PLAYING;
+    gameContext.start();
+    animate();
+  }
 });
 
 function loadingScreenAnimate() {
+  if (currentState !== GameState.LOADING) {
+    return;
+  }
+
   if (progress.requested == 0 || progress.loaded < progress.requested) {
     splashScreen.draw(progress);
     requestAnimationFrame(loadingScreenAnimate);
+  } else if (assetsLoaded) {
+    // Loading complete, start game
+    splashScreen.destroy();
+    currentState = GameState.PLAYING;
+    gameContext.start();
+    animate();
   }
 }
-
-requestAnimationFrame(loadingScreenAnimate);
