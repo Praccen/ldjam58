@@ -204,4 +204,12 @@ export default class Inventory {
   findItemsByType(type: ItemType): Item[] {
     return this.items.filter((item) => item.type === type);
   }
+
+  getItems(): Item[] {
+    return [...this.items];
+  }
+
+  getAggregatedCurses(): any[] {
+    return this.aggregateCurses();
+  }
 }

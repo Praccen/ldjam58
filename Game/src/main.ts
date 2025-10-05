@@ -1,6 +1,8 @@
 import GameContext from "./States/GameContext.js";
 import MainMenu from "./States/Menu.js";
 import SplashScreen from "./States/SplashScreen.js";
+import EndGame from "./States/EndGame.js";
+import Game from "./States/Game.js";
 
 window.addEventListener("contextmenu", function (e: Event) {
   e.preventDefault();
@@ -8,6 +10,7 @@ window.addEventListener("contextmenu", function (e: Event) {
 
 let splashScreen = new SplashScreen();
 let mainMenu = new MainMenu();
+let endGameScreen = new EndGame();
 
 export let gameContext = new GameContext();
 
@@ -16,10 +19,12 @@ enum GameState {
   MAIN_MENU,
   LOADING,
   PLAYING,
+  END_GAME,
 }
 
 let currentState = GameState.MAIN_MENU;
 let assetsLoaded = false;
+let gameStartTime = 0;
 
 /**
  * Function to start the game - called from the main menu
@@ -29,7 +34,10 @@ function startGame() {
     // Assets are ready, start game immediately
     currentState = GameState.PLAYING;
     mainMenu.mainMenu.style.display = "none";
+    endGameScreen.hide();
+
     gameContext.start();
+    gameStartTime = Date.now();
 
     // Focus the main document to enable keyboard input
     if (gameContext.renderer && gameContext.renderer.domElement) {
@@ -43,6 +51,7 @@ function startGame() {
     // Assets not ready, show loading screen
     currentState = GameState.LOADING;
     mainMenu.mainMenu.style.display = "none";
+    endGameScreen.hide();
     splashScreen.splashScreen.style.display = "block";
     loadingScreenAnimate();
   }
@@ -50,6 +59,62 @@ function startGame() {
 
 // Make startGame available globally for the HTML
 (window as any).startGame = startGame;
+
+/**
+ * Function to return to main menu - called from the end game screen
+ */
+async function returnToMenu() {
+  currentState = GameState.MAIN_MENU;
+  endGameScreen.hide();
+  mainMenu.mainMenu.style.display = "block";
+  // Reset and create new game context
+
+  gameContext.loadNewGame();
+  setupGameCallbacks();
+}
+
+// Make returnToMenu available globally for the HTML
+(window as any).returnToMenu = returnToMenu;
+
+function onGameComplete() {
+  currentState = GameState.END_GAME;
+
+  const timePlayedMs = Date.now() - gameStartTime;
+  const minutes = Math.floor(timePlayedMs / 60000);
+  const seconds = Math.floor((timePlayedMs % 60000) / 1000);
+  const timeString = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+
+  const artifactsCollected = gameContext.game.inventory.getItemCount();
+
+  const floorsExplored = gameContext.game.getLevel().map.getCurrentFloor();
+
+  // Get items and curses data, but serialize only necessary fields
+  const items = gameContext.game.inventory.getItems().map((item) => ({
+    name: item.name,
+    type: item.type,
+    quantity: item.quantity,
+    rarity: item.rarity,
+    description: item.description,
+  }));
+
+  const curses = gameContext.game.inventory.getAggregatedCurses();
+
+  // Show end game screen with stats
+  endGameScreen.show({
+    time: timeString,
+    artifacts: artifactsCollected,
+    floors: floorsExplored,
+    items: items,
+    curses: curses,
+  });
+}
+
+/**
+ * Setup callbacks for game events
+ */
+function setupGameCallbacks() {
+  gameContext.game.getLevel().callbacks.onGameComplete = onGameComplete;
+}
 
 /**
  * Function to close the inventory - called from the inventory iframe
@@ -161,6 +226,9 @@ let progress = { requested: 0, loaded: 0 };
 splashScreen.splashScreen.style.display = "none";
 mainMenu.mainMenu.style.display = "block";
 
+// Setup callbacks initially
+setupGameCallbacks();
+
 // Start asset loading in background
 gameContext.loadMeshes(progress).then(() => {
   assetsLoaded = true;
@@ -168,6 +236,7 @@ gameContext.loadMeshes(progress).then(() => {
     // If user clicked start and we're showing loading screen, start game now
     splashScreen.destroy();
     currentState = GameState.PLAYING;
+    gameStartTime = Date.now();
     gameContext.start();
 
     // Focus the main document to enable keyboard input
@@ -193,6 +262,7 @@ function loadingScreenAnimate() {
     // Loading complete, start game
     splashScreen.destroy();
     currentState = GameState.PLAYING;
+    gameStartTime = Date.now();
     gameContext.start();
 
     // Focus the main document to enable keyboard input

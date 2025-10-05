@@ -27,6 +27,10 @@ export interface AreaTrigger {
   callback: TriggerCallback;
 }
 
+export interface LevelCallbacks {
+  onGameComplete?: () => void;
+}
+
 export default class Level {
   scene: Scene;
   physicsScene: PhysicsScene;
@@ -39,6 +43,9 @@ export default class Level {
   private itemHandler: ItemHandler;
 
   triggers: AreaTrigger[] = [];
+  callbacks: LevelCallbacks = {};
+
+  private currentFloorShaft: vec2;
 
   constructor(renderer: Renderer3D, game: Game) {
     // Create a scene. It will automatically have a directional light, so let's set the ambient multiplier for it.
@@ -57,7 +64,10 @@ export default class Level {
       this.physicsScene,
       game.inventory
     );
-    this.map = new ProceduralMap(this.scene, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+    this.map = new ProceduralMap(
+      this.scene,
+      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+    );
 
     let level = this;
     this.scene.useTrees = false;
@@ -149,15 +159,22 @@ export default class Level {
 
     this.physicsScene.update(0.0, true);
 
+    const shaft = this.map.getfloorShaftRoomPos(this.map.getCurrentFloor());
+    this.currentFloorShaft = vec2.fromValues(shaft[0], shaft[2]);
+
     this.triggers.push({
       name: "exit",
-      x: this.map.getExitRoomPos(this.map.getCurrentFloor())[0],
-      y: this.map.getExitRoomPos(this.map.getCurrentFloor())[2],
+      x: this.currentFloorShaft[0],
+      y: this.currentFloorShaft[1],
       width: roomSize * 0.5,
       height: roomSize * 0.5,
       callback: () => {
         if (this.playerController.getCanExtract()) {
-          console.log("Exited!");
+          if (this.callbacks.onGameComplete) {
+            this.callbacks.onGameComplete();
+          }
+        } else {
+          console.log("Cannot extract - cursed with Binding!");
         }
       },
     });
@@ -175,8 +192,10 @@ export default class Level {
       this.map.floorPhysicsScenes.get(this.map.getCurrentFloor()).update(0.0);
     }
 
-    this.scene.updateParticleSpawners(dt);
+    const shaft = this.map.getfloorShaftRoomPos(this.map.getCurrentFloor());
+    this.currentFloorShaft = vec2.fromValues(shaft[0], shaft[2]);
 
+    this.scene.updateParticleSpawners(dt);
     this.checkTriggers();
   }
 
@@ -197,15 +216,12 @@ export default class Level {
   }
 
   private isPlayerInArea(trigger: AreaTrigger): boolean {
+    const pos = this.playerController.getPosition();
     return (
-      this.playerController.getPhysicsObject().transform.position[0] >=
-        trigger.x - trigger.width &&
-      this.playerController.getPhysicsObject().transform.position[0] <=
-        trigger.x + trigger.width &&
-      this.playerController.getPhysicsObject().transform.position[1] >=
-        trigger.y - trigger.height &&
-      this.playerController.getPhysicsObject().transform.position[1] <=
-        trigger.y + trigger.height
+      pos[0] >= trigger.x - trigger.width &&
+      pos[0] <= trigger.x + trigger.width &&
+      pos[2] >= trigger.y - trigger.height &&
+      pos[2] <= trigger.y + trigger.height
     );
   }
 

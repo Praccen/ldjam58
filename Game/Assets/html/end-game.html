@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expedition Avslutad</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600&display=swap");
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        font-family: "Crimson Text", serif;
+        background: #0a0a0a;
+        color: #d4c5a9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+      }
+
+      /* Background layers */
+      .background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+            ellipse at 50% 20%,
+            rgba(139, 90, 43, 0.2) 0%,
+            transparent 50%
+          ),
+          linear-gradient(180deg, #0a0a0a 0%, #1a1410 50%, #0a0a0a 100%);
+        z-index: 1;
+      }
+
+      .fog {
+        position: fixed;
+        width: 200%;
+        height: 200%;
+        top: -50%;
+        left: -50%;
+        background: radial-gradient(
+            circle at 30% 40%,
+            rgba(40, 35, 30, 0.3) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 70% 60%,
+            rgba(40, 35, 30, 0.2) 0%,
+            transparent 40%
+          );
+        animation: fogDrift 20s ease-in-out infinite;
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      @keyframes fogDrift {
+        0%,
+        100% {
+          transform: translate(0, 0);
+        }
+        50% {
+          transform: translate(-50px, -30px);
+        }
+      }
+
+      .torch-light {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+          ellipse at 50% 30%,
+          rgba(255, 147, 41, 0.1) 0%,
+          transparent 60%
+        );
+        animation: torchFlicker 3s ease-in-out infinite;
+        z-index: 3;
+        pointer-events: none;
+      }
+
+      @keyframes torchFlicker {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        25% {
+          opacity: 0.85;
+        }
+        50% {
+          opacity: 0.95;
+        }
+        75% {
+          opacity: 0.9;
+        }
+      }
+
+      /* Particle system */
+      .dust-particle {
+        position: fixed;
+        width: 3px;
+        height: 3px;
+        background: #d4c5a9;
+        border-radius: 50%;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 4;
+        box-shadow: 0 0 3px rgba(212, 197, 169, 0.5);
+      }
+
+      /* Content */
+      .container {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+        padding: 40px 20px;
+        max-width: 1000px;
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .container::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .container::-webkit-scrollbar-track {
+        background: rgba(20, 15, 10, 0.5);
+        border-radius: 4px;
+      }
+
+      .container::-webkit-scrollbar-thumb {
+        background: rgba(139, 115, 85, 0.6);
+        border-radius: 4px;
+      }
+
+      .title {
+        font-family: "Cinzel", serif;
+        font-size: clamp(1.8rem, 5vw, 3rem);
+        font-weight: 700;
+        color: #ffd89b;
+        text-shadow: 0 0 20px rgba(255, 147, 41, 0.6),
+          0 0 40px rgba(255, 147, 41, 0.4), 2px 2px 4px rgba(0, 0, 0, 0.8);
+        margin-bottom: 15px;
+        letter-spacing: clamp(3px, 1vw, 6px);
+        animation: victoryPulse 3s ease-in-out infinite;
+      }
+
+      @keyframes victoryPulse {
+        0%,
+        100% {
+          text-shadow: 0 0 20px rgba(255, 147, 41, 0.6),
+            0 0 40px rgba(255, 147, 41, 0.4), 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+        50% {
+          text-shadow: 0 0 35px rgba(255, 147, 41, 0.8),
+            0 0 60px rgba(255, 147, 41, 0.6), 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+      }
+
+      .subtitle {
+        font-size: clamp(1rem, 2vw, 1.3rem);
+        color: #d4c5a9;
+        margin-bottom: 20px;
+        letter-spacing: 2px;
+        font-style: italic;
+      }
+
+      .stats-box {
+        background: linear-gradient(
+          135deg,
+          rgba(40, 30, 20, 0.7) 0%,
+          rgba(30, 20, 15, 0.8) 100%
+        );
+        border: 2px solid rgba(139, 115, 85, 0.5);
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .stat-title {
+        font-family: "Cinzel", serif;
+        font-size: 1.3rem;
+        color: #ffd89b;
+        margin-bottom: 20px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+      }
+
+      .stat-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1.1rem;
+        color: #d4c5a9;
+        margin: 15px 0;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(139, 115, 85, 0.3);
+      }
+
+      .stat-item:last-child {
+        border-bottom: none;
+      }
+
+      .stat-label {
+        font-weight: 600;
+        color: #c5a572;
+      }
+
+      .stat-value {
+        color: #ffd89b;
+        font-weight: 700;
+      }
+
+      .message {
+        font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+        color: #a8846f;
+        margin: 20px 0;
+        padding: 15px;
+        border-top: 1px solid rgba(139, 115, 85, 0.3);
+        border-bottom: 1px solid rgba(139, 115, 85, 0.3);
+        font-style: italic;
+        line-height: 1.8;
+      }
+
+      .menu {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 40px;
+      }
+
+      .menu-button {
+        font-family: "Cinzel", serif;
+        font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+        padding: clamp(12px, 2vh, 16px) clamp(20px, 4vw, 35px);
+        background: linear-gradient(
+          135deg,
+          rgba(40, 30, 20, 0.8) 0%,
+          rgba(30, 20, 15, 0.9) 100%
+        );
+        border: 2px solid rgba(139, 115, 85, 0.5);
+        color: #d4c5a9;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: clamp(2px, 0.5vw, 3px);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      }
+
+      .menu-button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 147, 41, 0.2),
+          transparent
+        );
+        transition: left 0.5s ease;
+      }
+
+      .menu-button:hover::before {
+        left: 100%;
+      }
+
+      .menu-button:hover {
+        background: linear-gradient(
+          135deg,
+          rgba(60, 45, 30, 0.9) 0%,
+          rgba(40, 30, 20, 0.95) 100%
+        );
+        border-color: rgba(255, 147, 41, 0.8);
+        color: #ffd89b;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7),
+          0 0 20px rgba(255, 147, 41, 0.3);
+        transform: translateY(-2px);
+      }
+
+      .menu-button:active {
+        transform: translateY(0);
+      }
+
+      .menu-button.primary {
+        border-color: rgba(255, 147, 41, 0.6);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5),
+          0 0 15px rgba(255, 147, 41, 0.2);
+      }
+
+      .footer {
+        position: fixed;
+        bottom: 20px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 0.75rem;
+        color: #6b5d4f;
+        z-index: 10;
+        letter-spacing: 2px;
+      }
+
+      /* Item and curse display */
+      .collections-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin: 20px 0;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      @media (max-width: 768px) {
+        .collections-container {
+          flex-direction: column;
+        }
+      }
+
+      .collection-box {
+        flex: 1;
+        min-width: 280px;
+        background: linear-gradient(
+          135deg,
+          rgba(40, 30, 20, 0.7) 0%,
+          rgba(30, 20, 15, 0.8) 100%
+        );
+        border: 2px solid rgba(139, 115, 85, 0.5);
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+      }
+
+      .collection-box.curses {
+        border-color: rgba(180, 60, 60, 0.5);
+        background: linear-gradient(
+          135deg,
+          rgba(50, 20, 20, 0.7) 0%,
+          rgba(30, 15, 15, 0.8) 100%
+        );
+      }
+
+      .collection-title {
+        font-family: "Cinzel", serif;
+        font-size: 1.1rem;
+        color: #ffd89b;
+        margin-bottom: 15px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-align: center;
+      }
+
+      .collection-box.curses .collection-title {
+        color: #e8b4b4;
+      }
+
+      .items-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 10px;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .item-display {
+        background: rgba(40, 30, 20, 0.5);
+        border: 1px solid rgba(139, 115, 85, 0.4);
+        border-radius: 6px;
+        padding: 8px;
+        text-align: center;
+        position: relative;
+      }
+
+      .item-icon {
+        font-size: 1.8rem;
+        margin-bottom: 4px;
+      }
+
+      .item-name {
+        font-size: 0.65rem;
+        color: #d4c5a9;
+        line-height: 1.1;
+      }
+
+      .item-quantity {
+        position: absolute;
+        bottom: 4px;
+        right: 4px;
+        background: rgba(0, 0, 0, 0.8);
+        color: #ffd89b;
+        padding: 2px 6px;
+        border-radius: 8px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        border: 1px solid rgba(255, 147, 41, 0.5);
+      }
+
+      .curses-list {
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .curse-display {
+        background: rgba(40, 20, 20, 0.5);
+        border: 1px solid rgba(180, 60, 60, 0.4);
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+
+      .curse-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+
+      .curse-name {
+        font-family: "Cinzel", serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #e8b4b4;
+      }
+
+      .curse-count {
+        font-size: 0.7rem;
+        color: #ff9999;
+        background: rgba(80, 20, 20, 0.7);
+        padding: 2px 6px;
+        border-radius: 8px;
+        font-weight: 600;
+        border: 1px solid rgba(180, 60, 60, 0.5);
+      }
+
+      .curse-modifier {
+        font-size: 0.85rem;
+        color: #ff6666;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      .curse-description {
+        font-size: 0.75rem;
+        color: #c88888;
+        line-height: 1.3;
+        font-style: italic;
+      }
+
+      .empty-message {
+        text-align: center;
+        color: #8b7355;
+        font-style: italic;
+        padding: 20px;
+        opacity: 0.6;
+      }
+
+      /* Custom scrollbars */
+      .items-list::-webkit-scrollbar,
+      .curses-list::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .items-list::-webkit-scrollbar-track,
+      .curses-list::-webkit-scrollbar-track {
+        background: rgba(20, 15, 10, 0.5);
+        border-radius: 3px;
+      }
+
+      .items-list::-webkit-scrollbar-thumb {
+        background: rgba(139, 115, 85, 0.6);
+        border-radius: 3px;
+      }
+
+      .curses-list::-webkit-scrollbar-thumb {
+        background: rgba(180, 60, 60, 0.6);
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="background"></div>
+    <div class="fog"></div>
+    <div class="torch-light"></div>
+
+    <div class="container">
+      <h1 class="title">DU HAR ÖVERLEVT</h1>
+      <p class="subtitle">Expeditionen är avslutad</p>
+
+      <div class="stats-box">
+        <div class="stat-title">Expedition Statistik</div>
+        <div class="stat-item">
+          <span class="stat-label">Tid:</span>
+          <span class="stat-value" id="time-stat">0:00</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Artefakter Samlade:</span>
+          <span class="stat-value" id="artifacts-stat">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Våningar Utforskade:</span>
+          <span class="stat-value" id="floors-stat">0</span>
+        </div>
+      </div>
+
+      <div class="collections-container">
+        <!-- Items collected -->
+        <div class="collection-box items">
+          <div class="collection-title">Samlade Artefakter</div>
+          <div class="items-list" id="itemsList">
+            <div class="empty-message">Inga artefakter</div>
+          </div>
+        </div>
+
+        <!-- Curses accumulated -->
+        <div class="collection-box curses">
+          <div class="collection-title">Ackumulerade Förbannelser</div>
+          <div class="curses-list" id="cursesList">
+            <div class="empty-message">Inga förbannelser</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu">
+        <button class="menu-button primary" onclick="returnToMenu()">
+          Huvudmeny
+        </button>
+      </div>
+    </div>
+
+    <div class="footer">TACK FÖR ATT DU SPELADE</div>
+
+    <script>
+      // Particle system - continuously spawns falling dust particles
+      let particleInterval;
+
+      function startParticleSystem() {
+        // Spawn a new particle every 800ms
+        particleInterval = setInterval(() => {
+          createParticle();
+        }, 800);
+
+        // Create initial batch
+        for (let i = 0; i < 15; i++) {
+          setTimeout(() => createParticle(), i * 500);
+        }
+      }
+
+      function createParticle() {
+        const particle = document.createElement("div");
+        particle.className = "dust-particle";
+
+        // Random horizontal position
+        const startX = Math.random() * 100;
+        particle.style.left = startX + "%";
+        particle.style.top = "-10px";
+
+        document.body.appendChild(particle);
+
+        // Animate and auto-remove when done
+        animateParticle(particle);
+      }
+
+      function animateParticle(particle) {
+        const duration = 10000 + Math.random() * 10000; // 10-20 seconds
+        const drift = (Math.random() - 0.5) * 50; // Horizontal drift in px
+        const startTime = Date.now();
+        let animationFrame;
+
+        function animate() {
+          const elapsed = Date.now() - startTime;
+          const progress = elapsed / duration;
+
+          if (progress < 1 && document.body.contains(particle)) {
+            // Calculate position
+            const y = progress * (window.innerHeight + 20);
+            const x = drift * progress;
+
+            // Calculate opacity (fade in and out)
+            let opacity;
+            if (progress < 0.15) {
+              opacity = progress / 0.15; // Fade in
+            } else if (progress > 0.85) {
+              opacity = (1 - progress) / 0.15; // Fade out
+            } else {
+              opacity = 0.6;
+            }
+
+            particle.style.transform = `translate(${x}px, ${y}px)`;
+            particle.style.opacity = opacity;
+
+            animationFrame = requestAnimationFrame(animate);
+          } else {
+            // Clean up - remove particle from DOM
+            if (document.body.contains(particle)) {
+              particle.remove();
+            }
+            cancelAnimationFrame(animationFrame);
+          }
+        }
+
+        animate();
+      }
+
+      // Start particle system
+      startParticleSystem();
+
+      // Item type to emoji mapping
+      const itemIcons = {
+        0: "🏆", // GRAIL
+        1: "💍", // RING
+        2: "🪙", // COIN
+        3: "⚔️", // WEAPON
+        4: "💀", // SKULL
+        5: "👑", // SCEPTER
+      };
+
+      // Initialize stats from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const timePlayed = urlParams.get("time") || "0:00";
+      const artifactsCollected = urlParams.get("artifacts") || "0";
+      const floorsExplored = urlParams.get("floors") || "0";
+
+      document.getElementById("time-stat").textContent = timePlayed;
+      document.getElementById("artifacts-stat").textContent =
+        artifactsCollected;
+      document.getElementById("floors-stat").textContent = floorsExplored;
+
+      // Try to get items and curses data from URL (base64 encoded JSON)
+      const itemsData = urlParams.get("items");
+      const cursesData = urlParams.get("curses");
+
+      if (itemsData) {
+        try {
+          const items = JSON.parse(decodeURIComponent(itemsData));
+          displayItems(items);
+        } catch (e) {
+          console.error("Failed to parse items data:", e);
+        }
+      }
+
+      if (cursesData) {
+        try {
+          const curses = JSON.parse(decodeURIComponent(cursesData));
+          displayCurses(curses);
+        } catch (e) {
+          console.error("Failed to parse curses data:", e);
+        }
+      }
+
+      // Display items in the grid
+      function displayItems(items) {
+        const itemsList = document.getElementById("itemsList");
+
+        if (!items || items.length === 0) {
+          itemsList.innerHTML =
+            '<div class="empty-message">Inga artefakter</div>';
+          return;
+        }
+
+        itemsList.innerHTML = "";
+        items.forEach((item) => {
+          const itemDiv = document.createElement("div");
+          itemDiv.className = "item-display";
+
+          const icon = document.createElement("div");
+          icon.className = "item-icon";
+          icon.textContent = itemIcons[item.type] || "📦";
+
+          const name = document.createElement("div");
+          name.className = "item-name";
+          name.textContent = item.name;
+
+          itemDiv.appendChild(icon);
+          itemDiv.appendChild(name);
+
+          // Show quantity if > 1 or if it's a coin
+          if (item.type === 2 || item.quantity > 1) {
+            const quantity = document.createElement("div");
+            quantity.className = "item-quantity";
+            quantity.textContent = item.quantity;
+            itemDiv.appendChild(quantity);
+          }
+
+          itemsList.appendChild(itemDiv);
+        });
+      }
+
+      // Display curses with stacking
+      function displayCurses(curses) {
+        const cursesList = document.getElementById("cursesList");
+
+        if (!curses || curses.length === 0) {
+          cursesList.innerHTML =
+            '<div class="empty-message">Inga förbannelser</div>';
+          return;
+        }
+
+        cursesList.innerHTML = "";
+        curses.forEach((curse) => {
+          const curseDiv = document.createElement("div");
+          curseDiv.className = "curse-display";
+
+          // Header row with name and count
+          const headerRow = document.createElement("div");
+          headerRow.className = "curse-header-row";
+
+          const curseName = document.createElement("div");
+          curseName.className = "curse-name";
+          curseName.textContent = curse.name;
+
+          headerRow.appendChild(curseName);
+
+          // Show count badge if stacked
+          if (curse.count > 1) {
+            const curseCount = document.createElement("div");
+            curseCount.className = "curse-count";
+            curseCount.textContent = `×${curse.count}`;
+            headerRow.appendChild(curseCount);
+          }
+
+          curseDiv.appendChild(headerRow);
+
+          // Show modifier effect
+          if (curse.totalModifier !== undefined && curse.totalModifier !== 0) {
+            const modifierDiv = document.createElement("div");
+            modifierDiv.className = "curse-modifier";
+            modifierDiv.textContent = formatCurseModifier(curse.totalModifier);
+            curseDiv.appendChild(modifierDiv);
+          }
+
+          // Description
+          const curseDesc = document.createElement("div");
+          curseDesc.className = "curse-description";
+          curseDesc.textContent = curse.description;
+
+          curseDiv.appendChild(curseDesc);
+          cursesList.appendChild(curseDiv);
+        });
+      }
+
+      // Format curse modifier for display
+      function formatCurseModifier(modifier) {
+        // For whole number modifiers (like protection charms), don't show as percentage
+        if (Number.isInteger(modifier) && Math.abs(modifier) < 10) {
+          return modifier > 0 ? `+${modifier}` : `${modifier}`;
+        }
+
+        // For decimal modifiers, show as percentage
+        const percentage = (modifier * 100).toFixed(0);
+        return modifier > 0 ? `+${percentage}%` : `${percentage}%`;
+      }
+
+      // Menu button functions
+      function playAgain() {
+        console.log("Starting new game...");
+        // Call the parent window's startGame function
+        if (window.parent && window.parent.startGame) {
+          window.parent.startGame();
+        }
+      }
+
+      function returnToMenu() {
+        console.log("Returning to main menu...");
+        // Call the parent window's returnToMenu function
+        if (window.parent && window.parent.returnToMenu) {
+          window.parent.returnToMenu();
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -133,4 +133,9 @@ export default class GameContext {
   draw() {
     this.game.draw();
   }
+
+  loadNewGame() {
+    delete this.game;
+    this.game = new Game(this.renderer, this.guiRenderer);
+  }
 }

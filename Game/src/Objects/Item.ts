@@ -72,7 +72,7 @@ export default class Item {
     this.description = description;
     this.quantity = 1;
 
-    var model: string = "Assets/gltf/items/scene.gltf";
+    var model: string = "Assets/objs/cube.obj";
     // TODO: Add models
     switch (this.type) {
       case ItemType.GRAIL:
@@ -95,7 +95,7 @@ export default class Item {
     this.physicsObject.isStatic = true;
 
     this.scene
-      .addNewAnimatedMesh(
+      .addNewMesh(
         model,
         "Assets/gltf/items/textures/Scene_-_Root_baseColor.png",
         "Assets/gltf/items/textures/Scene_-_Root_metallicRoughness.png"

@@ -69,24 +69,17 @@ export const wallPieceModels = new Array<{
   posOffset: vec3;
 }>(
   {
-    paths: [
-      "Assets/objs/Boxes/floor.obj",
-      "Assets/objs/Boxes/ceiling.obj",
-    ],
+    paths: ["Assets/objs/Boxes/floor.obj", "Assets/objs/Boxes/ceiling.obj"],
     rot: [0],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: [
-      "Assets/objs/Boxes/wall.obj",
-    ],
+    paths: ["Assets/objs/Boxes/wall.obj"],
     rot: [0, 180],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: [
-      "Assets/objs/Boxes/wall.obj",
-    ],
+    paths: ["Assets/objs/Boxes/wall.obj"],
     rot: [90, 270],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
@@ -168,16 +161,12 @@ export const wallPieceModels = new Array<{
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: [
-      "Assets/objs/Boxes/wall.obj",
-    ],
+    paths: ["Assets/objs/Boxes/wall.obj"],
     rot: [0],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: [
-      "Assets/objs/Boxes/wall.obj",
-    ],
+    paths: ["Assets/objs/Boxes/wall.obj"],
     rot: [90],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
@@ -683,11 +672,8 @@ export default class ProceduralMap {
         Math.min(row, this.rows.get(floorNumber) - 1)
       ].push(transform); // Save transform to be able to cull it with custom culling
 
-
-     // Doorway leading into shaft, use mesh collision for it and then return to not add double physics objects
-    if (
-      isDoorway
-    ) {
+    // Doorway leading into shaft, use mesh collision for it and then return to not add double physics objects
+    if (isDoorway) {
       let doorwayPhysObj = this.floorPhysicsScenes
         .get(floorNumber)
         .addNewPhysicsObject(transform);
@@ -868,7 +854,9 @@ export default class ProceduralMap {
                     await Factories.createInstancedMesh(
                       scene,
                       path,
-                      path.includes("Boxes")? "CSS:rgb(255,255,255)": "Assets/Textures/dungeon_texture.png",
+                      path.includes("Boxes")
+                        ? "CSS:rgb(255,255,255)"
+                        : "Assets/Textures/dungeon_texture.png",
                       "CSS:rgb(0, 0, 0)"
                     )
                   );
@@ -1208,6 +1196,15 @@ export default class ProceduralMap {
     return this.getRoomCenterWorldPos(
       floorNumber,
       this.floorExitRoom.get(floorNumber)
+    );
+  }
+
+  getfloorShaftRoomPos(floorNumber: number): vec3 {
+    const room = this.floorShaftRoom.get(floorNumber);
+    return vec3.fromValues(
+      room[0] * roomSize + roomSize / 2,
+      floorNumber * -roomHeight,
+      room[1] * roomSize + roomSize / 2
     );
   }
 
