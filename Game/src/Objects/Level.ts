@@ -1,4 +1,5 @@
 import {
+  AnimatedGraphicsBundle,
   Camera,
   ParticleSpawner,
   PhysicsScene,
@@ -9,6 +10,7 @@ import {
   vec3,
 } from "praccen-web-engine";
 import ProceduralMap, {
+  roomHeight,
   roomSize,
 } from "../Generators/Map/ProceduralMapGenerator";
 import Game from "../States/Game";
@@ -41,6 +43,7 @@ export default class Level {
 
   private playerController: PlayerController;
   private itemHandler: ItemHandler;
+  private bucketBundle: AnimatedGraphicsBundle;
 
   triggers: AreaTrigger[] = [];
   callbacks: LevelCallbacks = {};
@@ -157,6 +160,20 @@ export default class Level {
       this.itemHandler.spawnItemsForFloor(worldRooms);
     }
 
+    this.scene.addNewAnimatedMesh("Assets/gltf/Bucket.glb", "Atlas_Pirate", "CSS:rgb(0,0,0)", false).then((bundle) => {
+        this.bucketBundle = bundle;
+        this.bucketBundle.emission = this.scene.renderer.textureStore.getTexture("Atlas_Pirate");
+        vec3.set(this.bucketBundle.transform.position, roomSize * 3.5, 0.0, roomSize * 3.5);
+        this.bucketBundle.updateMinAndMaxPositions();
+        const width = this.bucketBundle.getMinAndMaxPositions().max[0] - this.bucketBundle.getMinAndMaxPositions().min[0];
+        const scaleFactor = 2.0 / width;
+        vec3.set(this.bucketBundle.transform.scale, scaleFactor, scaleFactor, scaleFactor);
+        const bucketPhysicsObject = this.physicsScene.addNewPhysicsObject(this.bucketBundle.transform);
+        bucketPhysicsObject.boundingBox.setMinAndMaxVectors(vec3.fromValues(-width * 0.5, 0, -width * 0.5), vec3.fromValues(width * 0.5, width, width * 0.5));
+        bucketPhysicsObject.ignoreGravity = true;
+        bucketPhysicsObject.isImmovable = true;
+    });
+
     this.physicsScene.update(0.0, true);
 
     const shaft = this.map.getfloorShaftRoomPos(this.map.getCurrentFloor());
@@ -182,6 +199,13 @@ export default class Level {
 
   update(camera: Camera, dt: number) {
     this.playerController.update(camera, dt);
+    
+    if (this.bucketBundle != undefined) {
+      const target = -roomHeight * this.map.getCurrentFloor() - 1.0;
+      const current = this.bucketBundle.transform.position[1];
+
+      this.bucketBundle.transform.position[1] += (target - current) * dt;
+    }
 
     // Update physics
     this.physicsScene.update(dt);

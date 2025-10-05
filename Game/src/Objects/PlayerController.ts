@@ -49,6 +49,9 @@ export default class PlayerController {
 
   private itemHandler: ItemHandler;
 
+  private cayoteeTimer = 0;
+  private cayoteeTimerAllowed = 0.2;
+
   private stats: PlayerStats = {
     luck: 1, //TODO
     protectionCharms: 3,
@@ -288,11 +291,12 @@ export default class PlayerController {
     // Jumping
     if (
       (Input.keys[" "] || Input.buttons.get("A")) &&
-      this.physicsObject.onGround &&
+      (this.physicsObject.onGround || this.cayoteeTimer <= this.cayoteeTimerAllowed) &&
       this.stats.jumpy
     ) {
       this.physicsObject.velocity[1] = 0.0;
       vec3.set(this.physicsObject.impulse, 0.0, jumpForce, 0.0);
+      this.cayoteeTimer += this.cayoteeTimerAllowed;
     }
 
     let xzVelocity = vec3.clone(this.physicsObject.velocity);
@@ -320,5 +324,12 @@ export default class PlayerController {
       this.light.offset,
       vec3.fromValues(0.0, 1.0, 0.0)
     );
+
+    if (this.physicsObject.onGround) {
+      this.cayoteeTimer = 0.0;
+    }
+    else {
+      this.cayoteeTimer += dt;
+    }
   }
 }

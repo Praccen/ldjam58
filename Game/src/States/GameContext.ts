@@ -74,6 +74,7 @@ export default class GameContext {
       let meshes = [
         "Assets/objs/cube.obj",
         "Assets/gltf/NPCS/Ghost Skull.glb",
+        "Assets/gltf/Bucket.glb",
 
         "Assets/objs/Boxes/wall_doorway.obj",
       ];
