@@ -291,7 +291,8 @@ export default class PlayerController {
     // Jumping
     if (
       (Input.keys[" "] || Input.buttons.get("A")) &&
-      (this.physicsObject.onGround || this.cayoteeTimer <= this.cayoteeTimerAllowed) &&
+      (this.physicsObject.onGround ||
+        this.cayoteeTimer <= this.cayoteeTimerAllowed) &&
       this.stats.jumpy
     ) {
       this.physicsObject.velocity[1] = 0.0;
@@ -327,8 +328,7 @@ export default class PlayerController {
 
     if (this.physicsObject.onGround) {
       this.cayoteeTimer = 0.0;
-    }
-    else {
+    } else {
       this.cayoteeTimer += dt;
     }
   }
