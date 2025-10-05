@@ -19,6 +19,7 @@ import { vec2 } from "gl-matrix";
 import PlayerController from "./PlayerController";
 import ItemHandler from "../Systems/ItemHandler";
 import { triggerAsyncId } from "async_hooks";
+import GhostManager from "./GhostManager";
 
 type TriggerCallback = (triggerName: string) => void;
 
@@ -53,6 +54,7 @@ export default class Level {
   private playerController: PlayerController;
   private itemHandler: ItemHandler;
   private bucketBundle: AnimatedGraphicsBundle;
+  private ghostManager: GhostManager;
 
   areaTriggers: AreaTrigger[] = [];
   collisionTriggers: CollisionTrigger[] = [];
@@ -73,6 +75,7 @@ export default class Level {
 
     this.physicsScene = new PhysicsScene();
     this.itemHandler = new ItemHandler(this.scene, game.inventory);
+    this.ghostManager = new GhostManager(this.scene, this.physicsScene);
     this.map = new ProceduralMap(
       this.scene,
       [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
@@ -169,6 +172,14 @@ export default class Level {
         );
       }
     );
+    // this.playerController.getPhysicsObject().transform.position
+    this.ghostManager.addGhost(
+      vec3.add(
+        vec3.create(),
+        this.playerController.getPhysicsObject().transform.position,
+        vec3.fromValues(1, 0, 0)
+      )
+    );
 
     this.scene
       .addNewAnimatedMesh(
@@ -208,7 +219,6 @@ export default class Level {
         bucketPhysicsObject.ignoreGravity = true;
         bucketPhysicsObject.isImmovable = true;
 
-        
         this.collisionTriggers.push({
           name: "exit",
           collisionObject: bucketPhysicsObject,
@@ -220,7 +230,7 @@ export default class Level {
             } else {
               console.log("Cannot extract - cursed with Binding!");
             }
-          }
+          },
         });
       });
 
@@ -266,6 +276,12 @@ export default class Level {
       this.map.floorPhysicsScenes.get(this.map.getCurrentFloor()).update(0.0);
     }
 
+    // Update ghost manager with player position
+    this.ghostManager.update(
+      dt,
+      this.playerController.getPhysicsObject().transform.position
+    );
+
     const shaft = this.map.getfloorShaftRoomPos(this.map.getCurrentFloor());
     this.currentFloorShaft = vec2.fromValues(shaft[0], shaft[2]);
 
@@ -306,7 +322,11 @@ export default class Level {
       }
     });
     this.collisionTriggers.forEach((trigger: CollisionTrigger) => {
-      if (trigger.collisionObject.collisionsLastUpdate.has(this.playerController.getPhysicsObject().physicsObjectId)) {
+      if (
+        trigger.collisionObject.collisionsLastUpdate.has(
+          this.playerController.getPhysicsObject().physicsObjectId
+        )
+      ) {
         trigger.callback(trigger.name);
       }
     });
