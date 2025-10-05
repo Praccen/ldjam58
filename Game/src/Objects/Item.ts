@@ -91,6 +91,7 @@ export default class Item {
     this.physicsObject = this.physicsScene.addNewPhysicsObject();
     this.physicsObject.mass = 0.3;
     this.physicsObject.frictionCoefficient = 1.0;
+    this.physicsObject.isStatic = true;
 
     this.scene
       .addNewMesh(model, "CSS:rgb(0, 0, 0)", "CSS:rgb(0, 0, 0)")
