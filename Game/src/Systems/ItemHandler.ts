@@ -13,23 +13,16 @@ export default class ItemHandler {
   private items = new Map<number, Item>();
 
   private scene: Scene;
-  private physicsScene: PhysicsScene;
   private inventory: Inventory;
   private player: PlayerController;
-  private currentFloor: number = 1;
 
-  constructor(scene: Scene, physicsScene: PhysicsScene, inventory: Inventory) {
+  constructor(scene: Scene, inventory: Inventory) {
     this.scene = scene;
-    this.physicsScene = physicsScene;
     this.inventory = inventory;
   }
 
   setPlayer(player: PlayerController) {
     this.player = player;
-  }
-
-  setCurrentFloor(floor: number) {
-    this.currentFloor = floor;
   }
 
   private getRandomItemType(): ItemType {
@@ -180,7 +173,11 @@ export default class ItemHandler {
     return "critical";
   }
 
-  spawnItemsForFloor(accessibleRooms: { x: number; y: number; z: number }[]) {
+  spawnItemsForFloor(
+    accessibleRooms: { x: number; y: number; z: number }[],
+    floor: number,
+    physicsScene: PhysicsScene
+  ) {
     // Calculate number of items based on floor size
     // Approximately 1 item per 3-4 rooms, with some randomness
     const numRooms = accessibleRooms.length;
@@ -206,15 +203,15 @@ export default class ItemHandler {
         room.z + offsetZ
       );
 
-      this.spawnItem(position);
+      this.spawnItem(position, floor, physicsScene);
     }
   }
 
-  spawnItem(position: vec3) {
+  spawnItem(position: vec3, currentFloor: number, physicsScene: PhysicsScene) {
     const itemType = this.getRandomItemType();
-    const curseType = this.getRandomCurseType(this.currentFloor);
-    let rarity = this.getRarityForFloor(this.currentFloor);
-    let severity = this.getSeverityForFloor(this.currentFloor);
+    const curseType = this.getRandomCurseType(currentFloor);
+    let rarity = this.getRarityForFloor(currentFloor);
+    let severity = this.getSeverityForFloor(currentFloor);
 
     // Rare curses (PROTECTIONCHARMS, JUMPY, CANEXTRACT) are always legendary + critical
     const isRareCurse =
@@ -236,7 +233,7 @@ export default class ItemHandler {
 
     const item = new Item(
       this.scene,
-      this.physicsScene,
+      physicsScene,
       position,
       itemType,
       this.getItemName(itemType, rarity),
@@ -313,8 +310,8 @@ export default class ItemHandler {
     }
   }
 
-  pickupItem(ray: Ray, player: PhysicsObject) {
-    let hit = this.physicsScene.doRayCast(ray, false, [player], 2);
+  pickupItem(ray: Ray, player: PhysicsObject, physicsScene: PhysicsScene) {
+    let hit = physicsScene.doRayCast(ray, false, [player], 2);
     if (hit.distance != Infinity) {
       const item = this.items.get(hit.object.physicsObjectId);
       if (item) {

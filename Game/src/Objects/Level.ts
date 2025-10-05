@@ -72,11 +72,7 @@ export default class Level {
     this.scene.directionalLight.lightProjectionBoxSideLength = 100;
 
     this.physicsScene = new PhysicsScene();
-    this.itemHandler = new ItemHandler(
-      this.scene,
-      this.physicsScene,
-      game.inventory
-    );
+    this.itemHandler = new ItemHandler(this.scene, game.inventory);
     this.map = new ProceduralMap(
       this.scene,
       [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
@@ -146,29 +142,33 @@ export default class Level {
         0.2,
         this.map.getPlayerSpawnRoom()[1] * roomSize + roomSize / 2
       ),
-      this.itemHandler
+      this.itemHandler,
+      this
     );
     this.itemHandler.setPlayer(this.playerController);
 
-    for (const floorPhysicsScene of this.map.floorPhysicsScenes) {
-      floorPhysicsScene[1].addNewPhysicsObject(
-        this.playerController.getPhysicsObject().transform,
-        this.playerController.getPhysicsObject()
-      );
-    }
+    this.map.floorPhysicsScenes.forEach(
+      (floorPhysicsScene: PhysicsScene, floor: number) => {
+        floorPhysicsScene.addNewPhysicsObject(
+          this.playerController.getPhysicsObject().transform,
+          this.playerController.getPhysicsObject()
+        );
 
-    // Spawn items across all generated floors
-    for (let floorNum = 0; floorNum < 3; floorNum++) {
-      this.itemHandler.setCurrentFloor(floorNum);
-      const accessibleRooms = this.map.getAccessibleRooms(floorNum);
+        // Spawn items
+        const accessibleRooms = this.map.getAccessibleRooms(floor);
 
-      const worldRooms = accessibleRooms.map((room) => {
-        const worldPos = this.map.getRoomCenterWorldPos(floorNum, room);
-        return { x: worldPos[0], y: worldPos[1], z: worldPos[2] };
-      });
+        const worldRooms = accessibleRooms.map((room) => {
+          const worldPos = this.map.getRoomCenterWorldPos(floor, room);
+          return { x: worldPos[0], y: worldPos[1], z: worldPos[2] };
+        });
 
-      this.itemHandler.spawnItemsForFloor(worldRooms);
-    }
+        this.itemHandler.spawnItemsForFloor(
+          worldRooms,
+          floor,
+          floorPhysicsScene
+        );
+      }
+    );
 
     this.scene
       .addNewAnimatedMesh(

@@ -12,6 +12,7 @@ import {
 } from "praccen-web-engine";
 import { Input } from "../Input";
 import ItemHandler from "../Systems/ItemHandler";
+import Level from "./Level";
 
 const sensitivity = 0.4;
 const accelerationForce = 75.0;
@@ -36,6 +37,7 @@ interface PlayerStats {
 export default class PlayerController {
   private scene: Scene;
   private rendering: Renderer3D;
+  private level: Level;
 
   private mouseMovement: vec2;
 
@@ -125,12 +127,14 @@ export default class PlayerController {
     physicsScene: PhysicsScene,
     rendering: Renderer3D,
     spawnPosition: vec3,
-    itemHandler: ItemHandler
+    itemHandler: ItemHandler,
+    level: Level
   ) {
     this.scene = scene;
     this.phyiscsScene = physicsScene;
     this.rendering = rendering;
     this.itemHandler = itemHandler;
+    this.level = level;
 
     this.mouseMovement = vec2.create();
     Input.mouseMoveCallBack = (event: MouseEvent) => {
@@ -276,7 +280,13 @@ export default class PlayerController {
         let ray = new Ray();
         ray.setDir(vec3.clone(camera.getDir()));
         ray.setStart(vec3.clone(camera.getPosition()));
-        this.itemHandler.pickupItem(ray, this.physicsObject);
+        this.itemHandler.pickupItem(
+          ray,
+          this.physicsObject,
+          this.level.map.floorPhysicsScenes.get(
+            this.level.map.getCurrentFloor()
+          )
+        );
       }
     }
 
