@@ -149,7 +149,7 @@ export default class ItemHandler {
     // Floor 1-3: Mostly common, some rare
     if (floor <= 3) {
       if (roll < 70) return "common";
-       return "rare"; // No epics or legendaries
+      return "rare"; // No epics or legendaries
     }
 
     // Floor 4-6: Less common, more rare, some epic
@@ -311,7 +311,9 @@ export default class ItemHandler {
         if (this.player.getHauntedCount() == 0) {
           this.player.setHauntedCount(this.player.getHauntedCount() + 1);
           if (this.gui) {
-            this.gui.showHauntedMessage("It feels like something is following you..");
+            this.gui.showHauntedMessage(
+              "It feels like something is following you.."
+            );
           }
         } else if (roll < 20) {
           this.player.setHauntedCount(this.player.getHauntedCount() + 1);

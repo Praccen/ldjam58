@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>ARKEOLOG</title>
+        <title>Settings - ARKEOLOG</title>
         <style>
             @import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600&display=swap");
 
@@ -117,19 +117,6 @@
                 }
             }
 
-            /* Particle system */
-            .dust-particle {
-                position: fixed;
-                width: 3px;
-                height: 3px;
-                background: #d4c5a9;
-                border-radius: 50%;
-                opacity: 0;
-                pointer-events: none;
-                z-index: 4;
-                box-shadow: 0 0 3px rgba(212, 197, 169, 0.5);
-            }
-
             /* Content */
             .container {
                 position: relative;
@@ -142,13 +129,13 @@
 
             .title {
                 font-family: "Cinzel", serif;
-                font-size: clamp(2.5rem, 8vw, 5rem);
+                font-size: clamp(2rem, 6vw, 3.5rem);
                 font-weight: 700;
                 color: #d4c5a9;
                 text-shadow: 0 0 20px rgba(255, 147, 41, 0.5),
                     0 0 40px rgba(255, 147, 41, 0.3),
                     2px 2px 4px rgba(0, 0, 0, 0.8);
-                margin-bottom: 10px;
+                margin-bottom: 40px;
                 letter-spacing: clamp(4px, 1vw, 8px);
                 animation: titlePulse 4s ease-in-out infinite;
             }
@@ -167,30 +154,114 @@
                 }
             }
 
-            .subtitle {
-                font-size: 1.2rem;
-                color: #8b7355;
-                margin-bottom: 50px;
-                letter-spacing: 3px;
-                font-style: italic;
+            .settings-panel {
+                background: linear-gradient(
+                    135deg,
+                    rgba(30, 20, 15, 0.8) 0%,
+                    rgba(20, 15, 10, 0.9) 100%
+                );
+                border: 2px solid rgba(139, 115, 85, 0.5);
+                padding: 30px;
+                margin-bottom: 30px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
             }
 
-            .warning {
-                font-size: 0.9rem;
-                color: #a8846f;
-                margin-bottom: 40px;
-                padding: 15px;
-                border-top: 1px solid rgba(139, 115, 85, 0.3);
-                border-bottom: 1px solid rgba(139, 115, 85, 0.3);
-                font-style: italic;
-                line-height: 1.6;
+            .setting-item {
+                margin-bottom: 30px;
+                text-align: left;
             }
 
-            .menu {
+            .setting-item:last-child {
+                margin-bottom: 0;
+            }
+
+            .setting-label {
+                font-family: "Cinzel", serif;
+                font-size: 1.1rem;
+                color: #d4c5a9;
+                margin-bottom: 10px;
                 display: flex;
-                flex-direction: column;
-                gap: 20px;
-                margin-top: 40px;
+                justify-content: space-between;
+                align-items: center;
+                letter-spacing: 2px;
+            }
+
+            .setting-value {
+                color: #ffd89b;
+                font-weight: 600;
+            }
+
+            /* Custom slider styling */
+            .slider {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 100%;
+                height: 8px;
+                background: linear-gradient(
+                    90deg,
+                    rgba(40, 30, 20, 0.8) 0%,
+                    rgba(60, 45, 30, 0.8) 100%
+                );
+                border: 1px solid rgba(139, 115, 85, 0.3);
+                outline: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+            .slider::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 20px;
+                height: 20px;
+                background: linear-gradient(
+                    135deg,
+                    #ffd89b 0%,
+                    #d4c5a9 100%
+                );
+                border: 2px solid rgba(255, 147, 41, 0.6);
+                border-radius: 50%;
+                cursor: pointer;
+                box-shadow: 0 0 10px rgba(255, 147, 41, 0.4),
+                    0 2px 4px rgba(0, 0, 0, 0.5);
+                transition: all 0.2s ease;
+            }
+
+            .slider::-webkit-slider-thumb:hover {
+                background: linear-gradient(
+                    135deg,
+                    #fff 0%,
+                    #ffd89b 100%
+                );
+                box-shadow: 0 0 15px rgba(255, 147, 41, 0.6),
+                    0 2px 6px rgba(0, 0, 0, 0.7);
+                transform: scale(1.1);
+            }
+
+            .slider::-moz-range-thumb {
+                width: 20px;
+                height: 20px;
+                background: linear-gradient(
+                    135deg,
+                    #ffd89b 0%,
+                    #d4c5a9 100%
+                );
+                border: 2px solid rgba(255, 147, 41, 0.6);
+                border-radius: 50%;
+                cursor: pointer;
+                box-shadow: 0 0 10px rgba(255, 147, 41, 0.4),
+                    0 2px 4px rgba(0, 0, 0, 0.5);
+                transition: all 0.2s ease;
+            }
+
+            .slider::-moz-range-thumb:hover {
+                background: linear-gradient(
+                    135deg,
+                    #fff 0%,
+                    #ffd89b 100%
+                );
+                box-shadow: 0 0 15px rgba(255, 147, 41, 0.6),
+                    0 2px 6px rgba(0, 0, 0, 0.7);
+                transform: scale(1.1);
             }
 
             .menu-button {
@@ -211,6 +282,7 @@
                 position: relative;
                 overflow: hidden;
                 box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+                width: 100%;
             }
 
             .menu-button::before {
@@ -249,89 +321,101 @@
             .menu-button:active {
                 transform: translateY(0);
             }
-
-            .menu-button.primary {
-                border-color: rgba(255, 147, 41, 0.6);
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5),
-                    0 0 15px rgba(255, 147, 41, 0.2);
-            }
-
-            .footer {
-                position: fixed;
-                bottom: 20px;
-                left: 0;
-                right: 0;
-                text-align: center;
-                font-size: 0.8rem;
-                color: #6b5d4f;
-                z-index: 10;
-                letter-spacing: 2px;
-            }
         </style>
     </head>
-    <body onclick="startMenuMusicOnClick()">
+    <body>
         <div class="background"></div>
         <div class="fog"></div>
         <div class="torch-light"></div>
 
         <div class="container">
-            <h1 class="title">ARKEOLOG</h1>
-            <p class="subtitle">Explore. Collect. Escape.</p>
+            <h1 class="title">SETTINGS</h1>
 
-            <div class="warning">
-                Every artifact carries a curse.<br />
-                How much can you carry before the darkness takes you?
+            <div class="settings-panel">
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>Music Volume</span>
+                        <span class="setting-value" id="music-value">50%</span>
+                    </div>
+                    <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value="50"
+                        class="slider"
+                        id="music-slider"
+                    />
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>Sound Effects Volume</span>
+                        <span class="setting-value" id="sfx-value">70%</span>
+                    </div>
+                    <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value="70"
+                        class="slider"
+                        id="sfx-slider"
+                    />
+                </div>
             </div>
 
-            <div class="menu">
-                <button class="menu-button primary" onclick="startGame()">
-                    Begin Expedition
-                </button>
-                <button class="menu-button" onclick="showOptions()">
-                    Settings
-                </button>
-                <button class="menu-button" onclick="showCredits()">
-                    About Game
-                </button>
-            </div>
+            <button class="menu-button" onclick="returnToMenu()">
+                Back to Menu
+            </button>
         </div>
-
-        <div class="footer">A JOURNEY INTO THE UNKNOWN</div>
 
         <script>
             // Particles are now handled by parent window for consistency
 
-            // Start menu music on click
-            let musicStarted = false;
-            function startMenuMusicOnClick() {
-                if (!musicStarted && window.parent && window.parent.startMenuMusic) {
-                    window.parent.startMenuMusic();
-                    musicStarted = true;
-                }
-            }
+            // Load saved settings from localStorage
+            const musicSlider = document.getElementById('music-slider');
+            const sfxSlider = document.getElementById('sfx-slider');
+            const musicValue = document.getElementById('music-value');
+            const sfxValue = document.getElementById('sfx-value');
 
-            // Menu button functions
-            function startGame() {
-                console.log("Starting game...");
-                // Call the parent window's startGame function
-                if (window.parent && window.parent.startGame) {
-                    window.parent.startGame();
-                }
-            }
+            // Load saved values or use defaults (40% music, 70% SFX)
+            const savedMusicVolume = localStorage.getItem('musicVolume') || '40';
+            const savedSfxVolume = localStorage.getItem('sfxVolume') || '70';
 
-            function showOptions() {
-                console.log("Opening options...");
-                // Call the parent window's showSettings function
-                if (window.parent && window.parent.showSettings) {
-                    window.parent.showSettings();
-                }
-            }
+            musicSlider.value = savedMusicVolume;
+            musicValue.textContent = savedMusicVolume + '%';
 
-            function showCredits() {
-                console.log("Showing credits...");
-                alert(
-                    "ARKEOLOG\n\nCreated for Ludum dare Game Jam 58 2025\n\nDo you dare go deeper?"
-                );
+            sfxSlider.value = savedSfxVolume;
+            sfxValue.textContent = savedSfxVolume + '%';
+
+            // Update music volume
+            musicSlider.addEventListener('input', function() {
+                const value = this.value;
+                musicValue.textContent = value + '%';
+                localStorage.setItem('musicVolume', value);
+
+                // Update parent window's music volume
+                if (window.parent && window.parent.setMusicVolume) {
+                    window.parent.setMusicVolume(value / 100);
+                }
+            });
+
+            // Update SFX volume
+            sfxSlider.addEventListener('input', function() {
+                const value = this.value;
+                sfxValue.textContent = value + '%';
+                localStorage.setItem('sfxVolume', value);
+
+                // Update parent window's SFX volume
+                if (window.parent && window.parent.setSfxVolume) {
+                    window.parent.setSfxVolume(value / 100);
+                }
+            });
+
+            // Return to menu
+            function returnToMenu() {
+                if (window.parent && window.parent.closeSettings) {
+                    window.parent.closeSettings();
+                }
             }
         </script>
     </body>

@@ -12,6 +12,7 @@ import Level from "../Objects/Level.js";
 import PlayerController from "../Objects/PlayerController.js";
 import Inventory from "../Systems/Inventory.js";
 import { Input } from "../Input.js";
+import SoundManager from "../Audio/SoundManager.js";
 
 export default class Game {
   private renderer: Renderer3D;
@@ -22,6 +23,7 @@ export default class Game {
 
   gui: GameGUI;
   inventory: Inventory;
+  soundManager: SoundManager;
 
   private level: Level;
   private worldEditor: WorldEditor;
@@ -68,6 +70,11 @@ export default class Game {
     this.gui = new GameGUI();
 
     this.inventory = new Inventory();
+
+    // Initialize sound manager
+    this.soundManager = new SoundManager();
+    this.loadSounds();
+
     this.createLevel();
 
     // Connect inventory to player controller after level is created
@@ -81,6 +88,32 @@ export default class Game {
     );
 
     // this.worldEditor.setEnabled(true);
+  }
+
+  loadSounds() {
+    // Load sound effects
+    /* TODO:
+    this.soundManager.loadSound("arrow_fire", {
+      src: ["Assets/audio/arrow_fire.mp3", "Assets/audio/arrow_fire.ogg"],
+      volume: 0.6,
+    });
+
+    this.soundManager.loadSound("arrow_hit", {
+      src: ["Assets/audio/arrow_hit.mp3"],
+      volume: 0.5,
+    });
+
+    this.soundManager.loadSound("player_hurt", {
+      src: ["Assets/audio/player_hurt.mp3"],
+      volume: 0.7,
+    });
+
+    this.soundManager.loadSound("ambient_dungeon", {
+      src: ["Assets/audio/ambient_dungeon.mp3"],
+      volume: 0.3,
+      loop: true,
+    });
+    */
   }
 
   createLevel() {
@@ -120,6 +153,12 @@ export default class Game {
     this.level.update(this.camera, dt);
     this.renderer.setFogMaxDistance(
       20 * this.level.getPlayerController().getSight()
+    );
+
+    // Update sound listener position
+    this.soundManager.updateListener(
+      this.camera.getPosition(),
+      this.camera.getDir()
     );
   }
 

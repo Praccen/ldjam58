@@ -4,15 +4,126 @@
 		<title>Hello Typescript!</title>
 		<meta charset="utf-8" />
 		<link rel="stylesheet" href="index.css" />
+		<style>
+			/* Particle system for menu screens */
+			.dust-particle {
+				position: fixed;
+				width: 3px;
+				height: 3px;
+				background: #d4c5a9;
+				border-radius: 50%;
+				opacity: 0;
+				pointer-events: none;
+				z-index: 1000;
+				box-shadow: 0 0 3px rgba(212, 197, 169, 0.5);
+			}
+		</style>
 	</head>
 
 	<body>
 		<script type="module" src="./dist/main.esm.js"></script>
 		<iframe id="main-menu"></iframe>
 		<iframe id="splash-screen"></iframe>
+		<iframe id="settings"></iframe>
 		<iframe id="inventory"></iframe>
 		<iframe id="game-hud"></iframe>
 		<iframe id="end-game"></iframe>
 		<iframe id="lose-game"></iframe>
+
+		<script>
+			// Particle system - runs in parent window for consistency across menu screens
+			let particleInterval;
+			let particlesEnabled = true;
+
+			function startParticleSystem() {
+				if (particleInterval) return; // Already running
+
+				// Spawn a new particle every 800ms
+				particleInterval = setInterval(() => {
+					if (particlesEnabled) {
+						createParticle();
+					}
+				}, 800);
+
+				// Create initial batch
+				for (let i = 0; i < 15; i++) {
+					setTimeout(() => {
+						if (particlesEnabled) createParticle();
+					}, i * 500);
+				}
+			}
+
+			function stopParticleSystem() {
+				if (particleInterval) {
+					clearInterval(particleInterval);
+					particleInterval = null;
+				}
+				// Remove all existing particles
+				document.querySelectorAll('.dust-particle').forEach(p => p.remove());
+			}
+
+			function createParticle() {
+				const particle = document.createElement("div");
+				particle.className = "dust-particle";
+
+				// Random horizontal position
+				const startX = Math.random() * 100;
+				particle.style.left = startX + "%";
+				particle.style.top = "-10px";
+
+				document.body.appendChild(particle);
+
+				// Animate and auto-remove when done
+				animateParticle(particle);
+			}
+
+			function animateParticle(particle) {
+				const duration = 10000 + Math.random() * 10000; // 10-20 seconds
+				const drift = (Math.random() - 0.5) * 50; // Horizontal drift in px
+				const startTime = Date.now();
+				let animationFrame;
+
+				function animate() {
+					const elapsed = Date.now() - startTime;
+					const progress = elapsed / duration;
+
+					if (progress < 1 && document.body.contains(particle)) {
+						// Calculate position
+						const y = progress * (window.innerHeight + 20);
+						const x = drift * progress;
+
+						// Calculate opacity (fade in and out)
+						let opacity;
+						if (progress < 0.15) {
+							opacity = progress / 0.15; // Fade in
+						} else if (progress > 0.85) {
+							opacity = (1 - progress) / 0.15; // Fade out
+						} else {
+							opacity = 0.6;
+						}
+
+						particle.style.transform = `translate(${x}px, ${y}px)`;
+						particle.style.opacity = opacity;
+
+						animationFrame = requestAnimationFrame(animate);
+					} else {
+						// Clean up - remove particle from DOM
+						if (document.body.contains(particle)) {
+							particle.remove();
+						}
+						cancelAnimationFrame(animationFrame);
+					}
+				}
+
+				animate();
+			}
+
+			// Make particle control available globally
+			window.startParticleSystem = startParticleSystem;
+			window.stopParticleSystem = stopParticleSystem;
+
+			// Start particles initially for main menu
+			startParticleSystem();
+		</script>
 	</body>
 </html>

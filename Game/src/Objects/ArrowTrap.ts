@@ -7,6 +7,7 @@ import {
   quat,
 } from "praccen-web-engine";
 import PlayerController from "./PlayerController";
+import SoundManager from "../Audio/SoundManager";
 
 export interface ArrowProjectile {
   bundle: GraphicsBundle;
@@ -35,17 +36,20 @@ export default class ArrowTrap {
   private maxProjectiles = 1;
   private arrowSpeed = 15.0;
   private projectileLifetime = 3.0;
+  private soundManager: SoundManager | null = null;
 
   constructor(
     scene: Scene,
     physicsScene: PhysicsScene,
     position: vec3,
-    direction: TrapDirection
+    direction: TrapDirection,
+    soundManager?: SoundManager
   ) {
     this.scene = scene;
     this.physicsScene = physicsScene;
     this.position = vec3.clone(position);
     this.direction = direction;
+    this.soundManager = soundManager || null;
 
     // Pre-create projectile pool
     this.initializeProjectilePool();
@@ -102,6 +106,11 @@ export default class ArrowTrap {
       return; // No available projectiles
     }
 
+    // Play arrow fire sound
+    if (this.soundManager) {
+      this.soundManager.playSpatialSfx("arrow_fire", this.position);
+    }
+
     // Set initial position and activate
     vec3.copy(projectile.bundle.transform.position, this.position);
     projectile.lifetime = this.projectileLifetime;
@@ -154,6 +163,15 @@ export default class ArrowTrap {
       ) {
         playerHit = true;
         projectile.active = false;
+
+        // Play arrow hit sound
+        if (this.soundManager) {
+          this.soundManager.playSpatialSfx(
+            "arrow_hit",
+            projectile.bundle.transform.position
+          );
+        }
+
         // Move offscreen when hit
         vec3.set(projectile.bundle.transform.position, 0, -10000, 0);
         vec3.zero(projectile.physicsObject.velocity);

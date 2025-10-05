@@ -365,7 +365,9 @@ export default class PlayerController {
     this.damageTimer += dt;
     if (this.damageTimer >= this.damageCooldown) {
       const ghostManager = this.level.getGhostManager();
-      if (ghostManager.checkPlayerCollision(this.physicsObject.transform.position)) {
+      if (
+        ghostManager.checkPlayerCollision(this.physicsObject.transform.position)
+      ) {
         if (this.stats.protectionCharms > 0) {
           this.stats.protectionCharms--;
           this.damageTimer = 0;

@@ -378,7 +378,8 @@ export default class Level {
       this.scene,
       this.physicsScene,
       trapPosition,
-      direction
+      direction,
+      this.game.soundManager
     );
     this.arrowTraps.push(trap);
 

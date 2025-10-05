@@ -3,14 +3,20 @@ import MainMenu from "./States/Menu.js";
 import SplashScreen from "./States/SplashScreen.js";
 import EndGame from "./States/EndGame.js";
 import LoseGame from "./States/LoseGame.js";
+import Settings from "./States/Settings.js";
 import Game from "./States/Game.js";
+import { Howl } from "howler";
 
 window.addEventListener("contextmenu", function (e: Event) {
   e.preventDefault();
 });
 
+// Menu music - created on first click
+let menuMusic: Howl | null = null;
+
 let splashScreen = new SplashScreen();
 let mainMenu = new MainMenu();
+let settingsScreen = new Settings();
 let endGameScreen = new EndGame();
 let loseGameScreen = new LoseGame();
 
@@ -40,6 +46,14 @@ function startGame() {
     endGameScreen.hide();
     loseGameScreen.hide();
 
+    // Stop menu music and particles when starting game
+    if (menuMusic) {
+      menuMusic.stop();
+    }
+    if ((window as any).stopParticleSystem) {
+      (window as any).stopParticleSystem();
+    }
+
     gameContext.start();
     gameStartTime = Date.now();
 
@@ -58,12 +72,64 @@ function startGame() {
     endGameScreen.hide();
     loseGameScreen.hide();
     splashScreen.splashScreen.style.display = "block";
+
+    // Stop menu music and particles when showing loading screen
+    if (menuMusic) {
+      menuMusic.stop();
+    }
+    if ((window as any).stopParticleSystem) {
+      (window as any).stopParticleSystem();
+    }
+
     loadingScreenAnimate();
   }
 }
 
-// Make startGame available globally for the HTML
+function startMenuMusic() {
+  if (currentState === GameState.MAIN_MENU && !menuMusic) {
+    // Get saved music volume or use default (0.4 = 40%)
+    const savedVolume = localStorage.getItem('musicVolume');
+    const volume = savedVolume ? parseInt(savedVolume) / 100 : 0.4;
+
+    menuMusic = new Howl({
+      src: ['Assets/Audio/forgotten-echoes-338507.mp3'],
+      loop: true,
+      volume: volume
+    });
+    menuMusic.play();
+  }
+}
+
+function setMusicVolume(volume: number) {
+  if (menuMusic) {
+    menuMusic.volume(volume);
+  }
+}
+
+function setSfxVolume(volume: number) {
+  // Update the SoundManager in the game context
+  if (gameContext && gameContext.game && gameContext.game.soundManager) {
+    gameContext.game.soundManager.setSfxVolume(volume);
+  }
+}
+
+function showSettings() {
+  mainMenu.mainMenu.style.display = "none";
+  settingsScreen.show();
+}
+
+function closeSettings() {
+  settingsScreen.hide();
+  mainMenu.mainMenu.style.display = "block";
+}
+
+// Make functions available globally for the HTML
 (window as any).startGame = startGame;
+(window as any).startMenuMusic = startMenuMusic;
+(window as any).setMusicVolume = setMusicVolume;
+(window as any).setSfxVolume = setSfxVolume;
+(window as any).showSettings = showSettings;
+(window as any).closeSettings = closeSettings;
 
 /**
  * Function to return to main menu - called from the end game screen
@@ -77,6 +143,14 @@ async function returnToMenu() {
 
   gameContext.loadNewGame();
   setupGameCallbacks();
+
+  // Restart menu music and particles
+  if (menuMusic) {
+    menuMusic.play();
+  }
+  if ((window as any).startParticleSystem) {
+    (window as any).startParticleSystem();
+  }
 }
 
 // Make returnToMenu available globally for the HTML
@@ -130,6 +204,11 @@ function onGameComplete() {
     currentRunValue: currentRunValue,
     totalValue: newTotalValue,
   });
+
+  // Restart particles for end game screen
+  if ((window as any).startParticleSystem) {
+    (window as any).startParticleSystem();
+  }
 }
 
 function onGameLose() {
@@ -164,6 +243,11 @@ function onGameLose() {
     totalValue: newTotalValue,
     goldPenalty: goldPenalty,
   });
+
+  // Restart particles for lose game screen
+  if ((window as any).startParticleSystem) {
+    (window as any).startParticleSystem();
+  }
 }
 
 /**
@@ -325,6 +409,11 @@ setupGameCallbacks();
 gameContext.loadMeshes(progress).then(() => {
   assetsLoaded = true;
 });
+
+// Start menu music on first click anywhere
+document.addEventListener('click', function() {
+  startMenuMusic();
+}, { once: true });
 
 function loadingScreenAnimate() {
   if (currentState !== GameState.LOADING) {

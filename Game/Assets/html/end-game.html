@@ -112,19 +112,6 @@
         }
       }
 
-      /* Particle system */
-      .dust-particle {
-        position: fixed;
-        width: 3px;
-        height: 3px;
-        background: #d4c5a9;
-        border-radius: 50%;
-        opacity: 0;
-        pointer-events: none;
-        z-index: 4;
-        box-shadow: 0 0 3px rgba(212, 197, 169, 0.5);
-      }
-
       /* Content */
       .container {
         position: relative;
@@ -597,79 +584,7 @@
     <div class="footer">THANK YOU FOR PLAYING</div>
 
     <script>
-      // Particle system - continuously spawns falling dust particles
-      let particleInterval;
-
-      function startParticleSystem() {
-        // Spawn a new particle every 800ms
-        particleInterval = setInterval(() => {
-          createParticle();
-        }, 800);
-
-        // Create initial batch
-        for (let i = 0; i < 15; i++) {
-          setTimeout(() => createParticle(), i * 500);
-        }
-      }
-
-      function createParticle() {
-        const particle = document.createElement("div");
-        particle.className = "dust-particle";
-
-        // Random horizontal position
-        const startX = Math.random() * 100;
-        particle.style.left = startX + "%";
-        particle.style.top = "-10px";
-
-        document.body.appendChild(particle);
-
-        // Animate and auto-remove when done
-        animateParticle(particle);
-      }
-
-      function animateParticle(particle) {
-        const duration = 10000 + Math.random() * 10000; // 10-20 seconds
-        const drift = (Math.random() - 0.5) * 50; // Horizontal drift in px
-        const startTime = Date.now();
-        let animationFrame;
-
-        function animate() {
-          const elapsed = Date.now() - startTime;
-          const progress = elapsed / duration;
-
-          if (progress < 1 && document.body.contains(particle)) {
-            // Calculate position
-            const y = progress * (window.innerHeight + 20);
-            const x = drift * progress;
-
-            // Calculate opacity (fade in and out)
-            let opacity;
-            if (progress < 0.15) {
-              opacity = progress / 0.15; // Fade in
-            } else if (progress > 0.85) {
-              opacity = (1 - progress) / 0.15; // Fade out
-            } else {
-              opacity = 0.6;
-            }
-
-            particle.style.transform = `translate(${x}px, ${y}px)`;
-            particle.style.opacity = opacity;
-
-            animationFrame = requestAnimationFrame(animate);
-          } else {
-            // Clean up - remove particle from DOM
-            if (document.body.contains(particle)) {
-              particle.remove();
-            }
-            cancelAnimationFrame(animationFrame);
-          }
-        }
-
-        animate();
-      }
-
-      // Start particle system
-      startParticleSystem();
+      // Particles are now handled by parent window for consistency
 
       // Item type to emoji mapping
       const itemIcons = {
