@@ -29,13 +29,13 @@ export default class Inventory {
       return false;
     }
 
-    // Check if item already exists (for stackable items)
+    // Check if item already exists (only for coins)
     const existingItem = this.items.find(
-      (i) => i.type === item.type && i.name === item.name
+      (i) =>
+        i.type == ItemType.COIN && i.type === item.type && i.name === item.name
     );
 
     if (existingItem) {
-      // TODO only stack coins?
       existingItem.quantity += item.quantity;
     } else {
       this.items.push(item);
