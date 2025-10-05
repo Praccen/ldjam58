@@ -5,6 +5,7 @@ import {
   Ray,
   Renderer3D,
   Scene,
+  Shape,
   vec3,
 } from "praccen-web-engine";
 import ProceduralMap, {
@@ -56,7 +57,16 @@ export default class Level {
       this.physicsScene,
       game.inventory
     );
-    this.map = new ProceduralMap(this.scene, this.physicsScene, [0, 1, 2]);
+    this.map = new ProceduralMap(this.scene, this.physicsScene, [0, 1, 2, 3, 4, 5, 6, 7]);
+    
+    let level = this;
+    this.scene.useTrees = false;
+    this.scene.customFrustumCulling = (frustums: Shape[]) => {
+      this.scene.disableInstancedBundles();
+      level.map.doFrustumCulling();
+      this.scene.updateInstanceBuffers();
+      
+    };
 
     this.moodParticleSpawner = this.scene.addNewParticleSpawner(
       "Assets/Textures/Lava1.png",

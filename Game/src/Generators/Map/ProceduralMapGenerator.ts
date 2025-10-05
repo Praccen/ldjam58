@@ -1,5 +1,4 @@
-import * as ENGINE from "praccen-web-engine";
-import { PointLight, Scene, vec2, vec3 } from "praccen-web-engine";
+import { GraphicsBundle, PhysicsScene, PointLight, quat, Scene, Shape, Transform, vec2, vec3 } from "praccen-web-engine";
 import { Factories } from "../../Utils/Factories.js";
 import { LabyrinthGenerator } from "../LabyrinthGenerator.js";
 
@@ -259,9 +258,9 @@ export const roomSize = 10.0;
 export const roomHeight = 5.0;
 
 export default class ProceduralMap {
-  private scene: ENGINE.Scene;
-  private instancedMeshes: Map<string, ENGINE.GraphicsBundle>;
-  private physicsScene: ENGINE.PhysicsScene;
+  private scene: Scene;
+  private instancedMeshes: Map<string, GraphicsBundle>;
+  private physicsScene: PhysicsScene;
   private map: Map<number, Array<Array<number>>> = new Map<
     number,
     Array<Array<number>>
@@ -276,14 +275,16 @@ export default class ProceduralMap {
   private columns: Map<number, number> = new Map<number, number>();
   private rows: Map<number, number> = new Map<number, number>();
 
+  private graphicsContent = new Map<number, {enabled: boolean}[][][]>();
+
   constructor(
-    scene: ENGINE.Scene,
-    physicsScene: ENGINE.PhysicsScene,
+    scene: Scene,
+    physicsScene: PhysicsScene,
     floorNumbers: number[]
   ) {
     this.scene = scene;
     this.physicsScene = physicsScene;
-    this.instancedMeshes = new Map<string, ENGINE.GraphicsBundle>();
+    this.instancedMeshes = new Map<string, GraphicsBundle>();
 
     this.playerSpawnRoom = vec2.fromValues(0, 0);
 
@@ -350,6 +351,14 @@ export default class ProceduralMap {
       rowNr++;
     }
     this.rows.set(floorNumber, rowNr);
+
+    this.graphicsContent.set(floorNumber, []);
+    for (let col = 0; col < this.columns.get(floorNumber); col++) {
+      this.graphicsContent.get(floorNumber).push([])
+      for (let row = 0; row < this.rows.get(floorNumber); row++) {
+        this.graphicsContent.get(floorNumber)[col].push([]);
+      }
+    }
 
     let aboveFloor = this.getAboveFloorNumber(floorNumber);
     if (aboveFloor != -1) {
@@ -512,7 +521,7 @@ export default class ProceduralMap {
       vec3.set(transform.scale, 0.83, 0.83, 0.83);
 
       if (bridgeType == BridgeType.VERTICAL_BRIGE) {
-        ENGINE.quat.fromEuler(
+        quat.fromEuler(
           transform.rotation,
           0.0,
           column * 90 + row * 90,
@@ -532,13 +541,13 @@ export default class ProceduralMap {
 
     vec3.set(
       transform.position,
-      5.0 + 10 * column,
+      5.0 + roomSize * column,
       floorNumber * -roomHeight,
-      5.0 + 10 * row
+      5.0 + roomSize * row
     );
 
     if (!isBridge) {
-      ENGINE.quat.fromEuler(
+      quat.fromEuler(
         transform.rotation,
         0.0,
         column * 90 + row * 90,
@@ -547,8 +556,9 @@ export default class ProceduralMap {
     }
 
     transform.calculateMatrices();
+    this.graphicsContent.get(floorNumber)[Math.min(column, this.columns.get(floorNumber) - 1)][Math.min(row, this.rows.get(floorNumber) - 1)].push(transform); // Save transform to be able to cull it with custom culling
 
-    let phyTrans = new ENGINE.Transform();
+    let phyTrans = new Transform();
     vec3.set(
       phyTrans.position,
       roomSize * 0.5 + column * roomSize,
@@ -581,6 +591,7 @@ export default class ProceduralMap {
     );
 
     transform.calculateMatrices();
+    this.graphicsContent.get(floorNumber)[Math.min(column, this.columns.get(floorNumber) - 1)][Math.min(row, this.rows.get(floorNumber) - 1)].push(transform); // Save transform to be able to cull it with custom culling
 
     let physObj = this.physicsScene.addNewPhysicsObject(transform);
     physObj.setupBoundingBoxFromGraphicsBundle(mesh);
@@ -627,13 +638,14 @@ export default class ProceduralMap {
       vec3.set(transform.scale, 1.0, 1.0, 1.0);
     }
 
-    ENGINE.quat.fromEuler(
+    quat.fromEuler(
       transform.rotation,
       0.0,
       rots[Math.floor(Math.random() * rots.length)],
       0.0
     );
     transform.calculateMatrices();
+    this.graphicsContent.get(floorNumber)[Math.min(column, this.columns.get(floorNumber) - 1)][Math.min(row, this.rows.get(floorNumber) - 1)].push(transform); // Save transform to be able to cull it with custom culling
 
     // This is leading into the shaft, add collision for the dorway leading into it
     if (this.floorShaftRoom.get(floorNumber)[0] == column && this.floorShaftRoom.get(floorNumber)[1] == row) {
@@ -658,10 +670,11 @@ export default class ProceduralMap {
     } else {
       vec3.set(transform.scale, 1.0, 1.0, 1.0);
     }
-    ENGINE.quat.fromEuler(transform.rotation, 0.0, rots[0], 0.0);
+    quat.fromEuler(transform.rotation, 0.0, rots[0], 0.0);
     transform.calculateMatrices();
+    this.graphicsContent.get(floorNumber)[Math.min(column, this.columns.get(floorNumber) - 1)][Math.min(row, this.rows.get(floorNumber) - 1)].push(transform); // Save transform to be able to cull it with custom culling
 
-    let phyTrans = new ENGINE.Transform();
+    let phyTrans = new Transform();
     vec3.set(
       phyTrans.position,
       5.0 + column * roomSize,
@@ -715,13 +728,14 @@ export default class ProceduralMap {
       vec3.set(transform.scale, 1.0, 1.0, 1.0);
     }
 
-    ENGINE.quat.fromEuler(
+    quat.fromEuler(
       transform.rotation,
       0.0,
       rots[Math.floor(Math.random() * rots.length)],
       0.0
     );
     transform.calculateMatrices();
+    this.graphicsContent.get(floorNumber)[Math.min(column, this.columns.get(floorNumber) - 1)][Math.min(row, this.rows.get(floorNumber) - 1)].push(transform); // Save transform to be able to cull it with custom culling
 
     mesh = this.instancedMeshes.get("Assets/objs/dungeonPack/wall_half.obj");
     transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
@@ -736,10 +750,11 @@ export default class ProceduralMap {
     } else {
       vec3.set(transform.scale, 1.0, 1.0, 1.0);
     }
-    ENGINE.quat.fromEuler(transform.rotation, 0.0, rots[0], 0.0);
+    quat.fromEuler(transform.rotation, 0.0, rots[0], 0.0);
     transform.calculateMatrices();
+    this.graphicsContent.get(floorNumber)[Math.min(column, this.columns.get(floorNumber) - 1)][Math.min(row, this.rows.get(floorNumber) - 1)].push(transform); // Save transform to be able to cull it with custom culling
 
-    let phyTrans = new ENGINE.Transform();
+    let phyTrans = new Transform();
     vec3.set(
       phyTrans.position,
       5.0 + column * roomSize - 5.0,
@@ -784,7 +799,7 @@ export default class ProceduralMap {
       5.0 + 10 * row - 5.0
     );
     vec3.set(transform.scale, 1.0, 1.0, 1.0);
-    ENGINE.quat.fromEuler(
+    quat.fromEuler(
       transform.rotation,
       0.0,
       rots[Math.floor(Math.random() * rots.length)],
@@ -796,6 +811,7 @@ export default class ProceduralMap {
       wallPieceModels[mapFloor[column * 2][row * 2]].posOffset
     );
     transform.calculateMatrices();
+    this.graphicsContent.get(floorNumber)[Math.min(column, this.columns.get(floorNumber) - 1)][Math.min(row, this.rows.get(floorNumber) - 1)].push(transform); // Save transform to be able to cull it with custom culling
 
     // Only add a physics object for crossings if it's not a end piece
     if (
@@ -813,7 +829,7 @@ export default class ProceduralMap {
   /**
    * Loads meshes and populates instancedMeshes if empty. Then creates the mesh instances needed for the floor
    */
-  async createMeshes(floorNumber: number, scene: ENGINE.Scene) {
+  async createMeshes(floorNumber: number, scene: Scene) {
     if (this.instancedMeshes.size == 0) {
       let meshesToLoad = new Set<string>();
       for (let piece of wallPieceModels) {
@@ -1204,6 +1220,30 @@ export default class ProceduralMap {
       this.pointLight.constant = 1.0;
 
       this.pointLight.castShadow = false;
+    }
+  }
+
+  doFrustumCulling() {
+    for (const floor of this.graphicsContent) {
+      if (Math.abs(floor[0] - this.getCurrentFloor()) > 1) {
+        continue;
+      }
+      
+      for (let col = 0; col < floor[1].length; col++) {
+        if (Math.abs(col - this.focusRoom[0]) > 3) {
+          continue;
+        }
+
+        for (let row = 0; row < floor[1][col].length; row++) {
+          if (Math.abs(row - this.focusRoom[1]) > 3) {
+            continue;
+          }
+
+          for (const objectWithEnable of floor[1][col][row]) {
+            objectWithEnable.enabled = true;
+          }
+        }
+      }
     }
   }
 }

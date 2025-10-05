@@ -71,6 +71,10 @@ export default class Scene {
 
   private firstUpdate: boolean = true;
 
+  useTrees: boolean = true;
+
+  customFrustumCulling: (frustums: Shape[])=>void = null; 
+
   constructor(renderer: RendererBase) {
     this.renderer = renderer;
 
@@ -341,6 +345,9 @@ export default class Scene {
   }
 
   updateTrees() {
+    if (!this.useTrees) {
+      return; 
+    }
     this.stillTree.recalculate((content: TreeSceneContentElement) => {
       (content.shape as OBB).setMinAndMaxVectors(
         content.graphicsBundle.getMinAndMaxPositions().min,
@@ -367,7 +374,47 @@ export default class Scene {
     this.animatedTree.prune();
   }
 
+  /**
+   * Will mark everything as disabled, but won't update instance buffers for instanced bundles
+   */
+  disableAllBundles() {
+    for (const bundle of this.graphicBundles) {
+      bundle.enabled = false;
+    }
+
+    for (const bundle of this.graphicBundlesAnimated) {
+      bundle.enabled = false;
+    }
+
+    this.disableInstancedBundles()
+  }
+
+  /**
+   * Will mark all instanced bundles as disabled, won't updated instance buffers
+   */
+  disableInstancedBundles() {
+     for (const bundle of this.graphicBundlesInstanced) {
+      for (let transform of bundle.instancedTransforms) {
+        transform.enabled = false;
+      }
+    }
+  }
+
+  /**
+   * Will update all instance buffers for instanced bundles
+   */
+  updateInstanceBuffers() {
+    for (const instancedBundle of this.graphicBundlesInstanced) {
+      instancedBundle.updateInstanceBuffer();
+    }
+  }
+
   updateFrustumCulling(frustums: Shape[]) {
+    if (this.customFrustumCulling != undefined) {
+      this.customFrustumCulling(frustums);
+      return;
+    }
+
     for (const bundle of this.graphicBundles) {
       bundle.enabled = false;
     }

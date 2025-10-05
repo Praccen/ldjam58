@@ -104,6 +104,7 @@ export default class Game {
 
   update(dt: number) {
     if (this.worldEditor.interacting()) {
+      this.level.map.updateFocusRoom(this.camera.getPosition());
       return;
     }
     this.gameTimer += dt;
