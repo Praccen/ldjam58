@@ -18,6 +18,7 @@ export default class LoseGame {
     time: string;
     curses?: any[];
     totalValue?: number;
+    goldPenalty?: number;
   }) {
     // Update the iframe src with query parameters for stats
     const params = new URLSearchParams({
@@ -32,6 +33,11 @@ export default class LoseGame {
     // Add value data if provided
     if (stats.totalValue !== undefined) {
       params.set("totalValue", stats.totalValue.toString());
+    }
+
+    // Add gold penalty if provided
+    if (stats.goldPenalty !== undefined) {
+      params.set("goldPenalty", stats.goldPenalty.toString());
     }
 
     this.loseGameScreen.setAttribute(

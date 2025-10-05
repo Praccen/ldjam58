@@ -447,14 +447,18 @@
     <div class="torch-light"></div>
 
     <div class="container">
-      <h1 class="title">YOU HAVE DIED</h1>
-      <p class="subtitle">The ghosts have taken your soul</p>
+      <h1 class="title">YOU HAVE BEEN KNOCKED OUT</h1>
+      <p class="subtitle">Medics will have to extract you</p>
 
       <div class="stats-box">
         <div class="stat-title">Expedition Statistics</div>
         <div class="stat-item">
           <span class="stat-label">Survival Time:</span>
           <span class="stat-value" id="time-stat">0:00</span>
+        </div>
+        <div class="stat-item" id="penalty-item" style="display: none; color: #ff6b6b;">
+          <span class="stat-label">Extraction Cost:</span>
+          <span class="stat-value" id="penalty-stat" style="color: #ff6b6b;">0 kr</span>
         </div>
         <div class="stat-item value-highlight">
           <span class="stat-label">Total Value (All Runs):</span>
@@ -558,10 +562,19 @@
       const urlParams = new URLSearchParams(window.location.search);
       const timePlayed = urlParams.get("time") || "0:00";
       const totalValue = urlParams.get("totalValue") || "0";
+      const goldPenalty = urlParams.get("goldPenalty") || "0";
 
       document.getElementById("time-stat").textContent = timePlayed;
-      document.getElementById("total-value-stat").textContent =
-        formatCurrency(parseInt(totalValue));
+      document.getElementById("total-value-stat").textContent = formatCurrency(
+        parseInt(totalValue)
+      );
+
+      // Show extraction cost if there was a penalty
+      const penaltyValue = parseInt(goldPenalty);
+      if (penaltyValue > 0) {
+        document.getElementById("penalty-item").style.display = "flex";
+        document.getElementById("penalty-stat").textContent = formatCurrency(penaltyValue);
+      }
 
       // Try to get curses data from URL (base64 encoded JSON)
       const cursesData = urlParams.get("curses");
@@ -585,8 +598,7 @@
         const cursesList = document.getElementById("cursesList");
 
         if (!curses || curses.length === 0) {
-          cursesList.innerHTML =
-            '<div class="empty-message">No curses</div>';
+          cursesList.innerHTML = '<div class="empty-message">No curses</div>';
           return;
         }
 

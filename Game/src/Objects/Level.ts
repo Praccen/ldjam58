@@ -20,6 +20,8 @@ import PlayerController from "./PlayerController";
 import ItemHandler from "../Systems/ItemHandler";
 import { triggerAsyncId } from "async_hooks";
 import GhostManager from "./GhostManager";
+import ArrowTrap, { TrapDirection } from "./ArrowTrap";
+import { GraphicsBundle } from "../../../dist/Engine";
 
 type TriggerCallback = (triggerName: string) => void;
 
@@ -61,6 +63,9 @@ export default class Level {
   collisionTriggers: CollisionTrigger[] = [];
   callbacks: LevelCallbacks = {};
 
+  private arrowTraps: ArrowTrap[] = [];
+  private trapTriggers: Map<AreaTrigger, ArrowTrap> = new Map();
+
   private currentFloorShaft: vec2;
 
   constructor(renderer: Renderer3D, game: Game) {
@@ -76,7 +81,11 @@ export default class Level {
 
     this.physicsScene = new PhysicsScene();
     this.itemHandler = new ItemHandler(this.scene, game.inventory, game.gui);
-    this.ghostManager = new GhostManager(this.scene, this.physicsScene, game.gui);
+    this.ghostManager = new GhostManager(
+      this.scene,
+      this.physicsScene,
+      game.gui
+    );
     this.map = new ProceduralMap(
       this.scene,
       [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
@@ -232,22 +241,17 @@ export default class Level {
     const shaft = this.map.getfloorShaftRoomPos(this.map.getCurrentFloor());
     this.currentFloorShaft = vec2.fromValues(shaft[0], shaft[2]);
 
-    // this.areaTriggers.push({
-    //   name: "exit",
-    //   x: this.currentFloorShaft[0],
-    //   y: this.currentFloorShaft[1],
-    //   width: roomSize * 0.5,
-    //   height: roomSize * 0.5,
-    //   callback: () => {
-    //     if (this.playerController.getCanExtract()) {
-    //       if (this.callbacks.onGameComplete) {
-    //         this.callbacks.onGameComplete();
-    //       }
-    //     } else {
-    //       console.log("Cannot extract - cursed with Binding!");
-    //     }
-    //   },
-    // });
+    // Add arrow trap in spawn room
+    const spawnRoom = this.map.getPlayerSpawnRoom();
+    const spawnRoomX = spawnRoom[0] * roomSize + roomSize / 2;
+    const spawnRoomZ = spawnRoom[1] * roomSize + roomSize / 2;
+
+    this.addArrowTrap(
+      vec3.fromValues(spawnRoomX - roomSize / 2 - 0.5, 1.5, spawnRoomZ),
+      TrapDirection.EAST,
+      vec3.fromValues(spawnRoomX + 2, 0, spawnRoomZ),
+      1.5
+    );
   }
 
   update(camera: Camera, dt: number) {
@@ -292,6 +296,14 @@ export default class Level {
       torchRadius,
       this.playerController.getHauntModifier()
     );
+
+    // Update arrow traps
+    this.arrowTraps.forEach((trap) => {
+      const playerHit = trap.update(dt, this.playerController);
+      if (playerHit) {
+        this.damagePlayer();
+      }
+    });
 
     const shaft = this.map.getfloorShaftRoomPos(this.map.getCurrentFloor());
     this.currentFloorShaft = vec2.fromValues(shaft[0], shaft[2]);
@@ -345,5 +357,106 @@ export default class Level {
         trigger.callback(trigger.name);
       }
     });
+  }
+
+  /**
+   * Adds an arrow trap to the level with an area trigger
+   * @param trapPosition Position where arrows spawn from (wall position)
+   * @param direction Direction arrows will fly
+   * @param triggerPosition Center of the trigger area
+   * @param triggerSize Size of the trigger area (half-width/height)
+   */
+  addArrowTrap(
+    trapPosition: vec3,
+    direction: TrapDirection,
+    triggerPosition: vec3,
+    triggerSize: number
+  ): void {
+    const trap = new ArrowTrap(
+      this.scene,
+      this.physicsScene,
+      trapPosition,
+      direction
+    );
+    this.arrowTraps.push(trap);
+
+    const trigger: AreaTrigger = {
+      name: `arrow_trap_${this.arrowTraps.length}`,
+      x: triggerPosition[0],
+      y: triggerPosition[2],
+      width: triggerSize,
+      height: triggerSize,
+      callback: () => {
+        trap.trigger();
+      },
+    };
+    this.areaTriggers.push(trigger);
+    this.trapTriggers.set(trigger, trap);
+
+    // Add visual pressure plate
+    this.scene
+      .addNewMesh(
+        "Assets/objs/cube.obj",
+        "CSS:rgb(100,100,100)",
+        "CSS:rgb(50,50,50)"
+      )
+      .then((bundle: GraphicsBundle) => {
+        vec3.set(
+          bundle.transform.position,
+          triggerPosition[0],
+          0.05,
+          triggerPosition[2]
+        );
+        vec3.set(
+          bundle.transform.scale,
+          triggerSize * 0.8,
+          0.05,
+          triggerSize * 0.8
+        );
+      });
+
+    // Add arrow slit on the wall
+    // TODO Add better model
+    this.scene
+      .addNewMesh(
+        "Assets/objs/cube.obj",
+        "CSS:rgb(40,40,40)",
+        "CSS:rgb(20,20,20)"
+      )
+      .then((bundle: GraphicsBundle) => {
+        // Position the slit at the trap position
+        vec3.set(
+          bundle.transform.position,
+          trapPosition[0],
+          trapPosition[1],
+          trapPosition[2]
+        );
+
+        // Scale based on direction (horizontal slit)
+        switch (direction) {
+          case TrapDirection.NORTH:
+          case TrapDirection.SOUTH:
+            // Slit runs horizontally along X axis
+            vec3.set(bundle.transform.scale, 2.5, 0.6, 0.15);
+            break;
+          case TrapDirection.EAST:
+          case TrapDirection.WEST:
+            // Slit runs horizontally along Z axis
+            vec3.set(bundle.transform.scale, 2.5, 0.6, 0.15);
+            break;
+        }
+      });
+  }
+
+  private damagePlayer(): void {
+    const currentCharms = this.playerController.getProtectionCharms();
+    if (currentCharms > 0) {
+      this.playerController.setProtectionCharms(currentCharms - 1);
+      if (currentCharms - 1 <= 0) {
+        if (this.callbacks.onGameLose) {
+          this.callbacks.onGameLose();
+        }
+      }
+    }
   }
 }

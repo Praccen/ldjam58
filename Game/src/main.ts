@@ -142,14 +142,27 @@ function onGameLose() {
 
   const curses = gameContext.game.inventory.getAggregatedCurses();
 
-  // Get persistent total value from localStorage (no new value added on loss)
+  // Get current floor depth
+  const currentFloor = gameContext.game.getLevel().map.getCurrentFloor();
+
+  // Calculate gold penalty based on floor (deeper = more penalty)
+  const goldPenalty = (currentFloor + 1) * 5000;
+
+  // Get persistent total value from localStorage
   const storedTotalValue = parseInt(localStorage.getItem("totalValue") || "0");
+
+  // Deduct gold, but don't go below 0
+  const newTotalValue = Math.max(0, storedTotalValue - goldPenalty);
+
+  // Save the new total value
+  localStorage.setItem("totalValue", newTotalValue.toString());
 
   // Show lose game screen with stats
   loseGameScreen.show({
     time: timeString,
     curses: curses,
-    totalValue: storedTotalValue,
+    totalValue: newTotalValue,
+    goldPenalty: goldPenalty,
   });
 }
 
