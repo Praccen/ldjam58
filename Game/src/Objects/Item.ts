@@ -14,10 +14,25 @@ export enum ItemType {
   SKULL,
   SCEPTER,
 }
+export enum CurseType {
+  // LUCK,
+  PROTECTIONCHARMS,
+  SPEED,
+  TORCH,
+  SIGHT,
+  // HAUNTEDCOUNT,
+  // SANITY,
+  // VERTIGO,
+  // HYPER,
+  JUMPY,
+  // FIRECURSED,
+  CANEXTRACT,
+}
 
 export interface Curse {
   name: string;
   description: string;
+  type: CurseType;
   severity?: "minor" | "major" | "critical";
 }
 

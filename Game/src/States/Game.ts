@@ -114,6 +114,9 @@ export default class Game {
     }
 
     this.level.update(this.camera, dt);
+    this.renderer.setFogMaxDistance(
+      20 * this.level.getPlayerController().getSight()
+    );
   }
 
   preRenderingUpdate(dt: number) {

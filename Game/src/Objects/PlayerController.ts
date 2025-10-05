@@ -17,6 +17,22 @@ const sensitivity = 0.4;
 const accelerationForce = 75.0;
 const jumpForce = 5.0;
 
+interface PlayerStats {
+  luck: number;
+  protectionCharms: number;
+  speed: number;
+  torch: number;
+  sight: number;
+  hauntedCount: number;
+  sanity: number;
+  vertigo: number;
+  hyper: number;
+
+  jumpy: boolean;
+  fireCursed: boolean;
+  canExtract: boolean;
+}
+
 export default class PlayerController {
   private scene: Scene;
   private rendering: Renderer3D;
@@ -33,9 +49,73 @@ export default class PlayerController {
 
   private itemHandler: ItemHandler;
 
-  private protectionCharms: number = 3;
+  private stats: PlayerStats = {
+    luck: 1, //TODO
+    protectionCharms: 3,
+    speed: 1.0,
+    torch: 1.0,
+    sight: 1.0,
+    hauntedCount: 0, //TODO
+    sanity: 100, //TODO
+    vertigo: 0, //TODO
+    hyper: 0, //TODO
+
+    jumpy: true,
+    fireCursed: true, //TODO
+    canExtract: true,
+  };
 
   startPosition: vec3;
+
+  setJumpy(jumpy: boolean) {
+    this.stats.jumpy = jumpy;
+  }
+  setCanExtract(can: boolean) {
+    this.stats.canExtract = can;
+  }
+  getCanExtract(): boolean {
+    return this.stats.canExtract;
+  }
+  setSpeed(speed: number) {
+    this.stats.speed = Math.max(0.1, speed);
+  }
+  getSpeed(): number {
+    return this.stats.speed;
+  }
+  setTorch(torch: number) {
+    this.stats.torch = Math.max(0.1, torch);
+  }
+  getTorch(): number {
+    return this.stats.torch;
+  }
+  setSight(sight: number) {
+    this.stats.sight = Math.max(0.1, sight);
+  }
+  getSight(): number {
+    return this.stats.sight;
+  }
+  getPosition(): vec3 {
+    return this.physicsObject.transform.position;
+  }
+  getVelocity(): vec3 {
+    return this.physicsObject.velocity;
+  }
+  getPhysicsObject(): PhysicsObject {
+    return this.physicsObject;
+  }
+
+  getProtectionCharms(): number {
+    return this.stats.protectionCharms;
+  }
+  getMaxProtectionCharms(): number {
+    return 3; // Max charms
+  }
+  setProtectionCharms(value: number): void {
+    this.stats.protectionCharms = Math.max(
+      0,
+      Math.min(value, this.getMaxProtectionCharms())
+    );
+  }
 
   constructor(
     scene: Scene,
@@ -97,35 +177,11 @@ export default class PlayerController {
     vec2.set(this.mouseMovement, 0.0, 0.0);
   }
 
-  getPosition(): vec3 {
-    return this.physicsObject.transform.position;
-  }
-
-  getVelocity(): vec3 {
-    return this.physicsObject.velocity;
-  }
-  getPhysicsObject(): PhysicsObject {
-    return this.physicsObject;
-  }
-
-  getProtectionCharms(): number {
-    return this.protectionCharms;
-  }
-
-  getMaxProtectionCharms(): number {
-    return 3; // Max charms
-  }
-
-  setProtectionCharms(value: number): void {
-    this.protectionCharms = Math.max(
-      0,
-      Math.min(value, this.getMaxProtectionCharms())
-    );
-  }
-
   update(camera: Camera, dt: number) {
     // Rotate camera with mouse
     let mouseDiff = Input.getMouseMovement();
+
+    this.light.quadratic = 0.3 / this.stats.torch;
 
     if (Input.keys["ARROWUP"]) {
       mouseDiff[1] -= 5;
@@ -220,19 +276,20 @@ export default class PlayerController {
     // Jumping
     if (
       (Input.keys[" "] || Input.buttons.get("A")) &&
-      this.physicsObject.onGround
+      this.physicsObject.onGround &&
+      this.stats.jumpy
     ) {
       this.physicsObject.velocity[1] = 0.0;
       vec3.set(this.physicsObject.impulse, 0.0, jumpForce, 0.0);
     }
 
     let xzVelocity = vec3.clone(this.physicsObject.velocity);
-    xzVelocity[1] = 0.0;
+    xzVelocity[1] = 0;
     vec3.scaleAndAdd(
       this.physicsObject.force,
       this.physicsObject.force,
       xzVelocity,
-      -10.0
+      -10.0 / this.stats.speed
     );
 
     // Update camera

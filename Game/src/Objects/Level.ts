@@ -112,8 +112,13 @@ export default class Level {
       ),
       this.itemHandler
     );
+    this.itemHandler.setPlayer(this.playerController);
 
     this.itemHandler.spawnItem(vec3.fromValues(7.0, 2.0, 5.0));
+    this.itemHandler.spawnItem(vec3.fromValues(9.0, 2.0, 5.0));
+    this.itemHandler.spawnItem(vec3.fromValues(11.0, 2.0, 5.0));
+    this.itemHandler.spawnItem(vec3.fromValues(13.0, 2.0, 5.0));
+    this.itemHandler.spawnItem(vec3.fromValues(15.0, 2.0, 5.0));
     this.physicsScene.update(0.0, true);
 
     this.triggers.push({
@@ -123,7 +128,9 @@ export default class Level {
       width: roomSize * 0.5,
       height: roomSize * 0.5,
       callback: () => {
-        console.log("Exited!");
+        if (this.playerController.getCanExtract()) {
+          console.log("Exited!");
+        }
       },
     });
   }
