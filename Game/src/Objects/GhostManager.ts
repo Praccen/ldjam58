@@ -140,10 +140,34 @@ export default class GhostManager {
 
         const shouldFlee = isInTorchRadius && isLookingAt;
 
+        // Calculate separation force from other ghosts
+        const separationForce = vec3.create();
+        const separationRadius = 1.5; // Minimum distance to maintain between ghosts
+
+        for (const otherGhost of this.ghosts) {
+            if (otherGhost === ghost || !otherGhost.physicsObject) {
+                continue;
+            }
+
+            const otherPos = otherGhost.physicsObject.transform.position;
+            const toOther = vec3.create();
+            vec3.subtract(toOther, ghostPos, otherPos);
+            const distance = vec3.length(toOther);
+
+            // Only apply separation if ghosts are too close
+            if (distance < separationRadius && distance > 0.001) {
+                vec3.normalize(toOther, toOther);
+                // Stronger repulsion when closer
+                const strength = (separationRadius - distance) / separationRadius;
+                vec3.scaleAndAdd(separationForce, separationForce, toOther, strength);
+            }
+        }
+
         // Movement speed
         const ySpeed = 2.0; // Speed for Y movement
         const xzSpeed = Math.min(3, 1.5 * this.anger); // Speed for XZ movement, increesed with anger
         const fleeSpeed = 5.0; // Speed when fleeing
+        const separationSpeed = 2.0; // Speed for separation from other ghosts
 
         if (shouldFlee) {
             // Flee away from player in XZ plane
@@ -188,6 +212,10 @@ export default class GhostManager {
                 }
             }
         }
+
+        // Apply separation force to prevent ghost overlap
+        ghostPos[0] += separationForce[0] * separationSpeed * dt;
+        ghostPos[2] += separationForce[2] * separationSpeed * dt;
 
         // Rotate to face player
         const dx = playerPosition[0] - ghostPos[0];
