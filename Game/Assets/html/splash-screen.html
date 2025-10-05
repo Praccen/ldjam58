@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ARKEOLOG - Laddar</title>
+    <title>ARKEOLOG - Loading</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600&display=swap");
 
@@ -299,18 +299,18 @@
     <div class="container">
       <h1 class="title">ARKEOLOG</h1>
       <p class="loading-text">
-        Förbereder expedition<span class="loading-dots">...</span>
+        Preparing expedition<span class="loading-dots">...</span>
       </p>
 
       <div class="progress-container">
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill"></div>
         </div>
-        <div class="progress-text" id="progressText">Laddar tillgångar...</div>
+        <div class="progress-text" id="progressText">Loading assets...</div>
       </div>
     </div>
 
-    <div class="footer">GRÄV DJUPARE. UPPTÄCK MERA.</div>
+    <div class="footer">DIG DEEPER. DISCOVER MORE.</div>
 
     <script>
       // Particle system - same as main menu but lighter
@@ -391,7 +391,7 @@
         }
 
         progressFill.style.width = percentage + "%";
-        progressText.textContent = `Laddar tillgångar... ${percentage}%`;
+        progressText.textContent = `Loading assets... ${percentage}%`;
       }
 
       // Make function available to parent

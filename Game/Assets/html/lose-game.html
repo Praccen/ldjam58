@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Expedition Misslyckad</title>
+    <title>Expedition Failed</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600&display=swap");
 
@@ -447,37 +447,37 @@
     <div class="torch-light"></div>
 
     <div class="container">
-      <h1 class="title">DU HAR DÖTT</h1>
-      <p class="subtitle">Spöken har tagit din själ</p>
+      <h1 class="title">YOU HAVE DIED</h1>
+      <p class="subtitle">The ghosts have taken your soul</p>
 
       <div class="stats-box">
-        <div class="stat-title">Expedition Statistik</div>
+        <div class="stat-title">Expedition Statistics</div>
         <div class="stat-item">
-          <span class="stat-label">Överlevnadstid:</span>
+          <span class="stat-label">Survival Time:</span>
           <span class="stat-value" id="time-stat">0:00</span>
         </div>
         <div class="stat-item value-highlight">
-          <span class="stat-label">Totalt Värde (Alla Körningar):</span>
+          <span class="stat-label">Total Value (All Runs):</span>
           <span class="stat-value" id="total-value-stat">0 kr</span>
         </div>
       </div>
 
       <!-- Curses accumulated -->
       <div class="collection-box">
-        <div class="collection-title">Dina Förbannelser</div>
+        <div class="collection-title">Your Curses</div>
         <div class="curses-list" id="cursesList">
-          <div class="empty-message">Inga förbannelser</div>
+          <div class="empty-message">No curses</div>
         </div>
       </div>
 
       <div class="menu">
         <button class="menu-button primary" onclick="returnToMenu()">
-          Huvudmeny
+          Main Menu
         </button>
       </div>
     </div>
 
-    <div class="footer">VILA I FRID</div>
+    <div class="footer">REST IN PEACE</div>
 
     <script>
       // Particle system - continuously spawns falling dust particles
@@ -586,7 +586,7 @@
 
         if (!curses || curses.length === 0) {
           cursesList.innerHTML =
-            '<div class="empty-message">Inga förbannelser</div>';
+            '<div class="empty-message">No curses</div>';
           return;
         }
 

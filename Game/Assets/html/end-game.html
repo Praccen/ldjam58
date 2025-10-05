@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Expedition Avslutad</title>
+    <title>Expedition Complete</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:wght@400;600&display=swap");
 
@@ -542,29 +542,29 @@
     <div class="torch-light"></div>
 
     <div class="container">
-      <h1 class="title">DU HAR ÖVERLEVT</h1>
-      <p class="subtitle">Expeditionen är avslutad</p>
+      <h1 class="title">YOU HAVE SURVIVED</h1>
+      <p class="subtitle">The expedition is complete</p>
 
       <div class="stats-box">
-        <div class="stat-title">Expedition Statistik</div>
+        <div class="stat-title">Expedition Statistics</div>
         <div class="stat-item">
-          <span class="stat-label">Tid:</span>
+          <span class="stat-label">Time:</span>
           <span class="stat-value" id="time-stat">0:00</span>
         </div>
         <div class="stat-item">
-          <span class="stat-label">Artefakter Samlade:</span>
+          <span class="stat-label">Artifacts Collected:</span>
           <span class="stat-value" id="artifacts-stat">0</span>
         </div>
         <div class="stat-item">
-          <span class="stat-label">Våningar Utforskade:</span>
+          <span class="stat-label">Floors Explored:</span>
           <span class="stat-value" id="floors-stat">0</span>
         </div>
         <div class="stat-item value-highlight">
-          <span class="stat-label">Detta Körnings Värde:</span>
+          <span class="stat-label">This Run's Value:</span>
           <span class="stat-value" id="run-value-stat">0 kr</span>
         </div>
         <div class="stat-item value-highlight total">
-          <span class="stat-label">Totalt Värde (Alla Körningar):</span>
+          <span class="stat-label">Total Value (All Runs):</span>
           <span class="stat-value" id="total-value-stat">0 kr</span>
         </div>
       </div>
@@ -572,29 +572,29 @@
       <div class="collections-container">
         <!-- Items collected -->
         <div class="collection-box items">
-          <div class="collection-title">Samlade Artefakter</div>
+          <div class="collection-title">Collected Artifacts</div>
           <div class="items-list" id="itemsList">
-            <div class="empty-message">Inga artefakter</div>
+            <div class="empty-message">No artifacts</div>
           </div>
         </div>
 
         <!-- Curses accumulated -->
         <div class="collection-box curses">
-          <div class="collection-title">Ackumulerade Förbannelser</div>
+          <div class="collection-title">Accumulated Curses</div>
           <div class="curses-list" id="cursesList">
-            <div class="empty-message">Inga förbannelser</div>
+            <div class="empty-message">No curses</div>
           </div>
         </div>
       </div>
 
       <div class="menu">
         <button class="menu-button primary" onclick="returnToMenu()">
-          Huvudmeny
+          Main Menu
         </button>
       </div>
     </div>
 
-    <div class="footer">TACK FÖR ATT DU SPELADE</div>
+    <div class="footer">THANK YOU FOR PLAYING</div>
 
     <script>
       // Particle system - continuously spawns falling dust particles
@@ -726,7 +726,7 @@
 
         if (!items || items.length === 0) {
           itemsList.innerHTML =
-            '<div class="empty-message">Inga artefakter</div>';
+            '<div class="empty-message">No artifacts</div>';
           return;
         }
 
@@ -777,7 +777,7 @@
 
         if (!curses || curses.length === 0) {
           cursesList.innerHTML =
-            '<div class="empty-message">Inga förbannelser</div>';
+            '<div class="empty-message">No curses</div>';
           return;
         }
 
