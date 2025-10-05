@@ -287,6 +287,8 @@ export default class ProceduralMap {
   private graphicsContent = new Map<number, { enabled: boolean }[][][]>();
   floorPhysicsScenes = new Map<number, PhysicsScene>();
 
+  private accessibleRooms: Map<number, vec2[]> = new Map<number, vec2[]>();
+
   constructor(scene: Scene, floorNumbers: number[]) {
     this.scene = scene;
     this.instancedMeshes = new Map<string, GraphicsBundle>();
@@ -405,7 +407,28 @@ export default class ProceduralMap {
     this.createMeshes(floorNumber, this.scene);
     // this.createExitLight(this.scene);
 
+    this.storeAccessibleRooms(floorNumber);
+
     console.log(LabyrinthGenerator.getAsciiMap(this.map.get(floorNumber)));
+  }
+
+  private storeAccessibleRooms(floorNumber: number) {
+    const rooms: vec2[] = [];
+    const mapFloor = this.map.get(floorNumber);
+
+    for (let col = 0; col < this.columns.get(floorNumber); col++) {
+      for (let row = 0; row < this.rows.get(floorNumber); row++) {
+        const coordCol = convertRoomIndexToCoordIncludingWalls(col);
+        const coordRow = convertRoomIndexToCoordIncludingWalls(row);
+
+        // Check if this is an accessible room (value = 0 in the map)
+        if (mapFloor[coordCol] && mapFloor[coordCol][coordRow] === 0) {
+          rooms.push(vec2.fromValues(col, row));
+        }
+      }
+    }
+
+    this.accessibleRooms.set(floorNumber, rooms);
   }
 
   private getMapLayoutForFloor(floorNumber: number): string {
@@ -1292,5 +1315,9 @@ export default class ProceduralMap {
         }
       }
     }
+  }
+
+  getAccessibleRooms(floorNumber: number): vec2[] {
+    return this.accessibleRooms.get(floorNumber) || [];
   }
 }

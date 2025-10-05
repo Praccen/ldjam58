@@ -126,7 +126,6 @@ export default class Level {
       this.itemHandler
     );
     this.itemHandler.setPlayer(this.playerController);
-    this.itemHandler.setCurrentFloor(this.map.getCurrentFloor());
 
     for (const floorPhysicsScene of this.map.floorPhysicsScenes) {
       floorPhysicsScene[1].addNewPhysicsObject(
@@ -135,11 +134,18 @@ export default class Level {
       );
     }
 
-    this.itemHandler.spawnItem(vec3.fromValues(7.0, 0.5, 5.0));
-    this.itemHandler.spawnItem(vec3.fromValues(9.0, 0.5, 5.0));
-    this.itemHandler.spawnItem(vec3.fromValues(11.0, 0.5, 5.0));
-    this.itemHandler.spawnItem(vec3.fromValues(13.0, 0.5, 5.0));
-    this.itemHandler.spawnItem(vec3.fromValues(15.0, 0.5, 5.0));
+    // Spawn items across all generated floors
+    for (let floorNum = 0; floorNum < 3; floorNum++) {
+      this.itemHandler.setCurrentFloor(floorNum);
+      const accessibleRooms = this.map.getAccessibleRooms(floorNum);
+
+      const worldRooms = accessibleRooms.map((room) => {
+        const worldPos = this.map.getRoomCenterWorldPos(floorNum, room);
+        return { x: worldPos[0], y: worldPos[1], z: worldPos[2] };
+      });
+
+      this.itemHandler.spawnItemsForFloor(worldRooms);
+    }
 
     this.physicsScene.update(0.0, true);
 

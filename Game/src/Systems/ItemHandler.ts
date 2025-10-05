@@ -180,6 +180,36 @@ export default class ItemHandler {
     return "critical";
   }
 
+  spawnItemsForFloor(accessibleRooms: { x: number; y: number; z: number }[]) {
+    // Calculate number of items based on floor size
+    // Approximately 1 item per 3-4 rooms, with some randomness
+    const numRooms = accessibleRooms.length;
+    const baseItemCount = Math.floor(numRooms / 6.5);
+    const itemCount = Math.max(
+      2,
+      Math.min(15, baseItemCount + Math.floor(Math.random() * 3) - 1)
+    );
+
+    // Shuffle rooms to get random selection
+    const shuffledRooms = [...accessibleRooms].sort(() => Math.random() - 0.5);
+
+    for (let i = 0; i < Math.min(itemCount, shuffledRooms.length); i++) {
+      const room = shuffledRooms[i];
+
+      // Random position within the room (not too close to walls)
+      const offsetX = (Math.random() - 0.5) * 9;
+      const offsetZ = (Math.random() - 0.5) * 9;
+
+      const position = vec3.fromValues(
+        room.x + offsetX,
+        room.y + 0.5, // Slightly above ground
+        room.z + offsetZ
+      );
+
+      this.spawnItem(position);
+    }
+  }
+
   spawnItem(position: vec3) {
     const itemType = this.getRandomItemType();
     const curseType = this.getRandomCurseType(this.currentFloor);
