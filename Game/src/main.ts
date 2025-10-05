@@ -89,15 +89,30 @@ function onGameComplete() {
   const floorsExplored = gameContext.game.getLevel().map.getCurrentFloor();
 
   // Get items and curses data, but serialize only necessary fields
+  // Also calculate value for each item based on rarity
   const items = gameContext.game.inventory.getItems().map((item) => ({
     name: item.name,
     type: item.type,
     quantity: item.quantity,
     rarity: item.rarity,
     description: item.description,
+    value: calculateItemValue(item.rarity, item.type),
   }));
 
   const curses = gameContext.game.inventory.getAggregatedCurses();
+
+  // Calculate total value from this run
+  const currentRunValue = items.reduce(
+    (total, item) => total + item.value * item.quantity,
+    0
+  );
+
+  // Get persistent total value from localStorage
+  const storedTotalValue = parseInt(localStorage.getItem("totalValue") || "0");
+  const newTotalValue = storedTotalValue + currentRunValue;
+
+  // Store new total value
+  localStorage.setItem("totalValue", newTotalValue.toString());
 
   // Show end game screen with stats
   endGameScreen.show({
@@ -106,7 +121,43 @@ function onGameComplete() {
     floors: floorsExplored,
     items: items,
     curses: curses,
+    currentRunValue: currentRunValue,
+    totalValue: newTotalValue,
   });
+}
+
+/**
+ * Calculate item value based on rarity and type
+ */
+function calculateItemValue(
+  rarity: "common" | "rare" | "epic" | "legendary" | undefined,
+  type: number
+): number {
+  // Base value multipliers by rarity
+  const rarityMultipliers = {
+    common: 1,
+    rare: 3,
+    epic: 8,
+    legendary: 20,
+  };
+
+  // Base value by item type
+  const typeBaseValues: { [key: number]: number } = {
+    0: 1000, // GRAIL - very valuable
+    1: 300, // RING
+    2: 10, // COIN
+    3: 400, // WEAPON
+    4: 250, // SKULL
+    5: 600, // SCEPTER
+  };
+
+  const baseValue = typeBaseValues[type] || 100;
+  const multiplier = rarityMultipliers[rarity || "common"];
+
+  // Add some randomness (±20%)
+  const randomFactor = 0.8 + Math.random() * 0.4;
+
+  return Math.floor(baseValue * multiplier * randomFactor);
 }
 
 /**

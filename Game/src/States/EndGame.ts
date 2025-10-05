@@ -20,6 +20,8 @@ export default class EndGame {
     floors: number;
     items?: any[];
     curses?: any[];
+    currentRunValue?: number;
+    totalValue?: number;
   }) {
     // Update the iframe src with query parameters for stats
     const params = new URLSearchParams({
@@ -36,6 +38,15 @@ export default class EndGame {
     // Add curses data if provided
     if (stats.curses && stats.curses.length > 0) {
       params.set("curses", encodeURIComponent(JSON.stringify(stats.curses)));
+    }
+
+    // Add value data if provided
+    if (stats.currentRunValue !== undefined) {
+      params.set("currentRunValue", stats.currentRunValue.toString());
+    }
+
+    if (stats.totalValue !== undefined) {
+      params.set("totalValue", stats.totalValue.toString());
     }
 
     this.endGameScreen.setAttribute(
