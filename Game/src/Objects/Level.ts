@@ -2,6 +2,7 @@ import {
   AnimatedGraphicsBundle,
   Camera,
   ParticleSpawner,
+  PhysicsObject,
   PhysicsScene,
   Ray,
   Renderer3D,
@@ -17,16 +18,24 @@ import Game from "../States/Game";
 import { vec2 } from "gl-matrix";
 import PlayerController from "./PlayerController";
 import ItemHandler from "../Systems/ItemHandler";
+import { triggerAsyncId } from "async_hooks";
 
 type TriggerCallback = (triggerName: string) => void;
 
-export interface AreaTrigger {
+export interface Trigger {
   name: string;
+  callback: TriggerCallback;
+}
+
+export interface AreaTrigger extends Trigger {
   x: number;
   y: number;
   width: number;
   height: number;
-  callback: TriggerCallback;
+}
+
+export interface CollisionTrigger extends Trigger {
+  collisionObject: PhysicsObject;
 }
 
 export interface LevelCallbacks {
@@ -45,7 +54,8 @@ export default class Level {
   private itemHandler: ItemHandler;
   private bucketBundle: AnimatedGraphicsBundle;
 
-  triggers: AreaTrigger[] = [];
+  areaTriggers: AreaTrigger[] = [];
+  collisionTriggers: CollisionTrigger[] = [];
   callbacks: LevelCallbacks = {};
 
   private currentFloorShaft: vec2;
@@ -197,6 +207,21 @@ export default class Level {
         );
         bucketPhysicsObject.ignoreGravity = true;
         bucketPhysicsObject.isImmovable = true;
+
+        
+        this.collisionTriggers.push({
+          name: "exit",
+          collisionObject: bucketPhysicsObject,
+          callback: () => {
+            if (this.playerController.getCanExtract()) {
+              if (this.callbacks.onGameComplete) {
+                this.callbacks.onGameComplete();
+              }
+            } else {
+              console.log("Cannot extract - cursed with Binding!");
+            }
+          }
+        });
       });
 
     this.physicsScene.update(0.0, true);
@@ -204,22 +229,22 @@ export default class Level {
     const shaft = this.map.getfloorShaftRoomPos(this.map.getCurrentFloor());
     this.currentFloorShaft = vec2.fromValues(shaft[0], shaft[2]);
 
-    this.triggers.push({
-      name: "exit",
-      x: this.currentFloorShaft[0],
-      y: this.currentFloorShaft[1],
-      width: roomSize * 0.5,
-      height: roomSize * 0.5,
-      callback: () => {
-        if (this.playerController.getCanExtract()) {
-          if (this.callbacks.onGameComplete) {
-            this.callbacks.onGameComplete();
-          }
-        } else {
-          console.log("Cannot extract - cursed with Binding!");
-        }
-      },
-    });
+    // this.areaTriggers.push({
+    //   name: "exit",
+    //   x: this.currentFloorShaft[0],
+    //   y: this.currentFloorShaft[1],
+    //   width: roomSize * 0.5,
+    //   height: roomSize * 0.5,
+    //   callback: () => {
+    //     if (this.playerController.getCanExtract()) {
+    //       if (this.callbacks.onGameComplete) {
+    //         this.callbacks.onGameComplete();
+    //       }
+    //     } else {
+    //       console.log("Cannot extract - cursed with Binding!");
+    //     }
+    //   },
+    // });
   }
 
   update(camera: Camera, dt: number) {
@@ -275,8 +300,13 @@ export default class Level {
   }
 
   private checkTriggers(): void {
-    this.triggers.forEach((trigger: AreaTrigger) => {
+    this.areaTriggers.forEach((trigger: AreaTrigger) => {
       if (this.isPlayerInArea(trigger)) {
+        trigger.callback(trigger.name);
+      }
+    });
+    this.collisionTriggers.forEach((trigger: CollisionTrigger) => {
+      if (trigger.collisionObject.collisionsLastUpdate.has(this.playerController.getPhysicsObject().physicsObjectId)) {
         trigger.callback(trigger.name);
       }
     });
