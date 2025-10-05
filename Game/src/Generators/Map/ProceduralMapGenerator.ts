@@ -642,6 +642,7 @@ export default class ProceduralMap {
   createTopOfTileWall(floorNumber: number, column: number, row: number) {
     const mapFloor = this.map.get(floorNumber);
     let isBridge = false;
+    let isDoorway = false;
 
     const paths = wallPieceModels[mapFloor[column * 2 + 1][row * 2]].paths;
     let path = paths[Math.floor(Math.random() * paths.length)];
@@ -651,6 +652,7 @@ export default class ProceduralMap {
       this.floorShaftRoom.get(floorNumber)[1] == row
     ) {
       path = "Assets/objs/dungeonPack/wall_doorway.obj";
+      isDoorway = true;
     }
 
     const rots = wallPieceModels[mapFloor[column * 2 + 1][row * 2]].rot;
@@ -670,7 +672,9 @@ export default class ProceduralMap {
         BridgeType.HORIZONTAL_BRIDGE
     ) {
       isBridge = true;
-      vec3.set(transform.scale, 1.0, 0.3, 1.0);
+      if (!isDoorway) {
+        vec3.set(transform.scale, 1.0, 0.3, 1.0);
+      }
     } else {
       vec3.set(transform.scale, 1.0, 1.0, 1.0);
     }
@@ -738,8 +742,7 @@ export default class ProceduralMap {
 
     // Since this is leading into the shaft and has a doorway it should not have the collisionobject all the way, only the half wall side of the wall.
     if (
-      this.floorShaftRoom.get(floorNumber)[0] == column &&
-      this.floorShaftRoom.get(floorNumber)[1] == row
+      isDoorway
     ) {
       phyTrans.scale[0] *= 0.5;
       phyTrans.position[0] += roomSize * 0.25;
