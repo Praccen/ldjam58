@@ -67,7 +67,7 @@ export default class Level {
     this.scene = new Scene(renderer);
     this.scene.directionalLight.ambientMultiplier = 0.0;
     // vec3.set(this.scene.directionalLight.colour, 0.0, 0.0, 0.0);
-    vec3.set(this.scene.directionalLight.colour, 0.3, 0.3, 0.3);
+    vec3.set(this.scene.directionalLight.colour, 0.6, 0.6, 0.6);
     vec3.set(this.scene.directionalLight.direction, 0.001, -1.0, -0.6);
 
     this.scene.directionalLight.shadowCameraDistance = 100;

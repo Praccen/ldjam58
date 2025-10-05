@@ -179,9 +179,11 @@ export default class PlayerController {
 
     this.light = scene.addNewPointLight();
     this.light.castShadow = true;
-    vec3.set(this.light.colour, 0.7, 0.5, 0.4);
+    vec3.set(this.light.colour, 0.8, 0.6, 0.4);
     // vec3.scale(this.light.colour, this.light.colour, 0.5);
-    this.light.quadratic = 0.3;
+    this.light.quadratic = 0.12;
+    this.light.constant = 0.12;
+    this.light.linear = 0.1;
     this.light.position = this.physicsObject.transform.position;
 
     this.startPosition = spawnPosition;
