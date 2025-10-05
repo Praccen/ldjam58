@@ -54,9 +54,16 @@ export default class AnimatedGraphicsBundle extends GraphicsBundle {
     this.graphicsObjectAndGltfObject = graphicsObjectAndGltfObject;
     this.animationTimer = 0.0;
 
+    this.updateMinAndMaxPositions();
+  }
+
+  updateMinAndMaxPositions() {
+    if (this.graphicsObjectAndGltfObject == undefined) {
+      return;
+    }
     let pointArray = [];
     for (const go of this.graphicsObjectAndGltfObject.gos) {
-      pointArray.push(go.getVertexPositions());
+      pointArray.push(...go.getVertexPositions());
     }
     if (pointArray != undefined && pointArray.length > 0) {
       vec3.set(this.minPositions, Infinity, Infinity, Infinity);

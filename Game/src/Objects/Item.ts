@@ -4,6 +4,7 @@ import {
   GraphicsBundle,
   Scene,
   vec3,
+  AnimatedGraphicsBundle,
 } from "praccen-web-engine";
 
 export enum ItemType {
@@ -99,7 +100,7 @@ export default class Item {
         "Assets/gltf/items/textures/Scene_-_Root_baseColor.png",
         "Assets/gltf/items/textures/Scene_-_Root_metallicRoughness.png"
       )
-      .then((bundle: GraphicsBundle) => {
+      .then((bundle: AnimatedGraphicsBundle) => {
         this.graphicsBundle = bundle;
         this.graphicsBundle.transform.position = this.startPosition;
 
@@ -107,7 +108,6 @@ export default class Item {
           this.graphicsBundle
         );
 
-        console.log(this.graphicsBundle.getMinAndMaxPositions());
         this.graphicsBundle.transform.position[1] -=
           this.graphicsBundle.getMinAndMaxPositions().min[1];
         this.physicsObject.transform = this.graphicsBundle.transform;
