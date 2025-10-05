@@ -283,22 +283,6 @@ setupGameCallbacks();
 // Start asset loading in background
 gameContext.loadMeshes(progress).then(() => {
   assetsLoaded = true;
-  if (currentState === GameState.LOADING) {
-    // If user clicked start and we're showing loading screen, start game now
-    splashScreen.destroy();
-    currentState = GameState.PLAYING;
-    gameStartTime = Date.now();
-    gameContext.start();
-
-    // Focus the main document to enable keyboard input
-    if (gameContext.renderer && gameContext.renderer.domElement) {
-      gameContext.renderer.domElement.focus();
-    } else {
-      document.body.focus();
-    }
-
-    animate();
-  }
 });
 
 function loadingScreenAnimate() {
