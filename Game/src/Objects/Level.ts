@@ -58,7 +58,7 @@ export default class Level {
       game.inventory
     );
     this.map = new ProceduralMap(this.scene, this.physicsScene, [0, 1, 2]);
-    
+
     let level = this;
     this.scene.useTrees = false;
     this.scene.customFrustumCulling = (frustums: Shape[]) => {
@@ -123,11 +123,13 @@ export default class Level {
     );
     this.itemHandler.setPlayer(this.playerController);
 
+    this.itemHandler.setCurrentFloor(this.map.getCurrentFloor());
     this.itemHandler.spawnItem(vec3.fromValues(7.0, 0.5, 5.0));
     this.itemHandler.spawnItem(vec3.fromValues(9.0, 0.5, 5.0));
     this.itemHandler.spawnItem(vec3.fromValues(11.0, 0.5, 5.0));
     this.itemHandler.spawnItem(vec3.fromValues(13.0, 0.5, 5.0));
     this.itemHandler.spawnItem(vec3.fromValues(15.0, 0.5, 5.0));
+
     this.physicsScene.update(0.0, true);
 
     this.triggers.push({
