@@ -45,8 +45,8 @@ export default class Level {
     this.scene = new Scene(renderer);
     this.scene.directionalLight.ambientMultiplier = 0.0;
     // vec3.set(this.scene.directionalLight.colour, 0.2, 0.2, 0.2);
-    vec3.set(this.scene.directionalLight.colour, 0.0, 0.0, 0.0);
-    vec3.set(this.scene.directionalLight.direction, 1.1, -1.0, 0.3);
+    vec3.set(this.scene.directionalLight.colour, 0.3, 0.3, 0.3);
+    vec3.set(this.scene.directionalLight.direction, 0.001, -1.0, -0.4);
 
     this.scene.directionalLight.shadowCameraDistance = 100;
     this.scene.directionalLight.lightProjectionBoxSideLength = 100;
@@ -57,7 +57,7 @@ export default class Level {
       this.physicsScene,
       game.inventory
     );
-    this.map = new ProceduralMap(this.scene, [0, 1, 2]);
+    this.map = new ProceduralMap(this.scene, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
 
     let level = this;
     this.scene.useTrees = false;

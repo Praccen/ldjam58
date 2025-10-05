@@ -265,7 +265,7 @@ const physicsObjectScales = [
 ];
 
 export const roomSize = 10.0;
-export const roomHeight = 5.0;
+export const roomHeight = 4.5;
 
 export default class ProceduralMap {
   private scene: Scene;
@@ -1091,7 +1091,7 @@ export default class ProceduralMap {
 
   updateFocusRoom(position: vec3) {
     // Calculate room from characterPosition
-    let floorNumber = Math.max(0, Math.ceil(-(position[1] + 0.1) / 5.0));
+    let floorNumber = Math.max(0, Math.ceil(-(position[1] + 0.1) / roomHeight));
 
     this.currentFloor = floorNumber;
 
