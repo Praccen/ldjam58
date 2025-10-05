@@ -71,7 +71,7 @@ export default class Item {
     this.description = description;
     this.quantity = 1;
 
-    var model: string = "Assets/objs/cube.obj";
+    var model: string = "Assets/gltf/items/scene.gltf";
     // TODO: Add models
     switch (this.type) {
       case ItemType.GRAIL:
@@ -94,7 +94,11 @@ export default class Item {
     this.physicsObject.isStatic = true;
 
     this.scene
-      .addNewMesh(model, "CSS:rgb(0, 0, 0)", "CSS:rgb(0, 0, 0)")
+      .addNewAnimatedMesh(
+        model,
+        "Assets/gltf/items/textures/Scene_-_Root_baseColor.png",
+        "Assets/gltf/items/textures/Scene_-_Root_metallicRoughness.png"
+      )
       .then((bundle: GraphicsBundle) => {
         this.graphicsBundle = bundle;
         this.graphicsBundle.transform.position = this.startPosition;
@@ -102,6 +106,10 @@ export default class Item {
         this.physicsObject.setupBoundingBoxFromGraphicsBundle(
           this.graphicsBundle
         );
+
+        console.log(this.graphicsBundle.getMinAndMaxPositions());
+        this.graphicsBundle.transform.position[1] -=
+          this.graphicsBundle.getMinAndMaxPositions().min[1];
         this.physicsObject.transform = this.graphicsBundle.transform;
         this.physicsObject.boundingBox.setTransformMatrix(
           this.graphicsBundle.transform.matrix

@@ -1,0 +1,11 @@
+Model Information:
+* title:	The Holy Grail (Indiana Jones)
+* source:	https://sketchfab.com/3d-models/the-holy-grail-indiana-jones-f820567a7c564548a8f960f9c23baa34
+* author:	Mark Haldane (https://sketchfab.com/mhaldane)
+
+Model License:
+* license type:	CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)
+* requirements:	Author must be credited. No commercial use.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "The Holy Grail (Indiana Jones)" (https://sketchfab.com/3d-models/the-holy-grail-indiana-jones-f820567a7c564548a8f960f9c23baa34) by Mark Haldane (https://sketchfab.com/mhaldane) licensed under CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)

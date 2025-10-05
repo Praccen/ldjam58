@@ -202,7 +202,7 @@ export default class ItemHandler {
 
       const position = vec3.fromValues(
         room.x + offsetX,
-        room.y + 0.5, // Slightly above ground
+        room.y, // Slightly above ground
         room.z + offsetZ
       );
 
