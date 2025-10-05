@@ -146,14 +146,13 @@ export default class ItemHandler {
     // Floor 1-3: Mostly common, some rare
     if (floor <= 3) {
       if (roll < 70) return "common";
-      if (roll < 95) return "rare";
-      return "epic"; // No legendaries
+       return "rare"; // No epics or legendaries
     }
 
     // Floor 4-6: Less common, more rare, some epic
     if (floor <= 6) {
       if (roll < 50) return "common";
-      if (roll < 85) return "rare";
+      if (roll < 95) return "rare";
       if (roll < 98) return "epic";
       return "legendary"; // Very rare
     }
