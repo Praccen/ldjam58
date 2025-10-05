@@ -707,7 +707,14 @@ export module LabyrinthGenerator {
       for (let k = 1; k < xSize - 1; k++) {
         if (map[k][j] == 1) {
           wallCounter++;
-          map[k][j] = walls[wallCounter - 1];
+          
+          // Check surrounding for -1, if any is we don't remove the wall even if we were supposed to.
+          if (map[k - 1][j] == -1 || map[k + 1][j] == -1 || map[k][j - 1] == -1 || map[k][j + 1] == -1) {
+            map[k][j] = 1;
+          }
+          else {
+            map[k][j] = walls[wallCounter - 1];
+          }
         }
         if (map[k][j] > 2) {
           map[k][j] = 0;
@@ -729,6 +736,10 @@ export module LabyrinthGenerator {
       Math.random() * getUnTested(tested, nrOfWalls)
     );
     let randWall = getIdxUnTested(tested, nrOfWalls, randWallSeed);
+
+    if (randWall == -1) {
+      return;
+    }
 
     if (walls[randWall] != 0 && tested[randWall] != 1) {
       let elements = new Array<number>();
@@ -800,18 +811,16 @@ export module LabyrinthGenerator {
     nrOfWalls: number,
     nr: number
   ) {
-    let returnValue = 0;
-    let counter = 0;
+    let counter = -1;
     for (let i = 0; i < nrOfWalls; i++) {
       if (tested[i] == 0) {
         if (counter == nr) {
-          returnValue = i;
-          i = nrOfWalls;
+          return i;
         }
         counter++;
       }
     }
-    return returnValue;
+    return 0;
   }
 
   export function getAsciiMap(
