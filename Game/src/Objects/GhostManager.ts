@@ -17,7 +17,7 @@ export default class GhostManager {
     private scene: Scene = null;
     private physicsScene: PhysicsScene = null;
     private ghosts: Ghost[] = new Array<Ghost>();
-    private anger: number = 0;
+    private anger: number = 1;
 
     constructor(scene: Scene, physicsScene: PhysicsScene) {
         this.scene = scene;
@@ -71,44 +71,80 @@ export default class GhostManager {
         this.ghosts.push({ physicsObject, graphicsBundle });
     }
 
-    moveGhost(ghost: Ghost, playerPosition: vec3, dt: number) {
+    moveGhost(
+        ghost: Ghost,
+        playerPosition: vec3,
+        playerViewDir: vec3,
+        torchRadius: number,
+        dt: number
+    ) {
         if (!ghost.physicsObject) {
             return;
         }
 
         const ghostPos = ghost.physicsObject.transform.position;
 
+        // Calculate direction from player to ghost
+        const toGhost = vec3.create();
+        vec3.subtract(toGhost, ghostPos, playerPosition);
+        const distanceToPlayer = vec3.length(toGhost);
+        vec3.normalize(toGhost, toGhost);
+
+        // Check if ghost is within torch radius and player is looking at it
+        const isInTorchRadius = distanceToPlayer <= torchRadius;
+        const dotProduct = vec3.dot(toGhost, playerViewDir);
+        const isLookingAt = dotProduct > 0.7; // About 45 degree cone
+
+        const shouldFlee = isInTorchRadius && isLookingAt;
+
         // Movement speed
         const ySpeed = 2.0; // Speed for Y movement
-        const xzSpeed = 1.5; // Speed for XZ movement
+        const xzSpeed = Math.min(3, 1.5 * this.anger); // Speed for XZ movement, increesed with anger
+        const fleeSpeed = 5.0; // Speed when fleeing
 
-        if (playerPosition[1] < ghostPos[1]) {
-            // Move towards player's Y position
-            const dy = playerPosition[1] - ghostPos[1];
-            const yMovement = Math.sign(dy) * ySpeed * dt;
-            const yDistance = Math.abs(dy);
-            // Don't overshoot
-            if (Math.abs(yMovement) > yDistance) {
-                ghostPos[1] = playerPosition[1];
-            } else {
-                ghostPos[1] += yMovement;
-            }
-        } else {
-            // Y position is close enough, now move in XZ plane
-            const dx = playerPosition[0] - ghostPos[0];
-            const dz = playerPosition[2] - ghostPos[2];
+        if (shouldFlee) {
+            // Flee away from player in XZ plane
+            const dx = ghostPos[0] - playerPosition[0];
+            const dz = ghostPos[2] - playerPosition[2];
             const xzDistance = Math.sqrt(dx * dx + dz * dz);
 
-            if (xzDistance > 0.1) {
-                // Normalize direction and move
-                const moveAmount = xzSpeed * dt;
+            if (xzDistance > 0.001) {
                 const normalizedDx = dx / xzDistance;
                 const normalizedDz = dz / xzDistance;
 
-                if (moveAmount > xzDistance) {
-                    ghostPos[0] = playerPosition[0];
-                    ghostPos[2] = playerPosition[2];
+                ghostPos[0] += normalizedDx * fleeSpeed * dt;
+                ghostPos[2] += normalizedDz * fleeSpeed * dt;
+            }
+        } else {
+            // Normal behavior - move towards player
+            if (playerPosition[1] < ghostPos[1]) {
+                // Move towards player's Y position
+                const dy = playerPosition[1] - ghostPos[1];
+                const yMovement = Math.sign(dy) * ySpeed * dt;
+                const yDistance = Math.abs(dy);
+                // Don't overshoot
+                if (Math.abs(yMovement) > yDistance) {
+                    ghostPos[1] = playerPosition[1];
                 } else {
+                    ghostPos[1] += yMovement;
+                }
+            } else {
+                // Y position is close enough, now move in XZ plane
+                const dx = playerPosition[0] - ghostPos[0];
+                const dz = playerPosition[2] - ghostPos[2];
+                const xzDistance = Math.sqrt(dx * dx + dz * dz);
+
+                // Anger reduces the distance the ghost is willing to travel towards the player
+                console.log("Current dist:", xzDistance);
+                console.log(
+                    "Wanted dist:",
+                    Math.max(0.1, 10 - this.anger * this.anger)
+                );
+                if (xzDistance > Math.max(0.1, 10 - this.anger * this.anger)) {
+                    // Normalize direction and move
+                    const moveAmount = xzSpeed * dt;
+                    const normalizedDx = dx / xzDistance;
+                    const normalizedDz = dz / xzDistance;
                     ghostPos[0] += normalizedDx * moveAmount;
                     ghostPos[2] += normalizedDz * moveAmount;
                 }
@@ -125,9 +161,20 @@ export default class GhostManager {
         ghost.physicsObject.transform.rotation = rotationQuat;
     }
 
-    update(dt: number, playerPosition: vec3) {
+    update(
+        dt: number,
+        playerPosition: vec3,
+        playerViewDir: vec3,
+        torchRadius: number
+    ) {
         this.ghosts.forEach((ghost) => {
-            this.moveGhost(ghost, playerPosition, dt);
+            this.moveGhost(
+                ghost,
+                playerPosition,
+                playerViewDir,
+                torchRadius,
+                dt
+            );
         });
     }
 }

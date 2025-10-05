@@ -276,10 +276,13 @@ export default class Level {
       this.map.floorPhysicsScenes.get(this.map.getCurrentFloor()).update(0.0);
     }
 
-    // Update ghost manager with player position
+    const quadratic = 0.3 / this.playerController.getTorch();
+    const torchRadius = Math.sqrt(9.0 / quadratic);
     this.ghostManager.update(
       dt,
-      this.playerController.getPhysicsObject().transform.position
+      this.playerController.getPhysicsObject().transform.position,
+      camera.getDir(),
+      torchRadius
     );
 
     const shaft = this.map.getfloorShaftRoomPos(this.map.getCurrentFloor());
