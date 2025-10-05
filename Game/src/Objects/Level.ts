@@ -288,7 +288,7 @@ export default class Level {
     this.ghostManager.update(
       dt,
       this.playerController.getPhysicsObject().transform.position,
-      camera.getDir(),
+      vec3.clone(camera.getDir()),
       torchRadius,
       this.playerController.getHauntModifier()
     );
