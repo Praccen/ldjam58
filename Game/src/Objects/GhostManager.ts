@@ -31,6 +31,23 @@ export default class GhostManager {
         return this.ghosts.length;
     }
 
+    checkPlayerCollision(playerPos: vec3, damageRadius: number = 1.0): boolean {
+        for (const ghost of this.ghosts) {
+            if (!ghost.physicsObject) continue;
+
+            const ghostPos = ghost.physicsObject.transform.position;
+            const dx = playerPos[0] - ghostPos[0];
+            const dy = playerPos[1] - ghostPos[1];
+            const dz = playerPos[2] - ghostPos[2];
+            const distSq = dx * dx + dy * dy + dz * dz;
+
+            if (distSq < damageRadius * damageRadius) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private getFloorFromYPosition(yPos: number): number {
         return Math.max(0, Math.ceil(-(yPos + 0.1) / roomHeight));
     }

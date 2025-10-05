@@ -55,6 +55,9 @@ export default class PlayerController {
   private cayoteeTimer = 0;
   private cayoteeTimerAllowed = 0.2;
 
+  private damageTimer = 0;
+  private damageCooldown = 1.0;
+
   private stats: PlayerStats = {
     luck: 1, //TODO
     protectionCharms: 3,
@@ -356,6 +359,23 @@ export default class PlayerController {
       this.cayoteeTimer = 0.0;
     } else {
       this.cayoteeTimer += dt;
+    }
+
+    // Check for ghost collisions
+    this.damageTimer += dt;
+    if (this.damageTimer >= this.damageCooldown) {
+      const ghostManager = this.level.getGhostManager();
+      if (ghostManager.checkPlayerCollision(this.physicsObject.transform.position)) {
+        if (this.stats.protectionCharms > 0) {
+          this.stats.protectionCharms--;
+          this.damageTimer = 0;
+          if (this.stats.protectionCharms <= 0) {
+            if (this.level.callbacks.onGameLose) {
+              this.level.callbacks.onGameLose();
+            }
+          }
+        }
+      }
     }
   }
 }

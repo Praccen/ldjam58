@@ -41,6 +41,7 @@ export interface CollisionTrigger extends Trigger {
 
 export interface LevelCallbacks {
   onGameComplete?: () => void;
+  onGameLose?: () => void;
 }
 
 export default class Level {
@@ -313,6 +314,10 @@ export default class Level {
 
   getPlayerController(): PlayerController {
     return this.playerController;
+  }
+
+  getGhostManager(): GhostManager {
+    return this.ghostManager;
   }
 
   private isPlayerInArea(trigger: AreaTrigger): boolean {

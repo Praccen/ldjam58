@@ -2,6 +2,7 @@ import GameContext from "./States/GameContext.js";
 import MainMenu from "./States/Menu.js";
 import SplashScreen from "./States/SplashScreen.js";
 import EndGame from "./States/EndGame.js";
+import LoseGame from "./States/LoseGame.js";
 import Game from "./States/Game.js";
 
 window.addEventListener("contextmenu", function (e: Event) {
@@ -11,6 +12,7 @@ window.addEventListener("contextmenu", function (e: Event) {
 let splashScreen = new SplashScreen();
 let mainMenu = new MainMenu();
 let endGameScreen = new EndGame();
+let loseGameScreen = new LoseGame();
 
 export let gameContext = new GameContext();
 
@@ -20,6 +22,7 @@ enum GameState {
   LOADING,
   PLAYING,
   END_GAME,
+  LOSE_GAME,
 }
 
 let currentState = GameState.MAIN_MENU;
@@ -35,6 +38,7 @@ function startGame() {
     currentState = GameState.PLAYING;
     mainMenu.mainMenu.style.display = "none";
     endGameScreen.hide();
+    loseGameScreen.hide();
 
     gameContext.start();
     gameStartTime = Date.now();
@@ -52,6 +56,7 @@ function startGame() {
     currentState = GameState.LOADING;
     mainMenu.mainMenu.style.display = "none";
     endGameScreen.hide();
+    loseGameScreen.hide();
     splashScreen.splashScreen.style.display = "block";
     loadingScreenAnimate();
   }
@@ -66,6 +71,7 @@ function startGame() {
 async function returnToMenu() {
   currentState = GameState.MAIN_MENU;
   endGameScreen.hide();
+  loseGameScreen.hide();
   mainMenu.mainMenu.style.display = "block";
   // Reset and create new game context
 
@@ -126,6 +132,27 @@ function onGameComplete() {
   });
 }
 
+function onGameLose() {
+  currentState = GameState.LOSE_GAME;
+
+  const timePlayedMs = Date.now() - gameStartTime;
+  const minutes = Math.floor(timePlayedMs / 60000);
+  const seconds = Math.floor((timePlayedMs % 60000) / 1000);
+  const timeString = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+
+  const curses = gameContext.game.inventory.getAggregatedCurses();
+
+  // Get persistent total value from localStorage (no new value added on loss)
+  const storedTotalValue = parseInt(localStorage.getItem("totalValue") || "0");
+
+  // Show lose game screen with stats
+  loseGameScreen.show({
+    time: timeString,
+    curses: curses,
+    totalValue: storedTotalValue,
+  });
+}
+
 /**
  * Calculate item value based on rarity and type
  */
@@ -165,6 +192,7 @@ function calculateItemValue(
  */
 function setupGameCallbacks() {
   gameContext.game.getLevel().callbacks.onGameComplete = onGameComplete;
+  gameContext.game.getLevel().callbacks.onGameLose = onGameLose;
 }
 
 /**
