@@ -127,9 +127,12 @@ export default class Level {
     );
     this.itemHandler.setPlayer(this.playerController);
     this.itemHandler.setCurrentFloor(this.map.getCurrentFloor());
-    
+
     for (const floorPhysicsScene of this.map.floorPhysicsScenes) {
-      floorPhysicsScene[1].addNewPhysicsObject(this.playerController.getPhysicsObject().transform, this.playerController.getPhysicsObject());
+      floorPhysicsScene[1].addNewPhysicsObject(
+        this.playerController.getPhysicsObject().transform,
+        this.playerController.getPhysicsObject()
+      );
     }
 
     this.itemHandler.spawnItem(vec3.fromValues(7.0, 0.5, 5.0));
@@ -159,7 +162,7 @@ export default class Level {
 
     // Update physics
     this.physicsScene.update(dt);
-    
+
     this.map.updateFocusRoom(camera.getPosition());
 
     if (this.map.floorPhysicsScenes.has(this.map.getCurrentFloor())) {

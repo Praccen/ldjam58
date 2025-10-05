@@ -73,7 +73,7 @@ export default class Scene {
 
   useTrees: boolean = true;
 
-  customFrustumCulling: (frustums: Shape[])=>void = null; 
+  customFrustumCulling: (frustums: Shape[]) => void = null;
 
   constructor(renderer: RendererBase) {
     this.renderer = renderer;
@@ -346,7 +346,7 @@ export default class Scene {
 
   updateTrees() {
     if (!this.useTrees) {
-      return; 
+      return;
     }
     this.stillTree.recalculate((content: TreeSceneContentElement) => {
       (content.shape as OBB).setMinAndMaxVectors(
@@ -386,14 +386,14 @@ export default class Scene {
       bundle.enabled = false;
     }
 
-    this.disableInstancedBundles()
+    this.disableInstancedBundles();
   }
 
   /**
    * Will mark all instanced bundles as disabled, won't updated instance buffers
    */
   disableInstancedBundles() {
-     for (const bundle of this.graphicBundlesInstanced) {
+    for (const bundle of this.graphicBundlesInstanced) {
       for (let transform of bundle.instancedTransforms) {
         transform.enabled = false;
       }

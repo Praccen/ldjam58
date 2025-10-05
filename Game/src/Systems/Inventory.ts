@@ -112,7 +112,10 @@ export default class Inventory {
 
   private aggregateCurses(): any[] {
     // Group curses by type and count them
-    const curseMap = new Map<string, { count: number; name: string; description: string; type: CurseType }>();
+    const curseMap = new Map<
+      string,
+      { count: number; name: string; description: string; type: CurseType }
+    >();
 
     this.curses.forEach((curse) => {
       if (!curseMap.has(curse.name)) {

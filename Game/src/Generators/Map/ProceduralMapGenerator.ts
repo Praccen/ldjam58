@@ -1,4 +1,14 @@
-import { GraphicsBundle, PhysicsScene, PointLight, quat, Scene, Shape, Transform, vec2, vec3 } from "praccen-web-engine";
+import {
+  GraphicsBundle,
+  PhysicsScene,
+  PointLight,
+  quat,
+  Scene,
+  Shape,
+  Transform,
+  vec2,
+  vec3,
+} from "praccen-web-engine";
 import { Factories } from "../../Utils/Factories.js";
 import { LabyrinthGenerator } from "../LabyrinthGenerator.js";
 
@@ -274,13 +284,10 @@ export default class ProceduralMap {
   private columns: Map<number, number> = new Map<number, number>();
   private rows: Map<number, number> = new Map<number, number>();
 
-  private graphicsContent = new Map<number, {enabled: boolean}[][][]>();
+  private graphicsContent = new Map<number, { enabled: boolean }[][][]>();
   floorPhysicsScenes = new Map<number, PhysicsScene>();
 
-  constructor(
-    scene: Scene,
-    floorNumbers: number[]
-  ) {
+  constructor(scene: Scene, floorNumbers: number[]) {
     this.scene = scene;
     this.instancedMeshes = new Map<string, GraphicsBundle>();
 
@@ -343,7 +350,10 @@ export default class ProceduralMap {
         }
         if (row[columnNr] == "X") {
           noGoRooms.push([columnNr, rowNr]);
-          this.floorShaftRoom.set(floorNumber, vec2.fromValues(columnNr, rowNr));
+          this.floorShaftRoom.set(
+            floorNumber,
+            vec2.fromValues(columnNr, rowNr)
+          );
         }
       }
       rowNr++;
@@ -352,7 +362,7 @@ export default class ProceduralMap {
 
     this.graphicsContent.set(floorNumber, []);
     for (let col = 0; col < this.columns.get(floorNumber); col++) {
-      this.graphicsContent.get(floorNumber).push([])
+      this.graphicsContent.get(floorNumber).push([]);
       for (let row = 0; row < this.rows.get(floorNumber); row++) {
         this.graphicsContent.get(floorNumber)[col].push([]);
       }
@@ -522,12 +532,7 @@ export default class ProceduralMap {
       vec3.set(transform.scale, 0.83, 0.83, 0.83);
 
       if (bridgeType == BridgeType.VERTICAL_BRIGE) {
-        quat.fromEuler(
-          transform.rotation,
-          0.0,
-          column * 90 + row * 90,
-          0.0
-        );
+        quat.fromEuler(transform.rotation, 0.0, column * 90 + row * 90, 0.0);
       }
       isBridge = true;
     } else if (this.identifyGrates(floorNumber, column, row)) {
@@ -548,16 +553,15 @@ export default class ProceduralMap {
     );
 
     if (!isBridge) {
-      quat.fromEuler(
-        transform.rotation,
-        0.0,
-        column * 90 + row * 90,
-        0.0
-      );
+      quat.fromEuler(transform.rotation, 0.0, column * 90 + row * 90, 0.0);
     }
 
     transform.calculateMatrices();
-    this.graphicsContent.get(floorNumber)[Math.min(column, this.columns.get(floorNumber) - 1)][Math.min(row, this.rows.get(floorNumber) - 1)].push(transform); // Save transform to be able to cull it with custom culling
+    this.graphicsContent
+      .get(floorNumber)
+      [Math.min(column, this.columns.get(floorNumber) - 1)][
+        Math.min(row, this.rows.get(floorNumber) - 1)
+      ].push(transform); // Save transform to be able to cull it with custom culling
 
     let phyTrans = new Transform();
     vec3.set(
@@ -567,7 +571,9 @@ export default class ProceduralMap {
       roomSize * 0.5 + row * roomSize
     );
     phyTrans.scale = vec3.fromValues(roomSize, 1.0, roomSize);
-    let physObj = this.floorPhysicsScenes.get(floorNumber).addNewPhysicsObject(phyTrans);
+    let physObj = this.floorPhysicsScenes
+      .get(floorNumber)
+      .addNewPhysicsObject(phyTrans);
     physObj.isStatic = true;
     physObj.frictionCoefficient = 10.0;
   }
@@ -592,9 +598,15 @@ export default class ProceduralMap {
     );
 
     transform.calculateMatrices();
-    this.graphicsContent.get(floorNumber)[Math.min(column, this.columns.get(floorNumber) - 1)][Math.min(row, this.rows.get(floorNumber) - 1)].push(transform); // Save transform to be able to cull it with custom culling
+    this.graphicsContent
+      .get(floorNumber)
+      [Math.min(column, this.columns.get(floorNumber) - 1)][
+        Math.min(row, this.rows.get(floorNumber) - 1)
+      ].push(transform); // Save transform to be able to cull it with custom culling
 
-    let physObj = this.floorPhysicsScenes.get(floorNumber).addNewPhysicsObject(transform);
+    let physObj = this.floorPhysicsScenes
+      .get(floorNumber)
+      .addNewPhysicsObject(transform);
     physObj.setupBoundingBoxFromGraphicsBundle(mesh);
     physObj.setupInternalTreeFromGraphicsObject(mesh.graphicsObject, path);
     physObj.isStatic = true;
@@ -611,14 +623,15 @@ export default class ProceduralMap {
     const paths = wallPieceModels[mapFloor[column * 2 + 1][row * 2]].paths;
     let path = paths[Math.floor(Math.random() * paths.length)];
 
-    if (this.floorShaftRoom.get(floorNumber)[0] == column && this.floorShaftRoom.get(floorNumber)[1] == row) {
+    if (
+      this.floorShaftRoom.get(floorNumber)[0] == column &&
+      this.floorShaftRoom.get(floorNumber)[1] == row
+    ) {
       path = "Assets/objs/dungeonPack/wall_doorway.obj";
     }
 
     const rots = wallPieceModels[mapFloor[column * 2 + 1][row * 2]].rot;
-    let mesh = this.instancedMeshes.get(
-      path
-    );
+    let mesh = this.instancedMeshes.get(path);
     let transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
     vec3.set(
       transform.position,
@@ -646,17 +659,25 @@ export default class ProceduralMap {
       0.0
     );
     transform.calculateMatrices();
-    this.graphicsContent.get(floorNumber)[Math.min(column, this.columns.get(floorNumber) - 1)][Math.min(row, this.rows.get(floorNumber) - 1)].push(transform); // Save transform to be able to cull it with custom culling
+    this.graphicsContent
+      .get(floorNumber)
+      [Math.min(column, this.columns.get(floorNumber) - 1)][
+        Math.min(row, this.rows.get(floorNumber) - 1)
+      ].push(transform); // Save transform to be able to cull it with custom culling
 
     // This is leading into the shaft, add collision for the dorway leading into it
-    if (this.floorShaftRoom.get(floorNumber)[0] == column && this.floorShaftRoom.get(floorNumber)[1] == row) {
-      let doorwayPhysObj = this.floorPhysicsScenes.get(floorNumber).addNewPhysicsObject(transform);
+    if (
+      this.floorShaftRoom.get(floorNumber)[0] == column &&
+      this.floorShaftRoom.get(floorNumber)[1] == row
+    ) {
+      let doorwayPhysObj = this.floorPhysicsScenes
+        .get(floorNumber)
+        .addNewPhysicsObject(transform);
       doorwayPhysObj.setupBoundingBoxFromGraphicsBundle(mesh);
       doorwayPhysObj.setupInternalTreeFromGraphicsObject(mesh.graphicsObject);
       doorwayPhysObj.isStatic = true;
       doorwayPhysObj.frictionCoefficient = 0.0;
     }
-
 
     mesh = this.instancedMeshes.get("Assets/objs/dungeonPack/wall_half.obj");
     transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
@@ -673,7 +694,11 @@ export default class ProceduralMap {
     }
     quat.fromEuler(transform.rotation, 0.0, rots[0], 0.0);
     transform.calculateMatrices();
-    this.graphicsContent.get(floorNumber)[Math.min(column, this.columns.get(floorNumber) - 1)][Math.min(row, this.rows.get(floorNumber) - 1)].push(transform); // Save transform to be able to cull it with custom culling
+    this.graphicsContent
+      .get(floorNumber)
+      [Math.min(column, this.columns.get(floorNumber) - 1)][
+        Math.min(row, this.rows.get(floorNumber) - 1)
+      ].push(transform); // Save transform to be able to cull it with custom culling
 
     let phyTrans = new Transform();
     vec3.set(
@@ -689,12 +714,17 @@ export default class ProceduralMap {
     }
 
     // Since this is leading into the shaft and has a doorway it should not have the collisionobject all the way, only the half wall side of the wall.
-    if (this.floorShaftRoom.get(floorNumber)[0] == column && this.floorShaftRoom.get(floorNumber)[1] == row) { 
+    if (
+      this.floorShaftRoom.get(floorNumber)[0] == column &&
+      this.floorShaftRoom.get(floorNumber)[1] == row
+    ) {
       phyTrans.scale[0] *= 0.5;
       phyTrans.position[0] += roomSize * 0.25;
     }
 
-    let physObj = this.floorPhysicsScenes.get(floorNumber).addNewPhysicsObject(phyTrans);
+    let physObj = this.floorPhysicsScenes
+      .get(floorNumber)
+      .addNewPhysicsObject(phyTrans);
     physObj.isStatic = true;
     physObj.frictionCoefficient = 0.0;
   }
@@ -736,7 +766,11 @@ export default class ProceduralMap {
       0.0
     );
     transform.calculateMatrices();
-    this.graphicsContent.get(floorNumber)[Math.min(column, this.columns.get(floorNumber) - 1)][Math.min(row, this.rows.get(floorNumber) - 1)].push(transform); // Save transform to be able to cull it with custom culling
+    this.graphicsContent
+      .get(floorNumber)
+      [Math.min(column, this.columns.get(floorNumber) - 1)][
+        Math.min(row, this.rows.get(floorNumber) - 1)
+      ].push(transform); // Save transform to be able to cull it with custom culling
 
     mesh = this.instancedMeshes.get("Assets/objs/dungeonPack/wall_half.obj");
     transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
@@ -753,7 +787,11 @@ export default class ProceduralMap {
     }
     quat.fromEuler(transform.rotation, 0.0, rots[0], 0.0);
     transform.calculateMatrices();
-    this.graphicsContent.get(floorNumber)[Math.min(column, this.columns.get(floorNumber) - 1)][Math.min(row, this.rows.get(floorNumber) - 1)].push(transform); // Save transform to be able to cull it with custom culling
+    this.graphicsContent
+      .get(floorNumber)
+      [Math.min(column, this.columns.get(floorNumber) - 1)][
+        Math.min(row, this.rows.get(floorNumber) - 1)
+      ].push(transform); // Save transform to be able to cull it with custom culling
 
     let phyTrans = new Transform();
     vec3.set(
@@ -769,7 +807,9 @@ export default class ProceduralMap {
       phyTrans.scale[1] *= 0.3;
     }
 
-    let physObj = this.floorPhysicsScenes.get(floorNumber).addNewPhysicsObject(phyTrans);
+    let physObj = this.floorPhysicsScenes
+      .get(floorNumber)
+      .addNewPhysicsObject(phyTrans);
     physObj.isStatic = true;
     physObj.frictionCoefficient = 0.0;
   }
@@ -812,14 +852,20 @@ export default class ProceduralMap {
       wallPieceModels[mapFloor[column * 2][row * 2]].posOffset
     );
     transform.calculateMatrices();
-    this.graphicsContent.get(floorNumber)[Math.min(column, this.columns.get(floorNumber) - 1)][Math.min(row, this.rows.get(floorNumber) - 1)].push(transform); // Save transform to be able to cull it with custom culling
+    this.graphicsContent
+      .get(floorNumber)
+      [Math.min(column, this.columns.get(floorNumber) - 1)][
+        Math.min(row, this.rows.get(floorNumber) - 1)
+      ].push(transform); // Save transform to be able to cull it with custom culling
 
     // Only add a physics object for crossings if it's not a end piece
     if (
       mapFloor[column * 2][row * 2] % 16 < 12 ||
       mapFloor[column * 2][row * 2] % 16 > 15
     ) {
-      let physObj = this.floorPhysicsScenes.get(floorNumber).addNewPhysicsObject(transform);
+      let physObj = this.floorPhysicsScenes
+        .get(floorNumber)
+        .addNewPhysicsObject(transform);
       physObj.setupBoundingBoxFromGraphicsBundle(mesh);
       physObj.setupInternalTreeFromGraphicsObject(mesh.graphicsObject, path);
       physObj.isStatic = true;
@@ -875,7 +921,7 @@ export default class ProceduralMap {
 
           this.instancedMeshes.set(
             "Assets/objs/dungeonPack/wall_doorway.obj",
-             await Factories.createInstancedMesh(
+            await Factories.createInstancedMesh(
               scene,
               "Assets/objs/dungeonPack/wall_doorway.obj",
               "Assets/Textures/dungeon_texture.png",
@@ -1229,7 +1275,7 @@ export default class ProceduralMap {
       if (Math.abs(floor[0] - this.getCurrentFloor()) > 1) {
         continue;
       }
-      
+
       for (let col = 0; col < floor[1].length; col++) {
         if (Math.abs(col - this.focusRoom[0]) > 7) {
           continue;
