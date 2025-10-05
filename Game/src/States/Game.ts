@@ -70,6 +70,9 @@ export default class Game {
     this.inventory = new Inventory();
     this.createLevel();
 
+    // Connect inventory to player controller after level is created
+    this.inventory.setPlayerController(this.level.getPlayerController());
+
     this.worldEditor = new WorldEditor(
       this.camera,
       this.level.scene,

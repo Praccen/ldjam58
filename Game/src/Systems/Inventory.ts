@@ -1,4 +1,13 @@
-import Item, { ItemType, Curse } from "../Objects/Item";
+import Item, { ItemType, Curse, CurseType } from "../Objects/Item";
+import PlayerController from "../Objects/PlayerController";
+
+// Base stat values for calculating curse impact
+const BASE_STATS = {
+  speed: 1.0,
+  torch: 1.0,
+  sight: 1.0,
+  protectionCharms: 3,
+};
 
 export default class Inventory {
   private inventoryElement: HTMLElement;
@@ -6,8 +15,10 @@ export default class Inventory {
   private curses: Curse[] = [];
   private isVisible: boolean = false;
   private maxSlots: number = 24;
+  private playerController: PlayerController | null = null;
 
-  constructor() {
+  constructor(playerController?: PlayerController) {
+    this.playerController = playerController || null;
     // Get the existing inventory iframe from HTML
     this.inventoryElement = document.getElementById("inventory");
 
@@ -89,7 +100,69 @@ export default class Inventory {
     }
 
     if (contentWindow && (contentWindow as any).updateCurses) {
-      (contentWindow as any).updateCurses(this.curses);
+      // Aggregate curses by type and pass to UI
+      const aggregatedCurses = this.aggregateCurses();
+      (contentWindow as any).updateCurses(aggregatedCurses);
+    }
+  }
+
+  setPlayerController(playerController: PlayerController): void {
+    this.playerController = playerController;
+  }
+
+  private aggregateCurses(): any[] {
+    // Group curses by type and count them
+    const curseMap = new Map<string, { count: number; name: string; description: string; type: CurseType }>();
+
+    this.curses.forEach((curse) => {
+      if (!curseMap.has(curse.name)) {
+        curseMap.set(curse.name, {
+          count: 0,
+          name: curse.name,
+          description: curse.description,
+          type: curse.type,
+        });
+      }
+      const entry = curseMap.get(curse.name)!;
+      entry.count += 1;
+    });
+
+    // Calculate modifiers based on current player stats vs base stats
+    return Array.from(curseMap.values()).map((entry) => ({
+      name: entry.name,
+      count: entry.count,
+      description: entry.description,
+      totalModifier: this.calculateCurseModifier(entry.type),
+    }));
+  }
+
+  private calculateCurseModifier(curseType: CurseType): number {
+    if (!this.playerController) return 0;
+
+    switch (curseType) {
+      case CurseType.SPEED:
+        const currentSpeed = this.playerController.getSpeed();
+        return (currentSpeed - BASE_STATS.speed) / BASE_STATS.speed;
+
+      case CurseType.TORCH:
+        const currentTorch = this.playerController.getTorch();
+        return (currentTorch - BASE_STATS.torch) / BASE_STATS.torch;
+
+      case CurseType.SIGHT:
+        const currentSight = this.playerController.getSight();
+        return (currentSight - BASE_STATS.sight) / BASE_STATS.sight;
+
+      case CurseType.PROTECTIONCHARMS:
+        const currentCharms = this.playerController.getProtectionCharms();
+        return currentCharms - BASE_STATS.protectionCharms;
+
+      case CurseType.JUMPY:
+      case CurseType.CANEXTRACT:
+        // Boolean curses don't have percentage modifiers
+        return 0;
+
+      default:
+        return 0;
     }
   }
 

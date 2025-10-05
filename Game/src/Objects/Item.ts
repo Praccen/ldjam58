@@ -34,6 +34,7 @@ export interface Curse {
   description: string;
   type: CurseType;
   severity?: "minor" | "major" | "critical";
+  modifier?: number; // Optional: for displaying static modifiers if not calculated from player stats
 }
 
 export default class Item {
@@ -68,6 +69,7 @@ export default class Item {
     this.curse = curse;
     this.rarity = rarity;
     this.description = description;
+    this.quantity = 1;
 
     var model: string = "Assets/objs/cube.obj";
     // TODO: Add models

@@ -200,13 +200,14 @@
         position: absolute;
         bottom: 8px;
         right: 8px;
-        background: rgba(0, 0, 0, 0.8);
+        background: rgba(0, 0, 0, 0.9);
         color: #ffd89b;
-        padding: 2px 6px;
-        border-radius: 10px;
-        font-size: 0.75rem;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.85rem;
         font-weight: 700;
-        border: 1px solid rgba(255, 147, 41, 0.5);
+        border: 1px solid rgba(255, 147, 41, 0.6);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
       }
 
       /* Rarity colors */
@@ -332,13 +333,37 @@
         box-shadow: 0 0 12px rgba(220, 60, 60, 0.3);
       }
 
+      .curse-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+
       .curse-name {
         font-family: "Cinzel", serif;
         font-size: 1rem;
         font-weight: 600;
         color: #e8b4b4;
-        margin-bottom: 6px;
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+      }
+
+      .curse-count {
+        font-size: 0.75rem;
+        color: #ff9999;
+        background: rgba(80, 20, 20, 0.7);
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: 600;
+        border: 1px solid rgba(180, 60, 60, 0.5);
+      }
+
+      .curse-modifier {
+        font-size: 0.95rem;
+        color: #ff6666;
+        font-weight: 700;
+        margin-bottom: 6px;
+        text-shadow: 0 0 8px rgba(220, 60, 60, 0.5);
       }
 
       .curse-description {
@@ -494,8 +519,8 @@
         slot.appendChild(icon);
         slot.appendChild(name);
 
-        // Add quantity badge if more than 1
-        if (item.quantity > 1) {
+        // Always show quantity for coins, show for other items if > 1
+        if (item.type === 2 || item.quantity > 1) {
           const quantity = document.createElement("div");
           quantity.className = "item-quantity";
           quantity.textContent = item.quantity;
@@ -514,7 +539,7 @@
         return slot;
       }
 
-      // Update curse display
+      // Update curse display with aggregated data
       function updateCurses(curses) {
         const curseList = document.getElementById("curseList");
 
@@ -532,18 +557,66 @@
           const curseItem = document.createElement("div");
           curseItem.className = "curse-item";
 
+          // Header row with name and count
+          const headerRow = document.createElement("div");
+          headerRow.className = "curse-header-row";
+
           const curseName = document.createElement("div");
           curseName.className = "curse-name";
           curseName.textContent = curse.name;
 
+          // Show count badge if stacked
+          if (curse.count > 1) {
+            const curseCount = document.createElement("div");
+            curseCount.className = "curse-count";
+            curseCount.textContent = `×${curse.count}`;
+            headerRow.appendChild(curseName);
+            headerRow.appendChild(curseCount);
+          } else {
+            headerRow.appendChild(curseName);
+          }
+
+          curseItem.appendChild(headerRow);
+
+          // Show modifier effect
+          if (curse.totalModifier !== undefined && curse.totalModifier !== 0) {
+            const modifierDiv = document.createElement("div");
+            modifierDiv.className = "curse-modifier";
+
+            // Format the modifier as a percentage or multiplier
+            const formattedModifier = formatCurseModifier(curse.totalModifier);
+            modifierDiv.textContent = formattedModifier;
+
+            curseItem.appendChild(modifierDiv);
+          }
+
+          // Description
           const curseDesc = document.createElement("div");
           curseDesc.className = "curse-description";
           curseDesc.textContent = curse.description;
 
-          curseItem.appendChild(curseName);
           curseItem.appendChild(curseDesc);
           curseList.appendChild(curseItem);
         });
+      }
+
+      // Format curse modifier for display
+      function formatCurseModifier(modifier) {
+        // For whole number modifiers (like protection charms), don't show as percentage
+        if (Number.isInteger(modifier) && Math.abs(modifier) < 10) {
+          if (modifier > 0) {
+            return `+${modifier}`;
+          } else {
+            return `${modifier}`;
+          }
+        }
+
+        // For decimal modifiers, show as percentage
+        if (modifier > 0) {
+          return `+${(modifier * 100).toFixed(0)}%`;
+        } else {
+          return `${(modifier * 100).toFixed(0)}%`;
+        }
       }
 
       // Close inventory
