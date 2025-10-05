@@ -52,4 +52,13 @@ export default class GameGUI {
       (contentWindow as any).showHauntedMessage(text);
     }
   }
+
+  showDamageEffect(): void {
+    const iframe = this.hudElement as HTMLIFrameElement;
+    const contentWindow = iframe.contentWindow;
+
+    if (contentWindow && (contentWindow as any).showDamageEffect) {
+      (contentWindow as any).showDamageEffect();
+    }
+  }
 }

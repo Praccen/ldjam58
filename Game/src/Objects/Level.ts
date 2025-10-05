@@ -67,8 +67,10 @@ export default class Level {
   private trapTriggers: Map<AreaTrigger, ArrowTrap> = new Map();
 
   private currentFloorShaft: vec2;
+  private game: Game;
 
   constructor(renderer: Renderer3D, game: Game) {
+    this.game = game;
     // Create a scene. It will automatically have a directional light, so let's set the ambient multiplier for it.
     this.scene = new Scene(renderer);
     this.scene.directionalLight.ambientMultiplier = 0.0;
@@ -452,6 +454,10 @@ export default class Level {
     const currentCharms = this.playerController.getProtectionCharms();
     if (currentCharms > 0) {
       this.playerController.setProtectionCharms(currentCharms - 1);
+
+      // Show damage effect
+      this.game.gui.showDamageEffect();
+
       if (currentCharms - 1 <= 0) {
         if (this.callbacks.onGameLose) {
           this.callbacks.onGameLose();

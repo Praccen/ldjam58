@@ -369,6 +369,12 @@ export default class PlayerController {
         if (this.stats.protectionCharms > 0) {
           this.stats.protectionCharms--;
           this.damageTimer = 0;
+
+          // Show damage effect (access through level's game reference)
+          if ((this.level as any).game && (this.level as any).game.gui) {
+            (this.level as any).game.gui.showDamageEffect();
+          }
+
           if (this.stats.protectionCharms <= 0) {
             if (this.level.callbacks.onGameLose) {
               this.level.callbacks.onGameLose();
