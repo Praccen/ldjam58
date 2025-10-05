@@ -1,5 +1,6 @@
 import {
     GraphicsBundle,
+    ParticleSpawner,
     PhysicsObject,
     PhysicsScene,
     Scene,
@@ -11,6 +12,7 @@ import { roomHeight } from "../Generators/Map/ProceduralMapGenerator";
 export interface Ghost {
     physicsObject: PhysicsObject;
     graphicsBundle: GraphicsBundle;
+    fireParticleSpawner: ParticleSpawner;
 }
 
 export default class GhostManager {
@@ -24,10 +26,6 @@ export default class GhostManager {
         this.physicsScene = physicsScene;
     }
 
-    private getFloorFromYPosition(yPos: number): number {
-        return Math.max(0, Math.ceil(-(yPos + 0.1) / roomHeight));
-    }
-
     addGhost(spawn: vec3) {
         //TODO set spawnPositon to a position on the same floor but outside the map somewhere
         let spawnPosition: vec3 = spawn;
@@ -37,6 +35,26 @@ export default class GhostManager {
         physicsObject.ignoreGravity = true;
         physicsObject.isCollidable = false;
         let graphicsBundle: GraphicsBundle;
+
+        let fireParticleSpawner = this.scene.addNewParticleSpawner(
+            "Assets/Textures/fire.png",
+            5
+        );
+        fireParticleSpawner.lifeTime = 0.8;
+        fireParticleSpawner.fadePerSecond = 1.0 / 0.8;
+        vec3.set(
+            fireParticleSpawner.randomPositionModifier.min,
+            -0.05,
+            -0.05,
+            -0.05
+        );
+        vec3.set(
+            fireParticleSpawner.randomPositionModifier.max,
+            0.05,
+            0.05,
+            0.05
+        );
+        fireParticleSpawner.sizeChangePerSecond = -0.3;
 
         this.scene
             .addNewMesh(
@@ -68,7 +86,11 @@ export default class GhostManager {
                 );
             });
 
-        this.ghosts.push({ physicsObject, graphicsBundle });
+        this.ghosts.push({
+            physicsObject,
+            graphicsBundle,
+            fireParticleSpawner,
+        });
     }
 
     moveGhost(
@@ -83,6 +105,10 @@ export default class GhostManager {
         }
 
         const ghostPos = ghost.physicsObject.transform.position;
+
+        // Update fire particle spawner position to follow ghost
+        vec3.copy(ghost.fireParticleSpawner.position, ghostPos);
+        ghost.fireParticleSpawner.position[1] += 1.5;
 
         // Calculate direction from player to ghost
         const toGhost = vec3.create();
@@ -135,11 +161,6 @@ export default class GhostManager {
                 const xzDistance = Math.sqrt(dx * dx + dz * dz);
 
                 // Anger reduces the distance the ghost is willing to travel towards the player
-                console.log("Current dist:", xzDistance);
-                console.log(
-                    "Wanted dist:",
-                    Math.max(0.1, 10 - this.anger * this.anger)
-                );
                 if (xzDistance > Math.max(0.1, 10 - this.anger * this.anger)) {
                     // Normalize direction and move
                     const moveAmount = xzSpeed * dt;
