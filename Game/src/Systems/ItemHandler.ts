@@ -8,6 +8,7 @@ import {
 } from "praccen-web-engine";
 import Inventory from "./Inventory";
 import PlayerController from "../Objects/PlayerController";
+import GameGUI from "../GUI/GameGUI";
 
 export default class ItemHandler {
   private items = new Map<number, Item>();
@@ -15,10 +16,12 @@ export default class ItemHandler {
   private scene: Scene;
   private inventory: Inventory;
   private player: PlayerController;
+  private gui: GameGUI | null = null;
 
-  constructor(scene: Scene, inventory: Inventory) {
+  constructor(scene: Scene, inventory: Inventory, gui?: GameGUI) {
     this.scene = scene;
     this.inventory = inventory;
+    this.gui = gui || null;
   }
 
   setPlayer(player: PlayerController) {
@@ -307,6 +310,9 @@ export default class ItemHandler {
         // 80% risk of angering ghost
         if (this.player.getHauntedCount() == 0) {
           this.player.setHauntedCount(this.player.getHauntedCount() + 1);
+          if (this.gui) {
+            this.gui.showHauntedMessage("It feels like something is following you..");
+          }
         } else if (roll < 20) {
           this.player.setHauntedCount(this.player.getHauntedCount() + 1);
         } else {

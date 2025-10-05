@@ -43,4 +43,13 @@ export default class GameGUI {
       (contentWindow as any).updateCharms(current, max);
     }
   }
+
+  showHauntedMessage(text): void {
+    const iframe = this.hudElement as HTMLIFrameElement;
+    const contentWindow = iframe.contentWindow;
+
+    if (contentWindow && (contentWindow as any).showHauntedMessage) {
+      (contentWindow as any).showHauntedMessage(text);
+    }
+  }
 }

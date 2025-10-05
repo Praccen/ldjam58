@@ -162,6 +162,61 @@
           opacity: 0.9;
         }
       }
+
+      /* Center Message Display */
+      .message-container {
+        position: absolute;
+        top: 70%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        width: 100%;
+      }
+
+      .message-container.visible {
+        opacity: 1;
+      }
+
+      .haunted-message {
+        font-family: "Cinzel", serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #a855f7;
+        text-shadow: 0 0 20px rgba(168, 85, 247, 0.8),
+          0 0 40px rgba(168, 85, 247, 0.5), 2px 2px 8px rgba(0, 0, 0, 0.9);
+        letter-spacing: 3px;
+        display: inline-block;
+        white-space: nowrap;
+      }
+
+      .haunted-message span {
+        display: inline-block;
+        animation: wave 1.5s ease-in-out infinite;
+      }
+
+      @keyframes wave {
+        0%, 100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      @keyframes fadeOut {
+        0% {
+          opacity: 1;
+        }
+        70% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
     </style>
   </head>
   <body>
@@ -177,6 +232,11 @@
       <div class="floor-container">
         <div class="floor-label">Depth</div>
         <div class="floor-number" id="floorNumber">1</div>
+      </div>
+
+      <!-- Center Message Display -->
+      <div class="message-container" id="messageContainer">
+        <div class="haunted-message" id="hauntedMessage"></div>
       </div>
     </div>
 
@@ -208,9 +268,37 @@
         floorElement.textContent = floorNumber;
       }
 
+      // Show haunted message
+      function showHauntedMessage(inText) {
+        const container = document.getElementById("messageContainer");
+        const message = document.getElementById("hauntedMessage");
+
+        const text = inText;
+        message.innerHTML = "";
+
+        // Wrap each character in a span with staggered animation delay
+        text.split("").forEach((char, index) => {
+          const span = document.createElement("span");
+          span.textContent = char === " " ? "\u00A0" : char; // Use non-breaking space for spaces
+          span.style.animationDelay = `${index * 0.05}s`; // 50ms delay per character
+          message.appendChild(span);
+        });
+
+        // Add fadeOut animation to the container
+        container.style.animation = "fadeOut 5s ease-in-out forwards";
+        container.classList.add("visible");
+
+        // Remove after animation completes
+        setTimeout(() => {
+          container.classList.remove("visible");
+          container.style.animation = "";
+        }, 5000);
+      }
+
       // Make functions available to parent window
       window.updateCharms = updateCharms;
       window.updateFloor = updateFloor;
+      window.showHauntedMessage = showHauntedMessage;
 
       // Initialize with default values
       updateCharms(3, 3);

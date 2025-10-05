@@ -75,8 +75,8 @@ export default class Level {
     this.scene.directionalLight.lightProjectionBoxSideLength = 100;
 
     this.physicsScene = new PhysicsScene();
-    this.itemHandler = new ItemHandler(this.scene, game.inventory);
-    this.ghostManager = new GhostManager(this.scene, this.physicsScene);
+    this.itemHandler = new ItemHandler(this.scene, game.inventory, game.gui);
+    this.ghostManager = new GhostManager(this.scene, this.physicsScene, game.gui);
     this.map = new ProceduralMap(
       this.scene,
       [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]

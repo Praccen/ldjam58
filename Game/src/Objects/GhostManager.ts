@@ -8,6 +8,7 @@ import {
     quat,
 } from "praccen-web-engine";
 import { roomHeight, roomSize } from "../Generators/Map/ProceduralMapGenerator";
+import GameGUI from "../GUI/GameGUI";
 
 export interface Ghost {
     physicsObject: PhysicsObject;
@@ -21,10 +22,13 @@ export default class GhostManager {
     private ghosts: Ghost[] = new Array<Ghost>();
     private anger: number = 1;
     private angerTimer: number = 0;
+    private gui: GameGUI | null = null;
+    private angeredText: boolean = false;
 
-    constructor(scene: Scene, physicsScene: PhysicsScene) {
+    constructor(scene: Scene, physicsScene: PhysicsScene, gui?: GameGUI) {
         this.scene = scene;
         this.physicsScene = physicsScene;
+        this.gui = gui;
     }
 
     getActiveGhosts(): number {
@@ -224,7 +228,12 @@ export default class GhostManager {
                 const xzDistance = Math.sqrt(dx * dx + dz * dz);
 
                 // Anger reduces the distance the ghost is willing to travel towards the player
-                if (xzDistance > Math.max(0.1, 10 - this.anger * this.anger)) {
+                let playerDistance = Math.max(0.1, 10 - this.anger * this.anger);
+                if(playerDistance < 1.0 && !this.angeredText) {
+                    this.gui.showHauntedMessage("Your actions have angered the spirits greatly..");
+                    this.angeredText = true;
+                }
+                if (xzDistance > playerDistance) {
                     // Normalize direction and move
                     const moveAmount = xzSpeed * dt;
                     const normalizedDx = dx / xzDistance;
