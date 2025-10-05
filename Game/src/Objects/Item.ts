@@ -21,7 +21,7 @@ export enum CurseType {
   SPEED,
   TORCH,
   SIGHT,
-  // HAUNTEDCOUNT,
+  HAUNT,
   // SANITY,
   // VERTIGO,
   // HYPER,

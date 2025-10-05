@@ -25,6 +25,7 @@ interface PlayerStats {
   torch: number;
   sight: number;
   hauntedCount: number;
+  hauntModifier: number;
   sanity: number;
   vertigo: number;
   hyper: number;
@@ -60,7 +61,8 @@ export default class PlayerController {
     speed: 1.0,
     torch: 1.0,
     sight: 1.0,
-    hauntedCount: 0, //TODO
+    hauntedCount: 0,
+    hauntModifier: 0,
     sanity: 100, //TODO
     vertigo: 0, //TODO
     hyper: 0, //TODO
@@ -95,6 +97,18 @@ export default class PlayerController {
   }
   setSight(sight: number) {
     this.stats.sight = Math.max(0.1, sight);
+  }
+  getHauntedCount(): number {
+    return this.stats.hauntedCount;
+  }
+  setHauntedCount(count: number) {
+    this.stats.hauntedCount = count;
+  }
+  getHauntModifier(): number {
+    return this.stats.hauntModifier;
+  }
+  setHauntModifier(anger: number) {
+    this.stats.hauntModifier = anger;
   }
   getSight(): number {
     return this.stats.sight;

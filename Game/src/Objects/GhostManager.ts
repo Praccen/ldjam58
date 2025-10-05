@@ -7,7 +7,7 @@ import {
     vec3,
     quat,
 } from "praccen-web-engine";
-import { roomHeight } from "../Generators/Map/ProceduralMapGenerator";
+import { roomHeight, roomSize } from "../Generators/Map/ProceduralMapGenerator";
 
 export interface Ghost {
     physicsObject: PhysicsObject;
@@ -20,15 +20,32 @@ export default class GhostManager {
     private physicsScene: PhysicsScene = null;
     private ghosts: Ghost[] = new Array<Ghost>();
     private anger: number = 1;
+    private angerTimer: number = 0;
 
     constructor(scene: Scene, physicsScene: PhysicsScene) {
         this.scene = scene;
         this.physicsScene = physicsScene;
     }
 
-    addGhost(spawn: vec3) {
-        //TODO set spawnPositon to a position on the same floor but outside the map somewhere
-        let spawnPosition: vec3 = spawn;
+    getActiveGhosts(): number {
+        return this.ghosts.length;
+    }
+
+    private getFloorFromYPosition(yPos: number): number {
+        return Math.max(0, Math.ceil(-(yPos + 0.1) / roomHeight));
+    }
+
+    addGhost(spawn: vec3, shaftRoomPos: vec3) {
+        // Set spawn position some rooms away from shaft room in random direction
+        const floor = this.getFloorFromYPosition(spawn[1]);
+        const angle = Math.random() * Math.PI * 2; // Random direction
+        const offsetDistance = roomSize * 4;
+
+        let spawnPosition: vec3 = vec3.fromValues(
+            shaftRoomPos[0] + Math.cos(angle) * offsetDistance,
+            -floor * roomHeight,
+            shaftRoomPos[2] + Math.sin(angle) * offsetDistance
+        );
         let physicsObject = this.physicsScene.addNewPhysicsObject();
 
         physicsObject.isImmovable = true;
@@ -186,8 +203,15 @@ export default class GhostManager {
         dt: number,
         playerPosition: vec3,
         playerViewDir: vec3,
-        torchRadius: number
+        torchRadius: number,
+        hauntModifier: number
     ) {
+        this.angerTimer += dt;
+        if (this.angerTimer >= 10) {
+            this.anger += hauntModifier;
+            this.angerTimer = 0;
+        }
+
         this.ghosts.forEach((ghost) => {
             this.moveGhost(
                 ghost,

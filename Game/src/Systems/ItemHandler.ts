@@ -39,7 +39,12 @@ export default class ItemHandler {
 
   private getRandomCurseType(floor: number): CurseType {
     // Common curses available at all floors
-    const commonCurses = [CurseType.SPEED, CurseType.TORCH, CurseType.SIGHT];
+    const commonCurses = [
+      CurseType.SPEED,
+      CurseType.TORCH,
+      CurseType.SIGHT,
+      CurseType.HAUNT,
+    ];
 
     // Rare devastating curses only available after floor 8
     const rareCurses = [
@@ -70,6 +75,8 @@ export default class ItemHandler {
         return "Curse of Weight";
       case CurseType.CANEXTRACT:
         return "Curse of Binding";
+      case CurseType.HAUNT:
+        return "Haunted";
       default:
         return "Unknown Curse";
     }
@@ -79,12 +86,13 @@ export default class ItemHandler {
     type: CurseType,
     severity: "minor" | "major" | "critical"
   ): string {
-    const severityText =
-      severity === "minor"
-        ? "slightly"
-        : severity === "major"
-        ? "significantly"
-        : "drastically";
+    const severityText = "";
+    // TODO Fix this so that it depends on the current severity of the curse
+    // severity === "minor"
+    //   ? "slightly"
+    //   : severity === "major"
+    //   ? "significantly"
+    //   : "drastically";
 
     switch (type) {
       case CurseType.PROTECTIONCHARMS:
@@ -99,6 +107,8 @@ export default class ItemHandler {
         return "Prevents you from jumping";
       case CurseType.CANEXTRACT:
         return "Prevents you from extracting artifacts";
+      case CurseType.HAUNT:
+        return "A vengeful spirit stalks you through the darkness.";
       default:
         return "Unknown effect";
     }
@@ -291,8 +301,21 @@ export default class ItemHandler {
       case CurseType.SIGHT:
         this.player.setSight(this.player.getSight() - severity / 50.0);
         break;
-      // case CurseType.HAUNTEDCOUNT:
-      //   break;
+      case CurseType.HAUNT:
+        const roll = Math.random() * 100;
+        // First time always spawn ghost
+        // 20% risk of spawning new ghost
+        // 80% risk of angering ghost
+        if (this.player.getHauntedCount() == 0) {
+          this.player.setHauntedCount(this.player.getHauntedCount() + 1);
+        } else if (roll < 20) {
+          this.player.setHauntedCount(this.player.getHauntedCount() + 1);
+        } else {
+          this.player.setHauntModifier(
+            this.player.getHauntModifier() + severity / 100.0
+          );
+        }
+        break;
       // case CurseType.SANITY:
       //   break;
       // case CurseType.VERTIGO:

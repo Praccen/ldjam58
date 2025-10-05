@@ -172,14 +172,6 @@ export default class Level {
         );
       }
     );
-    // this.playerController.getPhysicsObject().transform.position
-    this.ghostManager.addGhost(
-      vec3.add(
-        vec3.create(),
-        this.playerController.getPhysicsObject().transform.position,
-        vec3.fromValues(1, 0, 0)
-      )
-    );
 
     this.scene
       .addNewAnimatedMesh(
@@ -276,13 +268,28 @@ export default class Level {
       this.map.floorPhysicsScenes.get(this.map.getCurrentFloor()).update(0.0);
     }
 
+    // Spawn new ghosts
+    if (
+      this.ghostManager.getActiveGhosts() <
+      this.playerController.getHauntedCount()
+    ) {
+      const shaftRoomPos = this.map.getfloorShaftRoomPos(
+        this.map.getCurrentFloor()
+      );
+      this.ghostManager.addGhost(
+        this.playerController.getPhysicsObject().transform.position,
+        shaftRoomPos
+      );
+    }
+
     const quadratic = 0.3 / this.playerController.getTorch();
     const torchRadius = Math.sqrt(9.0 / quadratic);
     this.ghostManager.update(
       dt,
       this.playerController.getPhysicsObject().transform.position,
       camera.getDir(),
-      torchRadius
+      torchRadius,
+      this.playerController.getHauntModifier()
     );
 
     const shaft = this.map.getfloorShaftRoomPos(this.map.getCurrentFloor());
