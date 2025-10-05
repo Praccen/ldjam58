@@ -84,8 +84,8 @@ export default class DirectionalShadowRenderPass {
     this.gl.clearColor(1.0, 1.0, 1.0, 1.0);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
-    // this.gl.enable(this.gl.CULL_FACE);
-    // this.gl.cullFace(this.gl.FRONT);
+    this.gl.enable(this.gl.CULL_FACE);
+    this.gl.cullFace(this.gl.FRONT);
 
     //Set uniforms
     scene.directionalLight.calcAndSendLightSpaceMatrix(
@@ -124,7 +124,7 @@ export default class DirectionalShadowRenderPass {
       false
     );
 
-    // this.gl.disable(this.gl.CULL_FACE);
+    this.gl.disable(this.gl.CULL_FACE);
     // ---------------------
   }
 }

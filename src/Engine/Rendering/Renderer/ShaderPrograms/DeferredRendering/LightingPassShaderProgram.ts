@@ -111,7 +111,7 @@ function getFragSrc() {
 	vec3 finalSpecular = light.colour * spec * specular;
 	
 	float shadow = CalcShadow(lightSpaceFragPos, normal);
-	vec3 lighting = (ambient + (1.1f - shadow) * (finalDiffuse + finalSpecular));
+	vec3 lighting = (ambient + (1.0f - shadow) * (finalDiffuse + finalSpecular));
 	lighting += oppositeDiff * ambient;
 	return lighting;
 	}
@@ -134,7 +134,7 @@ function getFragSrc() {
 	float currentDepth = projCoords.z;
 	
 	// check whether current frag pos is in shadow
-	float bias = max(0.002 * (1.0 - dot(normal, directionalLight.direction)), 0.005);
+	float bias = -max(0.001 * (1.0 - dot(normal, directionalLight.direction)), 0.002);
 	// float bias = 0.0;
 	
 	float shadow = 0.0;

@@ -44,9 +44,9 @@ export default class Level {
     // Create a scene. It will automatically have a directional light, so let's set the ambient multiplier for it.
     this.scene = new Scene(renderer);
     this.scene.directionalLight.ambientMultiplier = 0.0;
-    // vec3.set(this.scene.directionalLight.colour, 0.2, 0.2, 0.2);
+    // vec3.set(this.scene.directionalLight.colour, 0.0, 0.0, 0.0);
     vec3.set(this.scene.directionalLight.colour, 0.3, 0.3, 0.3);
-    vec3.set(this.scene.directionalLight.direction, 0.001, -1.0, -0.4);
+    vec3.set(this.scene.directionalLight.direction, 0.001, -1.0, -0.6);
 
     this.scene.directionalLight.shadowCameraDistance = 100;
     this.scene.directionalLight.lightProjectionBoxSideLength = 100;
