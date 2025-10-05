@@ -199,6 +199,19 @@ export default class PlayerController {
       mouseDiff[0] -= 5;
     }
 
+    Input.updateGamepad();
+    if (
+      vec2.squaredLength(
+        vec2.fromValues(
+          Input.joystickRightDirection[0],
+          Input.joystickRightDirection[1]
+        )
+      ) > 0.001
+    ) {
+      this.pitch += -Input.joystickRightDirection[1] * 2.0;
+      this.jaw += -Input.joystickRightDirection[0] * 2.0;
+    }
+
     if (document.pointerLockElement == document.getElementById("gameDiv")) {
       // Make sure the user is not changing a slider
       this.pitch -= mouseDiff[1] * sensitivity;
@@ -218,7 +231,6 @@ export default class PlayerController {
     vec3.normalize(forward, forward);
 
     // Touch / joystick control
-    Input.updateGamepad();
     if (
       vec2.squaredLength(
         vec2.fromValues(
