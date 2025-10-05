@@ -122,6 +122,11 @@ export default class GhostManager {
         }
 
         const ghostPos = ghost.physicsObject.transform.position;
+        // Apply bobbing motion 
+        const bobSpeed = 2.0;
+        const bobAmount = 0.0015;
+        const bobOffset = Math.sin(Date.now() * 0.001 * bobSpeed) * bobAmount;
+        ghostPos[1] = ghostPos[1] + bobOffset;
 
         // Update fire particle spawner position to follow ghost
         vec3.copy(ghost.fireParticleSpawner.position, ghostPos);
