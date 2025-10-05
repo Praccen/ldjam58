@@ -69,124 +69,37 @@ export const wallPieceModels = new Array<{
   posOffset: vec3;
 }>(
   {
-    paths: ["Assets/objs/Boxes/floor.obj", "Assets/objs/Boxes/ceiling.obj"],
+    paths: ["Assets/objs/MyDungeon/Floor.obj", "Assets/objs/Boxes/ceiling.obj"],
     rot: [0],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall.obj", "Assets/objs/MyDungeon/Wall_hole.obj"],
     rot: [0, 180],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall.obj", "Assets/objs/MyDungeon/Wall_hole.obj"],
     rot: [90, 270],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_corner.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_corner.obj"],
     rot: [90],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_corner.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_corner.obj"],
     rot: [0],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_corner.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_corner.obj"],
     rot: [270],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_corner.obj"],
-    rot: [180],
-    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
-  },
-  {
-    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
-    rot: [0],
-    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
-  },
-  {
-    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
-    rot: [270],
-    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
-  },
-  {
-    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
-    rot: [180],
-    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
-  },
-  {
-    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
-    rot: [90],
-    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
-  },
-  {
-    paths: ["Assets/objs/Boxes//wall_crossing.obj"],
-    rot: [0],
-    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
-  },
-  {
-    paths: ["Assets/objs/Boxes//wall_endcap.obj"],
-    rot: [0],
-    posOffset: vec3.fromValues(-2.0, 0.0, 0.0),
-  },
-  {
-    paths: ["Assets/objs/Boxes//wall_endcap.obj"],
-    rot: [180],
-    posOffset: vec3.fromValues(2.0, 0.0, 0.0),
-  },
-  {
-    paths: ["Assets/objs/Boxes//wall_endcap.obj"],
-    rot: [270],
-    posOffset: vec3.fromValues(0.0, 0.0, -2.0),
-  },
-  {
-    paths: ["Assets/objs/Boxes//wall_endcap.obj"],
-    rot: [90],
-    posOffset: vec3.fromValues(0.0, 0.0, 2.0),
-  },
-  {
-    paths: [
-      "Assets/objs/dungeonPack/pillar.obj",
-      "Assets/objs/dungeonPack/pillar_decorated.obj",
-      "Assets/objs/dungeonPack/crates_stacked.obj",
-      "Assets/objs/dungeonPack/column.obj",
-      "Assets/objs/dungeonPack/chest.obj",
-      "Assets/objs/dungeonPack/chair.obj",
-    ],
-    rot: [0, 45, 90, 135, 180, 225, 270, 315],
-    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
-  },
-  {
-    paths: ["Assets/objs/Boxes/wall.obj"],
-    rot: [0],
-    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
-  },
-  {
-    paths: ["Assets/objs/Boxes/wall.obj"],
-    rot: [90],
-    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
-  },
-  {
-    paths: ["Assets/objs/Boxes/wall_corner.obj"],
-    rot: [90],
-    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
-  },
-  {
-    paths: ["Assets/objs/Boxes/wall_corner.obj"],
-    rot: [0],
-    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
-  },
-  {
-    paths: ["Assets/objs/Boxes/wall_corner.obj"],
-    rot: [270],
-    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
-  },
-  {
-    paths: ["Assets/objs/Boxes/wall_corner.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_corner.obj"],
     rot: [180],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
@@ -216,22 +129,110 @@ export const wallPieceModels = new Array<{
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_endcap.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_endcap.obj"],
     rot: [0],
     posOffset: vec3.fromValues(-2.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_endcap.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_endcap.obj"],
     rot: [180],
     posOffset: vec3.fromValues(2.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_endcap.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_endcap.obj"],
     rot: [270],
     posOffset: vec3.fromValues(0.0, 0.0, -2.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_endcap.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_endcap.obj"],
+    rot: [90],
+    posOffset: vec3.fromValues(0.0, 0.0, 2.0),
+  },
+  {
+    paths: [
+      "Assets/objs/dungeonPack/pillar.obj",
+      "Assets/objs/dungeonPack/pillar_decorated.obj",
+      "Assets/objs/dungeonPack/crates_stacked.obj",
+      "Assets/objs/dungeonPack/column.obj",
+      "Assets/objs/dungeonPack/chest.obj",
+      "Assets/objs/dungeonPack/chair.obj",
+    ],
+    rot: [0, 45, 90, 135, 180, 225, 270, 315],
+    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
+    
+  },
+  {
+    paths: ["Assets/objs/MyDungeon/Wall.obj"],
+    rot: [0],
+    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
+  },
+  {
+    paths: ["Assets/objs/MyDungeon/Wall.obj"],
+    rot: [90],
+    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
+  },
+  {
+    paths: ["Assets/objs/MyDungeon/Wall_corner.obj"],
+    rot: [90],
+    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
+  },
+  {
+    paths: ["Assets/objs/MyDungeon/Wall_corner.obj"],
+    rot: [0],
+    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
+  },
+  {
+    paths: ["Assets/objs/MyDungeon/Wall_corner.obj"],
+    rot: [270],
+    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
+  },
+  {
+    paths: ["Assets/objs/MyDungeon/Wall_corner.obj"],
+    rot: [180],
+    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
+  },
+  {
+    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
+    rot: [0],
+    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
+  },
+  {
+    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
+    rot: [270],
+    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
+  },
+  {
+    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
+    rot: [180],
+    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
+  },
+  {
+    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
+    rot: [90],
+    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
+  },
+  {
+    paths: ["Assets/objs/Boxes/wall_crossing.obj"],
+    rot: [0],
+    posOffset: vec3.fromValues(0.0, 0.0, 0.0),
+  },
+  {
+    paths: ["Assets/objs/MyDungeon/Wall_endcap.obj"],
+    rot: [0],
+    posOffset: vec3.fromValues(-2.0, 0.0, 0.0),
+  },
+  {
+    paths: ["Assets/objs/MyDungeon/Wall_endcap.obj"],
+    rot: [180],
+    posOffset: vec3.fromValues(2.0, 0.0, 0.0),
+  },
+  {
+    paths: ["Assets/objs/MyDungeon/Wall_endcap.obj"],
+    rot: [270],
+    posOffset: vec3.fromValues(0.0, 0.0, -2.0),
+  },
+  {
+    paths: ["Assets/objs/MyDungeon/Wall_endcap.obj"],
     rot: [90],
     posOffset: vec3.fromValues(0.0, 0.0, 2.0),
   },
@@ -849,15 +850,23 @@ export default class ProceduralMap {
             for (let path of piece.paths)
               if (path != "") {
                 if (!this.instancedMeshes.has(path)) {
+                  let diffuseTexture = "CSS:rgb(255, 255, 255)";
+                  let specularTexture = "CSS:rgb(0,0,0)";
+                  if (path.includes("dungeonPack")) {
+                    diffuseTexture = "Assets/Textures/dungeon_texture.png";
+                  }
+                  if (path.includes("MyDungeon")) {
+                    diffuseTexture = path.substring(0, path.length - 4) + ".mtl";
+                    specularTexture = path.substring(0, path.length - 4) + "_spec.mtl";
+                  }
+
                   this.instancedMeshes.set(
                     path,
                     await Factories.createInstancedMesh(
                       scene,
                       path,
-                      path.includes("Boxes")
-                        ? "CSS:rgb(255,255,255)"
-                        : "Assets/Textures/dungeon_texture.png",
-                      "CSS:rgb(0, 0, 0)"
+                      diffuseTexture,
+                      specularTexture
                     )
                   );
                 }
