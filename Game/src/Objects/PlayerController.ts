@@ -272,7 +272,7 @@ export default class PlayerController {
       if (Input.keys["D"]) {
         vec3.add(accVec, accVec, camera.getRight());
       }
-      if (Input.keys["E"]) {
+      if (Input.keys["E"] || Input.buttons.get("C")) {
         let ray = new Ray();
         ray.setDir(vec3.clone(camera.getDir()));
         ray.setStart(vec3.clone(camera.getPosition()));
