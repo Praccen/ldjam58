@@ -57,14 +57,18 @@ export default class Level {
       this.physicsScene,
       game.inventory
     );
-    this.map = new ProceduralMap(this.scene, this.physicsScene, [0, 1, 2]);
+    this.map = new ProceduralMap(this.scene, [0, 1, 2]);
 
     let level = this;
     this.scene.useTrees = false;
+    let lastFloor = -1;
     this.scene.customFrustumCulling = (frustums: Shape[]) => {
-      this.scene.disableInstancedBundles();
-      level.map.doFrustumCulling();
-      this.scene.updateInstanceBuffers();
+      if (level.map.getCurrentFloor() != lastFloor) {
+        this.scene.disableInstancedBundles();
+        level.map.doFrustumCulling();
+        this.scene.updateInstanceBuffers();
+      }
+      lastFloor = level.map.getCurrentFloor();
     };
 
     this.moodParticleSpawner = this.scene.addNewParticleSpawner(
@@ -122,8 +126,12 @@ export default class Level {
       this.itemHandler
     );
     this.itemHandler.setPlayer(this.playerController);
-
     this.itemHandler.setCurrentFloor(this.map.getCurrentFloor());
+    
+    for (const floorPhysicsScene of this.map.floorPhysicsScenes) {
+      floorPhysicsScene[1].addNewPhysicsObject(this.playerController.getPhysicsObject().transform, this.playerController.getPhysicsObject());
+    }
+
     this.itemHandler.spawnItem(vec3.fromValues(7.0, 0.5, 5.0));
     this.itemHandler.spawnItem(vec3.fromValues(9.0, 0.5, 5.0));
     this.itemHandler.spawnItem(vec3.fromValues(11.0, 0.5, 5.0));
@@ -151,8 +159,12 @@ export default class Level {
 
     // Update physics
     this.physicsScene.update(dt);
-
+    
     this.map.updateFocusRoom(camera.getPosition());
+
+    if (this.map.floorPhysicsScenes.has(this.map.getCurrentFloor())) {
+      this.map.floorPhysicsScenes.get(this.map.getCurrentFloor()).update(0.0);
+    }
 
     this.scene.updateParticleSpawners(dt);
 

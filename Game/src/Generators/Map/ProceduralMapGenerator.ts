@@ -260,7 +260,6 @@ export const roomHeight = 5.0;
 export default class ProceduralMap {
   private scene: Scene;
   private instancedMeshes: Map<string, GraphicsBundle>;
-  private physicsScene: PhysicsScene;
   private map: Map<number, Array<Array<number>>> = new Map<
     number,
     Array<Array<number>>
@@ -276,14 +275,13 @@ export default class ProceduralMap {
   private rows: Map<number, number> = new Map<number, number>();
 
   private graphicsContent = new Map<number, {enabled: boolean}[][][]>();
+  floorPhysicsScenes = new Map<number, PhysicsScene>();
 
   constructor(
     scene: Scene,
-    physicsScene: PhysicsScene,
     floorNumbers: number[]
   ) {
     this.scene = scene;
-    this.physicsScene = physicsScene;
     this.instancedMeshes = new Map<string, GraphicsBundle>();
 
     this.playerSpawnRoom = vec2.fromValues(0, 0);
@@ -359,6 +357,9 @@ export default class ProceduralMap {
         this.graphicsContent.get(floorNumber)[col].push([]);
       }
     }
+
+    this.floorPhysicsScenes.set(floorNumber, new PhysicsScene());
+    vec3.zero(this.floorPhysicsScenes.get(floorNumber).gravity);
 
     let aboveFloor = this.getAboveFloorNumber(floorNumber);
     if (aboveFloor != -1) {
@@ -566,7 +567,7 @@ export default class ProceduralMap {
       roomSize * 0.5 + row * roomSize
     );
     phyTrans.scale = vec3.fromValues(roomSize, 1.0, roomSize);
-    let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
+    let physObj = this.floorPhysicsScenes.get(floorNumber).addNewPhysicsObject(phyTrans);
     physObj.isStatic = true;
     physObj.frictionCoefficient = 10.0;
   }
@@ -593,7 +594,7 @@ export default class ProceduralMap {
     transform.calculateMatrices();
     this.graphicsContent.get(floorNumber)[Math.min(column, this.columns.get(floorNumber) - 1)][Math.min(row, this.rows.get(floorNumber) - 1)].push(transform); // Save transform to be able to cull it with custom culling
 
-    let physObj = this.physicsScene.addNewPhysicsObject(transform);
+    let physObj = this.floorPhysicsScenes.get(floorNumber).addNewPhysicsObject(transform);
     physObj.setupBoundingBoxFromGraphicsBundle(mesh);
     physObj.setupInternalTreeFromGraphicsObject(mesh.graphicsObject, path);
     physObj.isStatic = true;
@@ -649,7 +650,7 @@ export default class ProceduralMap {
 
     // This is leading into the shaft, add collision for the dorway leading into it
     if (this.floorShaftRoom.get(floorNumber)[0] == column && this.floorShaftRoom.get(floorNumber)[1] == row) {
-      let doorwayPhysObj = this.physicsScene.addNewPhysicsObject(transform);
+      let doorwayPhysObj = this.floorPhysicsScenes.get(floorNumber).addNewPhysicsObject(transform);
       doorwayPhysObj.setupBoundingBoxFromGraphicsBundle(mesh);
       doorwayPhysObj.setupInternalTreeFromGraphicsObject(mesh.graphicsObject);
       doorwayPhysObj.isStatic = true;
@@ -693,7 +694,7 @@ export default class ProceduralMap {
       phyTrans.position[0] += roomSize * 0.25;
     }
 
-    let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
+    let physObj = this.floorPhysicsScenes.get(floorNumber).addNewPhysicsObject(phyTrans);
     physObj.isStatic = true;
     physObj.frictionCoefficient = 0.0;
   }
@@ -768,7 +769,7 @@ export default class ProceduralMap {
       phyTrans.scale[1] *= 0.3;
     }
 
-    let physObj = this.physicsScene.addNewPhysicsObject(phyTrans);
+    let physObj = this.floorPhysicsScenes.get(floorNumber).addNewPhysicsObject(phyTrans);
     physObj.isStatic = true;
     physObj.frictionCoefficient = 0.0;
   }
@@ -818,7 +819,7 @@ export default class ProceduralMap {
       mapFloor[column * 2][row * 2] % 16 < 12 ||
       mapFloor[column * 2][row * 2] % 16 > 15
     ) {
-      let physObj = this.physicsScene.addNewPhysicsObject(transform);
+      let physObj = this.floorPhysicsScenes.get(floorNumber).addNewPhysicsObject(transform);
       physObj.setupBoundingBoxFromGraphicsBundle(mesh);
       physObj.setupInternalTreeFromGraphicsObject(mesh.graphicsObject, path);
       physObj.isStatic = true;
@@ -955,7 +956,7 @@ export default class ProceduralMap {
         }
       }
     }
-    this.physicsScene.update(0.0, true, false); // Update static objects (all walls) so octree is updated
+    this.floorPhysicsScenes.get(floorNumber).update(0.0, true, false); // Update static objects (all walls) so octree is updated
   }
 
   checkIfVoid(position: vec3): boolean {
@@ -1230,12 +1231,12 @@ export default class ProceduralMap {
       }
       
       for (let col = 0; col < floor[1].length; col++) {
-        if (Math.abs(col - this.focusRoom[0]) > 3) {
+        if (Math.abs(col - this.focusRoom[0]) > 7) {
           continue;
         }
 
         for (let row = 0; row < floor[1][col].length; row++) {
-          if (Math.abs(row - this.focusRoom[1]) > 3) {
+          if (Math.abs(row - this.focusRoom[1]) > 7) {
             continue;
           }
 

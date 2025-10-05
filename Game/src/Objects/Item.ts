@@ -106,6 +106,7 @@ export default class Item {
         this.physicsObject.boundingBox.setTransformMatrix(
           this.graphicsBundle.transform.matrix
         );
+        this.physicsScene.update(0.0, true, false); // Since the item is static, make sure the physics scene has a static update after updating the item placement and size
       });
   }
 
