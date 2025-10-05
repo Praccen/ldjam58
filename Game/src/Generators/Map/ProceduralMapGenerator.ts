@@ -69,7 +69,7 @@ export const wallPieceModels = new Array<{
   posOffset: vec3;
 }>(
   {
-    paths: ["Assets/objs/MyDungeon/Floor.obj", "Assets/objs/Boxes/ceiling.obj"],
+    paths: ["Assets/objs/MyDungeon/Floor.obj", "Assets/objs/MyDungeon/Ceiling.obj"],
     rot: [0],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
@@ -104,27 +104,27 @@ export const wallPieceModels = new Array<{
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_Tsplit.obj"],
     rot: [0],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_Tsplit.obj"],
     rot: [270],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_Tsplit.obj"],
     rot: [180],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_Tsplit.obj"],
     rot: [90],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_crossing.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_crossing.obj"],
     rot: [0],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
@@ -192,27 +192,27 @@ export const wallPieceModels = new Array<{
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_Tsplit.obj"],
     rot: [0],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_Tsplit.obj"],
     rot: [270],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_Tsplit.obj"],
     rot: [180],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_Tsplit.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_Tsplit.obj"],
     rot: [90],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
   {
-    paths: ["Assets/objs/Boxes/wall_crossing.obj"],
+    paths: ["Assets/objs/MyDungeon/Wall_crossing.obj"],
     rot: [0],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
@@ -592,7 +592,7 @@ export default class ProceduralMap {
     // Make the tile a bridge if it has inaccessible spaces oposite of each other but accessible spaces in the other direction.
     let mesh = this.instancedMeshes.get(path);
     transform = this.scene.addNewInstanceOfInstancedMesh(mesh);
-    vec3.set(transform.scale, 2.7, 1.0, 2.7);
+    vec3.set(transform.scale, 1.0, 1.0, 1.0);
 
     vec3.set(
       transform.position,
@@ -632,7 +632,7 @@ export default class ProceduralMap {
       this.floorShaftRoom.get(floorNumber)[0] == column &&
       this.floorShaftRoom.get(floorNumber)[1] == row
     ) {
-      path = "Assets/objs/Boxes/wall_doorway.obj";
+      path = "Assets/objs/MyDungeon/Wall_doorway.obj";
       isDoorway = true;
     }
 
@@ -840,7 +840,7 @@ export default class ProceduralMap {
         }
       }
 
-      meshesToLoad.add("Assets/objs/Boxes/wall_doorway.obj");
+      meshesToLoad.add("Assets/objs/MyDungeon/Wall_doorway.obj");
 
       // Load meshes before creating
       await this.scene.renderer.meshStore
@@ -874,12 +874,12 @@ export default class ProceduralMap {
           }
 
           this.instancedMeshes.set(
-            "Assets/objs/Boxes/wall_doorway.obj",
+            "Assets/objs/MyDungeon/Wall_doorway.obj",
             await Factories.createInstancedMesh(
               scene,
-              "Assets/objs/Boxes/wall_doorway.obj",
-              "CSS:rgb(255,255,255)",
-              "CSS:rgb(0, 0, 0)"
+              "Assets/objs/MyDungeon/Wall_doorway.obj",
+              "Assets/objs/MyDungeon/Wall_doorway.mtl",
+              "Assets/objs/MyDungeon/Wall_doorway_spec.mtl"
             )
           );
         });
