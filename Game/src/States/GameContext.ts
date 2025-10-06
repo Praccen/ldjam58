@@ -1,12 +1,9 @@
 import { Div, GUIRenderer, Renderer3D } from "praccen-web-engine";
 import { wallPieceModels } from "../Generators/Map/ProceduralMapGenerator.js";
 import Game from "./Game.js";
-import MetaGUI from "../GUI/MetaGUI.js";
 import { SetCookie } from "../Utils/WebUtils.js";
 import { Input } from "../Input.js";
 import SoundManager from "../Audio/SoundManager.js";
-
-export let sensitivity = 1.0;
 
 export default class GameContext {
   renderer: Renderer3D;
@@ -14,11 +11,9 @@ export default class GameContext {
 
   game: Game;
 
-  metaGui: MetaGUI;
-
   private soundManager: SoundManager;
 
-  private oWasPressed = false;
+  sensitivity: number = 0.5;
 
   constructor(soundManager: SoundManager) {
     this.soundManager = soundManager;
@@ -33,6 +28,9 @@ export default class GameContext {
 
     this.renderer.useVolumetric = true;
     this.renderer.setFogTexture("Assets/Textures/Fog.png");
+    this.renderer.setFogDensity(60 * 0.005)
+    this.renderer.setFogBlur(true);
+    this.renderer.setFogRenderScale(0.5);
 
     // Create a GUI renderer and attach it to the document body
     this.guiRenderer = new GUIRenderer();
@@ -42,8 +40,6 @@ export default class GameContext {
     this.guiRenderer.domElement.className = "guiContainer";
 
     this.game = new Game(this.renderer, this.guiRenderer, this.soundManager);
-
-    this.metaGui = new MetaGUI(this.guiRenderer);
   }
 
   resize(width: number, height: number) {
@@ -52,23 +48,6 @@ export default class GameContext {
 
   onExit() {
     this.game.onExit();
-
-    SetCookie(
-      "volumetricRenderScale",
-      this.metaGui.volumetricRenderScaleSlider.getValue()
-    );
-    SetCookie(
-      "volumetricBlur",
-      this.metaGui.volumetricBlurCheckbox.getChecked()
-    );
-    SetCookie("fogDensity", this.metaGui.densitySlider.getValue());
-    SetCookie("sensitivity", this.metaGui.sensitivitySlider.getValue());
-    SetCookie("ambientMultiplier", this.metaGui.ambientSlider.getValue());
-    SetCookie(
-      "volumetric",
-      this.metaGui.volumetricLightingCheckbox.getChecked()
-    );
-    SetCookie("cameraFollow", this.metaGui.cameraFollowCheckbox.getChecked());
   }
 
   async loadMeshes(progress: {
@@ -96,44 +75,16 @@ export default class GameContext {
     });
   }
 
-  start() {}
+  start() {
+    
+  }
 
   update(dt: number) {
     this.game.update(dt);
-    if (Input.keys["O"]) {
-      if (!this.oWasPressed) {
-        this.metaGui.metaGuiDiv.toggleHidden();
-      }
-      this.oWasPressed = true;
-    } else {
-      this.oWasPressed = false;
-    }
   }
 
   preRendereringUpdate(dt: number) {
     this.game.preRenderingUpdate(dt);
-
-    // Update sensitivity according to sensitivity slider
-    sensitivity = this.metaGui.sensitivitySlider.getValue() * 0.04;
-
-    // Update blur of volumetric pass based on blur checkbox
-    this.renderer.setFogBlur(this.metaGui.volumetricBlurCheckbox.getChecked());
-
-    // Update fog render scale according to render scale slider
-    this.renderer.setFogRenderScale(
-      this.metaGui.volumetricRenderScaleSlider.getValue() * 0.01
-    );
-
-    // Update fog density according to density slider
-    this.renderer.setFogDensity(this.metaGui.densitySlider.getValue() * 0.005); // 60 is a good value for the finished game I think
-
-    // Update usage of volumetric lighting based on checkbox
-    this.renderer.useVolumetric =
-      this.metaGui.volumetricLightingCheckbox.getChecked();
-
-    // Update ambient multiplier based on ambient slider
-    this.game.getLevel().scene.getDirectionalLight().ambientMultiplier =
-      this.metaGui.ambientSlider.getValue() * 0.01;
   }
 
   draw() {

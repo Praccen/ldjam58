@@ -15,8 +15,7 @@ import { Input } from "../Input";
 import ItemHandler from "../Systems/ItemHandler";
 import Level from "./Level";
 import SoundManager from "../Audio/SoundManager";
-
-const sensitivity = 0.4;
+ 
 const accelerationForce = 75.0;
 const jumpForce = 5.0;
 
@@ -42,6 +41,7 @@ export default class PlayerController {
   private rendering: Renderer3D;
   private level: Level;
 
+  sensitivity: number = 0.5;
   private mouseMovement: vec2;
 
   private pitch = 0.0;
@@ -295,8 +295,8 @@ export default class PlayerController {
 
     if (document.pointerLockElement == document.getElementById("gameDiv")) {
       // Make sure the user is not changing a slider
-      this.pitch -= mouseDiff[1] * sensitivity;
-      this.jaw -= mouseDiff[0] * sensitivity;
+      this.pitch -= mouseDiff[1] * this.sensitivity;
+      this.jaw -= mouseDiff[0] * this.sensitivity;
     }
 
     this.pitch = Math.max(Math.min(this.pitch, 89), -89); // Don't allow the camera to go past 89 degrees

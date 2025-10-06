@@ -4,7 +4,6 @@ import {
   GUIRenderer,
   Renderer3D,
   vec3,
-  WorldEditor,
 } from "praccen-web-engine";
 import { GetCookie, SetCookie } from "../Utils/WebUtils.js";
 import GameGUI from "../GUI/GameGUI.js";
@@ -26,7 +25,6 @@ export default class Game {
   soundManager: SoundManager;
 
   private level: Level;
-  private worldEditor: WorldEditor;
 
   private gameTimer = 0.0;
 
@@ -78,15 +76,6 @@ export default class Game {
 
     // Connect inventory to player controller after level is created
     this.inventory.setPlayerController(this.level.getPlayerController());
-
-    this.worldEditor = new WorldEditor(
-      this.camera,
-      this.level.scene,
-      this.level.physicsScene,
-      this.guiRenderer
-    );
-
-    // this.worldEditor.setEnabled(true);
   }
 
   loadSounds() {
@@ -136,10 +125,6 @@ export default class Game {
   }
 
   update(dt: number) {
-    if (this.worldEditor.interacting()) {
-      this.level.map.updateFocusRoom(this.camera.getPosition());
-      return;
-    }
     this.gameTimer += dt;
 
     // Handle inventory toggle (I key)

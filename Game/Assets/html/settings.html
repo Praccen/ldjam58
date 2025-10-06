@@ -361,6 +361,21 @@
                         id="sfx-slider"
                     />
                 </div>
+
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>Mouse sensitivity</span>
+                        <span class="setting-value" id="sensitivity-value">50%</span>
+                    </div>
+                    <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value="50"
+                        class="slider"
+                        id="sensitivity-slider"
+                    />
+                </div>
             </div>
 
             <button class="menu-button" onclick="returnToMenu()">
@@ -374,18 +389,24 @@
             // Load saved settings from localStorage
             const musicSlider = document.getElementById('music-slider');
             const sfxSlider = document.getElementById('sfx-slider');
+            const sensitivitySlider = document.getElementById('sensitivity-slider');
             const musicValue = document.getElementById('music-value');
             const sfxValue = document.getElementById('sfx-value');
+            const sensitivityValue = document.getElementById('sensitivity-value');
 
             // Load saved values or use defaults (30% music, 30% SFX)
             const savedMusicVolume = localStorage.getItem('musicVolume') || '30';
             const savedSfxVolume = localStorage.getItem('sfxVolume') || '30';
+            const savedSensitivity = localStorage.getItem("sensitivity") || '50';
 
             musicSlider.value = savedMusicVolume;
             musicValue.textContent = savedMusicVolume + '%';
 
             sfxSlider.value = savedSfxVolume;
             sfxValue.textContent = savedSfxVolume + '%';
+
+            sensitivitySlider.value = savedSensitivity;
+            sensitivityValue.textContent = savedSensitivity + '%';
 
             // Update music volume
             musicSlider.addEventListener('input', function() {
@@ -418,6 +439,18 @@
                 // Update sound manager directly
                 if (window.parent && window.parent.soundManager) {
                     window.parent.soundManager.setSfxVolume(value / 100);
+                }
+            });
+
+            // Sensitivity 
+             sensitivitySlider.addEventListener('input', function() {
+                const value = this.value;
+                sensitivityValue.textContent = value + '%';
+                localStorage.setItem('sensitivity', value);
+
+                // Update parent window's sensitivity
+                if (window.parent && window.parent.setSensitivity) {
+                    window.parent.setSensitivity(value / 100);
                 }
             });
 

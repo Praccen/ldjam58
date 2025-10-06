@@ -608,14 +608,13 @@ export default class ProceduralMap {
         Math.min(row, this.rows.get(floorNumber) - 1)
       ].push(transform); // Save transform to be able to cull it with custom culling
 
-    if (floorNumber == 0) {
-      let physObj = this.floorPhysicsScenes
-      .get(floorNumber)
-      .addNewPhysicsObject(transform);
-      physObj.boundingBox.setMinAndMaxVectors(vec3.fromValues(-5.7, -0.2, -5.7), vec3.fromValues(5.7, 0.2, 5.7))
-      physObj.isStatic = true;
-      physObj.frictionCoefficient = 0.0;
-    }
+    let physObj = this.floorPhysicsScenes
+    .get(floorNumber)
+    .addNewPhysicsObject(transform);
+    physObj.boundingBox.setMinAndMaxVectors(vec3.fromValues(-5.7, -0.2, -5.7), vec3.fromValues(5.7, 0.2, 5.7))
+    physObj.isStatic = true;
+    physObj.frictionCoefficient = 0.0;
+    
   }
 
   /**

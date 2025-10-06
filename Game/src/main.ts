@@ -137,6 +137,10 @@ function setSfxVolume(volume: number) {
   soundManager.setSfxVolume(volume);
 }
 
+function setSensitivity(value: number) {
+  gameContext.game.getLevel().getPlayerController().sensitivity = value;
+}
+
 function showSettings() {
   mainMenu.mainMenu.style.display = "none";
   settingsScreen.show();
@@ -152,6 +156,7 @@ function closeSettings() {
 (window as any).startMenuMusic = startMenuMusic;
 (window as any).setMusicVolume = setMusicVolume;
 (window as any).setSfxVolume = setSfxVolume;
+(window as any).setSensitivity = setSensitivity;
 (window as any).showSettings = showSettings;
 (window as any).closeSettings = closeSettings;
 
@@ -398,8 +403,6 @@ window.addEventListener("beforeunload", function (e: BeforeUnloadEvent) {
 // A timer to keep track of frame time
 let lastUpdateTime = Date.now();
 
-let frames = 0;
-let fpsUpdateTimer = 0.0;
 let accumulativeDt = 0.0;
 
 const tickRate = 1.0 / 144.0;
@@ -416,15 +419,7 @@ function animate() {
   requestAnimationFrame(animate);
   let now = Date.now();
   let dt = (now - lastUpdateTime) * 0.001;
-  frames++;
-  fpsUpdateTimer += dt;
-  if (fpsUpdateTimer > 0.5) {
-    gameContext.metaGui.fpsDisplay.textString = Math.floor(
-      frames / fpsUpdateTimer
-    ).toString();
-    frames = 0;
-    fpsUpdateTimer = 0.0;
-  }
+  
   lastUpdateTime = now;
 
   accumulativeDt += dt;
