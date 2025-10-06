@@ -16,7 +16,17 @@ window.addEventListener("contextmenu", function (e: Event) {
 let menuMusic: Howl | null = null;
 
 // Game sound manager - persists across game sessions
+// Initialize with saved volumes from localStorage
+const savedMusicVolume = localStorage.getItem('musicVolume');
+const savedSfxVolume = localStorage.getItem('sfxVolume');
 export let soundManager = new SoundManager();
+// Set initial volumes from localStorage
+if (savedMusicVolume) {
+  soundManager.setMusicVolume(parseInt(savedMusicVolume) / 100);
+}
+if (savedSfxVolume) {
+  soundManager.setSfxVolume(parseInt(savedSfxVolume) / 100);
+}
 
 let splashScreen = new SplashScreen();
 let mainMenu = new MainMenu();

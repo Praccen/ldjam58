@@ -9,10 +9,16 @@ interface SoundConfig {
   html5?: boolean;
 }
 
+enum SoundCategory {
+  SFX,
+  MUSIC
+}
+
 export default class SoundManager {
   private sounds: Map<string, Howl> = new Map();
-  private musicVolume: number = 0.5;
-  private sfxVolume: number = 0.7;
+  private soundCategories: Map<string, SoundCategory> = new Map(); // Track which category each sound belongs to
+  private musicVolume: number = 0.3;
+  private sfxVolume: number = 0.3;
   private listenerPosition: vec3 = vec3.create();
   private listenerDirection: vec3 = vec3.fromValues(0, 0, -1);
   private currentMusicId: number | null = null;
@@ -21,24 +27,21 @@ export default class SoundManager {
   constructor() {
     // Set global howlar volume
     Howler.volume(1.0);
-
-    // Load saved volumes from localStorage (default 30%)
-    const savedMusicVolume = localStorage.getItem('musicVolume');
-    this.musicVolume = savedMusicVolume ? parseInt(savedMusicVolume) / 100 : 0.3;
-
-    const savedSfxVolume = localStorage.getItem('sfxVolume');
-    this.sfxVolume = savedSfxVolume ? parseInt(savedSfxVolume) / 100 : 0.3;
   }
 
-  loadSound(name: string, config: SoundConfig): void {
+  loadSound(name: string, config: SoundConfig, category: 'sfx' | 'music' = 'sfx'): void {
     // Don't reload if already loaded
     if (this.sounds.has(name)) {
       return;
     }
 
+    // Determine which category volume to use
+    const categoryEnum = category === 'music' ? SoundCategory.MUSIC : SoundCategory.SFX;
+    const categoryVolume = category === 'music' ? this.musicVolume : this.sfxVolume;
+
     const sound = new Howl({
       src: config.src,
-      volume: config.volume ?? 1.0,
+      volume: config.volume ?? categoryVolume,
       loop: config.loop ?? false,
       sprite: config.sprite,
       preload: true,
@@ -46,6 +49,7 @@ export default class SoundManager {
     });
 
     this.sounds.set(name, sound);
+    this.soundCategories.set(name, categoryEnum);
   }
 
   playSfx(name: string, volume?: number): number | null {
@@ -253,22 +257,32 @@ export default class SoundManager {
 
   setSfxVolume(volume: number): void {
     this.sfxVolume = Math.max(0, Math.min(1, volume));
-    localStorage.setItem('sfxVolume', Math.round(this.sfxVolume * 100).toString());
+
+    // Update all SFX sounds
+    this.sounds.forEach((sound, name) => {
+      const category = this.soundCategories.get(name);
+      if (category === SoundCategory.SFX) {
+        sound.volume(this.sfxVolume);
+      }
+    });
   }
 
   setMusicVolume(volume: number): void {
     this.musicVolume = Math.max(0, Math.min(1, volume));
-    localStorage.setItem('musicVolume', Math.round(this.musicVolume * 100).toString());
 
-    // Update the default volume on the currently playing sound's Howl object
-    if (this.musicName && this.currentMusicId !== null) {
-      const sound = this.sounds.get(this.musicName);
-      if (sound) {
-        // Update both the default volume and the current instance volume
+    // Update all music sounds
+    this.sounds.forEach((sound, name) => {
+      const category = this.soundCategories.get(name);
+      if (category === SoundCategory.MUSIC) {
+
         sound.volume(this.musicVolume);
-        sound.volume(this.musicVolume, this.currentMusicId);
+
+        // If this is the currently playing music, also update the instance
+        if (name === this.musicName && this.currentMusicId !== null) {
+          sound.volume(this.musicVolume, this.currentMusicId);
+        }
       }
-    }
+    });
   }
 
   setMuted(muted: boolean): void {
