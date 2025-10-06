@@ -32,7 +32,7 @@ const floorLayouts: string[] = [
   // `,
   `
   5111111
-  1111111
+  0111111
   1112111
   112X211
   1112111
@@ -411,7 +411,7 @@ export default class ProceduralMap {
 
         // Check if this is an accessible room (value = 0 in the map)
         if (mapFloor[coordCol] && mapFloor[coordCol][coordRow] === 0) {
-          rooms.push(vec2.fromValues(col, row));
+          rooms.push(vec2.fromValues(coordCol, coordRow));
         }
       }
     }
@@ -1213,6 +1213,18 @@ export default class ProceduralMap {
     );
   }
 
+  getMapForFloor(floorNumber: number): Array<Array<number>> {
+    return this.map.get(floorNumber);
+  }
+
+  getFloorShaftCoords(floorNumber: number): vec2 {
+    let room = vec2.fromValues(3, 3); // Standard 
+    if (this.floorShaftRoom.has(floorNumber)) {
+      room = this.floorShaftRoom.get(floorNumber);
+    }
+    return room;
+  }
+
   getfloorShaftRoomPos(floorNumber: number): vec3 {
     let room = vec2.fromValues(3, 3); // Standard 
     if (this.floorShaftRoom.has(floorNumber)) {
@@ -1223,6 +1235,10 @@ export default class ProceduralMap {
       floorNumber * -roomHeight,
       room[1] * roomSize + roomSize / 2
     );
+  }
+
+  getGraphicsLayer(floorNumber: number): { enabled: boolean }[][][]{
+    return this.graphicsContent.get(floorNumber) || [];
   }
 
   private createExitLight(floorNumber: number, scene: Scene) {

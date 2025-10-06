@@ -4,13 +4,16 @@ import {
   ParticleSpawner,
   PhysicsObject,
   PhysicsScene,
+  quat,
   Ray,
   Renderer3D,
   Scene,
   Shape,
+  Transform,
   vec3,
 } from "praccen-web-engine";
 import ProceduralMap, {
+  convertCoordIncludingWallsToRoomIndex,
   roomHeight,
   roomSize,
 } from "../Generators/Map/ProceduralMapGenerator";
@@ -22,6 +25,7 @@ import { triggerAsyncId } from "async_hooks";
 import GhostManager from "./GhostManager";
 import ArrowTrap, { TrapDirection } from "./ArrowTrap";
 import { GraphicsBundle } from "../../../dist/Engine";
+import { Factories } from "../Utils/Factories";
 
 type TriggerCallback = (triggerName: string) => void;
 
@@ -64,10 +68,13 @@ export default class Level {
   callbacks: LevelCallbacks = {};
 
   private arrowTraps: ArrowTrap[] = [];
-  private trapTriggers: Map<AreaTrigger, ArrowTrap> = new Map();
+  private trapTriggers: Map<CollisionTrigger, ArrowTrap> = new Map();
 
   private currentFloorShaft: vec2;
   private game: Game;
+
+  private arrowDispenserInstancedObject: GraphicsBundle;
+  private tripWireInstancedObject: GraphicsBundle;
 
   constructor(renderer: Renderer3D, game: Game) {
     this.game = game;
@@ -162,26 +169,73 @@ export default class Level {
     );
     this.itemHandler.setPlayer(this.playerController);
 
-    this.map.floorPhysicsScenes.forEach(
-      (floorPhysicsScene: PhysicsScene, floor: number) => {
-        floorPhysicsScene.addNewPhysicsObject(
-          this.playerController.getPhysicsObject().transform,
-          this.playerController.getPhysicsObject()
-        );
+    this.scene.renderer.meshStore
+      .loadMeshes(["Assets/objs/cube.obj", "Assets/objs/cube2.obj"], { loaded: 0 })
+      .then(async () => {
+        this.tripWireInstancedObject = await Factories.createInstancedMesh(this.scene, 
+        "Assets/objs/cube2.obj", 
+        "CSS:rgb(0,0,0)",
+        "CSS:rgb(255,255,255)");
 
-        // Spawn items
-        const accessibleRooms = this.map.getAccessibleRooms(floor);
+        this.arrowDispenserInstancedObject = await Factories.createInstancedMesh(this.scene, 
+        "Assets/objs/cube.obj", 
+        "CSS:rgb(0,0,0)",
+        "CSS:rgb(20,20,20)");
 
-        const worldRooms = accessibleRooms.map((room) => {
-          const worldPos = this.map.getRoomCenterWorldPos(floor, room);
-          return { x: worldPos[0], y: worldPos[1], z: worldPos[2] };
-        });
+        this.map.floorPhysicsScenes.forEach(
+        (floorPhysicsScene: PhysicsScene, floor: number) => {
+          floorPhysicsScene.addNewPhysicsObject(
+            this.playerController.getPhysicsObject().transform,
+            this.playerController.getPhysicsObject()
+          );
 
-        this.itemHandler.spawnItemsForFloor(
-          worldRooms,
-          floor,
-          floorPhysicsScene
-        );
+          // Spawn items
+          const accessibleRooms = this.map.getAccessibleRooms(floor);
+
+          const worldRooms = accessibleRooms.map((room) => {
+            const worldPos = this.map.getRoomCenterWorldPos(floor, room);
+            return { x: worldPos[0], y: worldPos[1], z: worldPos[2] };
+          });
+
+          this.itemHandler.spawnItemsForFloor(
+            worldRooms,
+            floor,
+            floorPhysicsScene
+          );
+
+          // Spawn traps
+          const trapRooms = this.map.getAccessibleRooms(floor);
+          for (const trapRoom of trapRooms) {
+            if (Math.random() * (floor / this.map.endFloor) < 0.5) {
+              continue;
+            }
+
+            // Never put a trap on the wall leading into the shaft
+            if (this.map.getFloorShaftCoords(floor)[0] == convertCoordIncludingWallsToRoomIndex(trapRoom[0]) && this.map.getFloorShaftCoords(floor)[1] == convertCoordIncludingWallsToRoomIndex(trapRoom[1]) - 1) {
+              continue;
+            }
+
+            // Consider spawning trap
+            // Check for a wall to put arrow dispenser on
+            let directions = [];
+            if (this.map.getMapForFloor(floor)[trapRoom[0] - 1][trapRoom[1]]%16 == 2 && this.map.getMapForFloor(floor)[trapRoom[0] + 1][trapRoom[1]]%16 == 2) {
+              directions.push(TrapDirection.EAST); 
+              directions.push(TrapDirection.WEST);
+            }
+            if (this.map.getMapForFloor(floor)[trapRoom[0]][trapRoom[1] - 1]%16 == 1 && this.map.getMapForFloor(floor)[trapRoom[0]][trapRoom[1] + 1]%16 == 1) {
+              directions.push(TrapDirection.SOUTH);
+              directions.push(TrapDirection.NORTH);
+            }
+
+            if (directions.length == 0) {
+              continue;
+            }
+
+            const direction = directions[Math.floor(Math.random() * directions.length)];
+            this.addArrowTrap(this.map.getRoomCenterWorldPos(floor, trapRoom), direction, this.map.getGraphicsLayer(floor), floorPhysicsScene);
+          }
+        }
+      );
       }
     );
 
@@ -242,18 +296,6 @@ export default class Level {
 
     const shaft = this.map.getfloorShaftRoomPos(this.map.getCurrentFloor());
     this.currentFloorShaft = vec2.fromValues(shaft[0], shaft[2]);
-
-    // Add arrow trap in spawn room
-    const spawnRoom = this.map.getPlayerSpawnRoom();
-    const spawnRoomX = spawnRoom[0] * roomSize + roomSize / 2;
-    const spawnRoomZ = spawnRoom[1] * roomSize + roomSize / 2;
-
-    this.addArrowTrap(
-      vec3.fromValues(spawnRoomX - roomSize / 2 - 0.5, 1.5, spawnRoomZ),
-      TrapDirection.EAST,
-      vec3.fromValues(spawnRoomX + 2, 0, spawnRoomZ),
-      1.5
-    );
   }
 
   update(camera: Camera, dt: number) {
@@ -363,17 +405,35 @@ export default class Level {
 
   /**
    * Adds an arrow trap to the level with an area trigger
-   * @param trapPosition Position where arrows spawn from (wall position)
+   * @param trapRoomPosition Position of the center of the room that the trap should be in
    * @param direction Direction arrows will fly
-   * @param triggerPosition Center of the trigger area
    * @param triggerSize Size of the trigger area (half-width/height)
    */
   addArrowTrap(
-    trapPosition: vec3,
+    trapRoomPosition: vec3,
     direction: TrapDirection,
-    triggerPosition: vec3,
-    triggerSize: number
+    graphicsLayer: { enabled: boolean }[][][],
+    physicsScene: PhysicsScene
   ): void {
+    let offset = vec3.create();
+    let tripwireRotation = 0.0;
+    if (direction == TrapDirection.EAST) {
+      vec3.set(offset, -roomSize * 0.45, 1.5, 0.0);
+    }
+    else if (direction == TrapDirection.NORTH) {
+      vec3.set(offset, 0.0, 1.5, roomSize * 0.45);
+      tripwireRotation = 90;
+    }
+    else if (direction == TrapDirection.SOUTH) {
+      vec3.set(offset, 0.0, 1.5, -roomSize * 0.45);
+      tripwireRotation = 90;
+    }
+    else if (direction == TrapDirection.WEST) {
+      vec3.set(offset, roomSize * 0.45, 1.5, 0.0);
+    }
+
+    let trapPosition = vec3.add(vec3.create(), trapRoomPosition, offset);
+
     const trap = new ArrowTrap(
       this.scene,
       this.physicsScene,
@@ -383,75 +443,58 @@ export default class Level {
     );
     this.arrowTraps.push(trap);
 
-    const trigger: AreaTrigger = {
+    // Add visual trip wire
+    let tripwireTransform = this.scene.addNewInstanceOfInstancedMesh(this.tripWireInstancedObject)
+    vec3.set(
+      tripwireTransform.position,
+      trapRoomPosition[0],
+      trapRoomPosition[1] + 0.4,
+      trapRoomPosition[2]
+    );
+    vec3.set(
+      tripwireTransform.scale,
+      roomSize,
+      0.05,
+      0.05
+    );
+    quat.fromEuler(tripwireTransform.rotation, 0.0, tripwireRotation, 0.0);
+    tripwireTransform.calculateMatrices();
+    graphicsLayer[Math.floor(trapRoomPosition[0] / roomSize)][Math.floor(trapRoomPosition[2] / roomSize)].push(tripwireTransform);
+
+    let tripwirePhysObj = physicsScene.addNewPhysicsObject(tripwireTransform);
+    tripwirePhysObj.isStatic = true;
+    tripwirePhysObj.isCollidable = false;
+    physicsScene.update(0.0, true, false);
+
+    const trigger: CollisionTrigger = {
       name: `arrow_trap_${this.arrowTraps.length}`,
-      x: triggerPosition[0],
-      y: triggerPosition[2],
-      width: triggerSize,
-      height: triggerSize,
+      collisionObject: tripwirePhysObj,
       callback: () => {
         trap.trigger();
       },
     };
-    this.areaTriggers.push(trigger);
+    this.collisionTriggers.push(trigger);
     this.trapTriggers.set(trigger, trap);
 
-    // Add visual pressure plate
-    this.scene
-      .addNewMesh(
-        "Assets/objs/cube.obj",
-        "CSS:rgb(100,100,100)",
-        "CSS:rgb(50,50,50)"
-      )
-      .then((bundle: GraphicsBundle) => {
-        vec3.set(
-          bundle.transform.position,
-          triggerPosition[0],
-          0.05,
-          triggerPosition[2]
-        );
-        vec3.set(
-          bundle.transform.scale,
-          triggerSize * 0.8,
-          0.05,
-          triggerSize * 0.8
-        );
-        trap.triggerPosition = bundle.transform.position;
-      });
 
     // Add arrow slit on the wall
     // TODO Add better model
-    this.scene
-      .addNewMesh(
-        "Assets/objs/cube.obj",
-        "CSS:rgb(40,40,40)",
-        "CSS:rgb(20,20,20)"
-      )
-      .then((bundle: GraphicsBundle) => {
-        // Position the slit at the trap position
-        vec3.set(
-          bundle.transform.position,
-          trapPosition[0],
-          trapPosition[1],
-          trapPosition[2]
-        );
-
-        // Scale based on direction (horizontal slit)
-        switch (direction) {
-          case TrapDirection.NORTH:
-          case TrapDirection.SOUTH:
-            // Slit runs horizontally along X axis
-            vec3.set(bundle.transform.scale, 2.5, 0.6, 0.15);
-            break;
-          case TrapDirection.EAST:
-          case TrapDirection.WEST:
-            // Slit runs horizontally along Z axis
-            vec3.set(bundle.transform.scale, 2.5, 0.6, 0.15);
-            break;
-        }
-
-        trap.holePosition = bundle.transform.position;
-      });
+    let dispenserTransform = this.scene.addNewInstanceOfInstancedMesh(this.arrowDispenserInstancedObject)
+    vec3.set(
+      dispenserTransform.position,
+      trapPosition[0],
+      trapPosition[1],
+      trapPosition[2]
+    );
+    vec3.set(
+      dispenserTransform.scale,
+      0.15, 0.6, 0.15
+    );
+    quat.fromEuler(dispenserTransform.rotation, 0.0, tripwireRotation, 0.0);
+    dispenserTransform.calculateMatrices();
+    dispenserTransform.enabled = true;
+    graphicsLayer[Math.floor(trapRoomPosition[0] / roomSize)][Math.floor(trapRoomPosition[2] / roomSize)].push(dispenserTransform);
+    trap.holePosition = dispenserTransform.position;
   }
 
   private damagePlayer(): void {
