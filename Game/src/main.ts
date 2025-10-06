@@ -256,6 +256,8 @@ function onGameComplete() {
   if ((window as any).startParticleSystem) {
     (window as any).startParticleSystem();
   }
+
+  document.exitPointerLock();
 }
 
 function onGameLose() {
@@ -299,6 +301,8 @@ function onGameLose() {
   if ((window as any).startParticleSystem) {
     (window as any).startParticleSystem();
   }
+  
+  document.exitPointerLock();
 }
 
 /**

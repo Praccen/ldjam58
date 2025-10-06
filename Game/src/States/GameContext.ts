@@ -76,10 +76,13 @@ export default class GameContext {
   }
 
   start() {
-    
+    document.body.requestPointerLock();
   }
 
   update(dt: number) {
+    if (Input.mouseClicked) {
+      document.body.requestPointerLock();
+    }
     this.game.update(dt);
   }
 

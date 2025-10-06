@@ -293,11 +293,8 @@ export default class PlayerController {
       this.jaw += -Input.joystickRightDirection[0] * 2.0;
     }
 
-    if (document.pointerLockElement == document.getElementById("gameDiv")) {
-      // Make sure the user is not changing a slider
-      this.pitch -= mouseDiff[1] * this.sensitivity;
-      this.jaw -= mouseDiff[0] * this.sensitivity;
-    }
+    this.pitch -= mouseDiff[1] * this.sensitivity;
+    this.jaw -= mouseDiff[0] * this.sensitivity;
 
     this.pitch = Math.max(Math.min(this.pitch, 89), -89); // Don't allow the camera to go past 89 degrees
     this.jaw = this.jaw % 360;

@@ -1,8 +1,6 @@
 import { TextObject3D } from "praccen-web-engine";
 
 export default class GameGUI {
-  mapDisplay: TextObject3D;
-  characterDisplay: TextObject3D;
   private hudElement: HTMLElement;
 
   constructor() {
