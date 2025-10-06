@@ -7,6 +7,8 @@ import Settings from "./States/Settings.js";
 import Game from "./States/Game.js";
 import { Howler } from "howler";
 import SoundManager from "./Audio/SoundManager.js";
+import ShopManager from "./Systems/ShopManager.js";
+import ShopScreen from "./States/ShopScreen.js";
 
 window.addEventListener("contextmenu", function (e: Event) {
   e.preventDefault();
@@ -37,6 +39,7 @@ let menuMusicStarted = false;
 let splashScreen = new SplashScreen();
 let mainMenu = new MainMenu();
 let settingsScreen = new Settings();
+let shopScreen = new ShopScreen();
 let endGameScreen = new EndGame();
 let loseGameScreen = new LoseGame();
 
@@ -83,6 +86,9 @@ function startGame() {
     mainMenu.mainMenu.style.display = "none";
     endGameScreen.hide();
     loseGameScreen.hide();
+
+    // Reset death ward for new run
+    ShopManager.resetDeathWard();
 
     gameContext.start();
     gameStartTime = Date.now();
@@ -147,6 +153,16 @@ function closeSettings() {
   mainMenu.mainMenu.style.display = "block";
 }
 
+function showShop() {
+  mainMenu.mainMenu.style.display = "none";
+  shopScreen.show();
+}
+
+function closeShop() {
+  shopScreen.hide();
+  mainMenu.mainMenu.style.display = "block";
+}
+
 // Make functions available globally for the HTML
 (window as any).startGame = startGame;
 (window as any).startMenuMusic = startMenuMusic;
@@ -155,6 +171,8 @@ function closeSettings() {
 (window as any).setSensitivity = setSensitivity;
 (window as any).showSettings = showSettings;
 (window as any).closeSettings = closeSettings;
+(window as any).showShop = showShop;
+(window as any).closeShop = closeShop;
 
 /**
  * Function to return to main menu - called from the end game screen
@@ -320,7 +338,10 @@ function calculateItemValue(
   // Add some randomness (±20%)
   const randomFactor = 0.8 + Math.random() * 0.4 ;
 
-  return Math.floor(baseValue * multiplier * randomFactor * quantity);
+  // Apply shop upgrade bonus
+  const shopMultiplier = ShopManager.getArtifactValueMultiplier();
+
+  return Math.floor(baseValue * multiplier * randomFactor * quantity * shopMultiplier);
 }
 
 /**
@@ -457,6 +478,10 @@ function loadingScreenAnimate() {
     splashScreen.destroy();
     currentState = GameState.PLAYING;
     gameStartTime = Date.now();
+
+    // Reset death ward for new run
+    ShopManager.resetDeathWard();
+
     gameContext.start();
 
     // Focus the main document to enable keyboard input

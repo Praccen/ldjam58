@@ -87,6 +87,12 @@ export default class Game {
     );
 
     // this.worldEditor.setEnabled(true);
+    // Initialize HUD with correct values from shop upgrades
+    this.gui.updateCharms(
+      this.level.getPlayerController().getProtectionCharms(),
+      this.level.getPlayerController().getMaxProtectionCharms()
+    );
+    this.gui.updateFloor(this.level.map.getCurrentFloor());
   }
 
   loadSounds() {

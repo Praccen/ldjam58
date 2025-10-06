@@ -26,6 +26,7 @@ import GhostManager from "./GhostManager";
 import ArrowTrap, { TrapDirection } from "./ArrowTrap";
 import { GraphicsBundle } from "../../../dist/Engine";
 import { Factories } from "../Utils/Factories";
+import ShopManager from "../Systems/ShopManager";
 
 type TriggerCallback = (triggerName: string) => void;
 
@@ -500,6 +501,16 @@ export default class Level {
   private damagePlayer(): void {
     const currentCharms = this.playerController.getProtectionCharms();
     if (currentCharms > -1) {
+      // Check for death ward before applying fatal damage
+      if (currentCharms === 0 && ShopManager.hasDeathWard() && !ShopManager.hasUsedDeathWard()) {
+        // Death ward saves the player once
+        ShopManager.useDeathWard();
+        this.game.gui.showHauntedMessage("The Death Ward protects you!");
+        this.game.gui.showDamageEffect();
+        // Don't reduce charms, player survives with 0 charms
+        return;
+      }
+
       this.playerController.setProtectionCharms(currentCharms - 1);
 
       // Show damage effect

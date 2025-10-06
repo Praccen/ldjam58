@@ -9,6 +9,7 @@ import {
 import Inventory from "./Inventory";
 import PlayerController from "../Objects/PlayerController";
 import GameGUI from "../GUI/GameGUI";
+import ShopManager from "./ShopManager";
 
 export default class ItemHandler {
   private items = new Map<number, Item>();
@@ -43,9 +44,9 @@ export default class ItemHandler {
   private getRandomCurseType(floor: number): CurseType {
     // Common curses available at all floors
     const commonCurses = [
-      CurseType.SPEED,
-      CurseType.TORCH,
-      CurseType.SIGHT,
+      // CurseType.SPEED,
+      // CurseType.TORCH,
+      // CurseType.SIGHT,
       CurseType.HAUNT,
     ];
 
@@ -144,35 +145,37 @@ export default class ItemHandler {
     floor: number
   ): "common" | "rare" | "epic" | "legendary" {
     // Deeper floors have better items, but legendaries are very rare
+    // Apply luck bonus from shop upgrades (shifts roll toward better items)
+    const rarityBoost = ShopManager.getRarityBoost() * 100; // Convert to percentage points
     const roll = Math.random() * 100;
 
     // Floor 1-3: Mostly common, some rare
     if (floor <= 3) {
-      if (roll < 70) return "common";
+      if (roll < 70 - rarityBoost) return "common";
       return "rare"; // No epics or legendaries
     }
 
     // Floor 4-6: Less common, more rare, some epic
     if (floor <= 6) {
-      if (roll < 50) return "common";
-      if (roll < 95) return "rare";
-      if (roll < 98) return "epic";
+      if (roll < 50 - rarityBoost) return "common";
+      if (roll < 95 - rarityBoost * 0.5) return "rare";
+      if (roll < 98 - rarityBoost * 0.3) return "epic";
       return "legendary"; // Very rare
     }
 
     // Floor 7-9: Balanced distribution
     if (floor <= 9) {
-      if (roll < 35) return "common";
-      if (roll < 70) return "rare";
-      if (roll < 93) return "epic";
+      if (roll < 35 - rarityBoost) return "common";
+      if (roll < 70 - rarityBoost * 0.7) return "rare";
+      if (roll < 93 - rarityBoost * 0.5) return "epic";
       return "legendary"; // Still rare
     }
 
     // Floor 10+: Better items, but legendary still rare
-    if (roll < 20) return "common";
-    if (roll < 55) return "rare";
-    if (roll < 88) return "epic";
-    return "legendary"; // 12% chance
+    if (roll < 20 - rarityBoost) return "common";
+    if (roll < 55 - rarityBoost * 0.7) return "rare";
+    if (roll < 88 - rarityBoost * 0.5) return "epic";
+    return "legendary"; // 12% chance + luck
   }
 
   private getSeverityForFloor(floor: number): "minor" | "major" | "critical" {
@@ -272,7 +275,25 @@ export default class ItemHandler {
   }
 
   triggerCurse(curse: Curse) {
-    const severity = this.getSeverityModifier(curse.severity);
+    const baseSeverity = this.getSeverityModifier(curse.severity);
+
+    // Apply curse resistances from shop upgrades
+    let severity = baseSeverity;
+    switch (curse.type) {
+      case CurseType.SPEED:
+        severity = ShopManager.applyCurseResistance(baseSeverity, "speedResistance");
+        break;
+      case CurseType.TORCH:
+        severity = ShopManager.applyCurseResistance(baseSeverity, "torchResistance");
+        break;
+      case CurseType.SIGHT:
+        severity = ShopManager.applyCurseResistance(baseSeverity, "sightResistance");
+        break;
+      case CurseType.HAUNT:
+        severity = ShopManager.applyCurseResistance(baseSeverity, "hauntResistance");
+        break;
+    }
+
     switch (curse.type) {
       // case CurseType.LUCK:
       //   break;

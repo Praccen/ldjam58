@@ -15,6 +15,7 @@ import { Input } from "../Input";
 import ItemHandler from "../Systems/ItemHandler";
 import Level from "./Level";
 import SoundManager from "../Audio/SoundManager";
+import ShopManager from "../Systems/ShopManager";
  
 const accelerationForce = 75.0;
 const jumpForce = 5.0;
@@ -65,9 +66,9 @@ export default class PlayerController {
 
   private stats: PlayerStats = {
     luck: 1, //TODO
-    protectionCharms: 3,
-    speed: 1.0,
-    torch: 1.0,
+    protectionCharms: ShopManager.getStartingCharms(),
+    speed: ShopManager.getMoveSpeedMultiplier(),
+    torch: ShopManager.getTorchMultiplier(),
     sight: 1.0,
     hauntedCount: 0,
     hauntModifier: 0,
@@ -135,7 +136,7 @@ export default class PlayerController {
     return this.stats.protectionCharms;
   }
   getMaxProtectionCharms(): number {
-    return 3; // Max charms
+    return ShopManager.getMaxCharms();
   }
   setProtectionCharms(value: number): void {
     this.stats.protectionCharms = Math.max(

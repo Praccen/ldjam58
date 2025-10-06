@@ -287,6 +287,9 @@
                 <button class="menu-button primary" onclick="startGame()">
                     Begin Expedition
                 </button>
+                <button class="menu-button" onclick="showShop()">
+                    The Shop
+                </button>
                 <button class="menu-button" onclick="showOptions()">
                     Settings
                 </button>
@@ -322,6 +325,14 @@
                     window.parent.startGame();
                 }
 
+            }
+
+            function showShop() {
+                console.log("Opening shop...");
+                // Call the parent window's showShop function
+                if (window.parent && window.parent.showShop) {
+                    window.parent.showShop();
+                }
             }
 
             function showOptions() {

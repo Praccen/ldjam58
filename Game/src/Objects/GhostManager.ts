@@ -9,6 +9,7 @@ import {
 } from "praccen-web-engine";
 import { roomHeight, roomSize } from "../Generators/Map/ProceduralMapGenerator";
 import GameGUI from "../GUI/GameGUI";
+import ShopManager from "../Systems/ShopManager";
 
 export interface Ghost {
   physicsObject: PhysicsObject;
@@ -217,8 +218,10 @@ export default class GhostManager {
         const xzDistance = Math.sqrt(dx * dx + dz * dz);
 
         // Anger reduces the distance the ghost is willing to travel towards the player
-        let playerDistance = Math.max(0.1, 10 - this.anger * this.anger);
-        if (playerDistance < 1.0 && !this.angeredText) {
+        // Apply fear aura upgrade (keeps ghosts further away)
+        const fearDistance = ShopManager.getGhostFearDistance();
+        let playerDistance = Math.max(0.1, 10 - this.anger * this.anger) + fearDistance;
+        if (playerDistance < 1.0 + fearDistance && !this.angeredText) {
           this.gui.showHauntedMessage(
             "Your actions have angered the spirits greatly.."
           );

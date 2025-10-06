@@ -396,9 +396,8 @@
       window.showHauntedMessage = showHauntedMessage;
       window.showDamageEffect = showDamageEffect;
 
-      // Initialize with default values
-      updateCharms(3, 3);
-      updateFloor(1);
+      // Don't initialize here - let Game.ts initialize with correct shop upgrade values
+      // Game.ts will call updateCharms() and updateFloor() after player is created
     </script>
   </body>
 </html>
