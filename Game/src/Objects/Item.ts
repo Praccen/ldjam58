@@ -5,6 +5,7 @@ import {
   Scene,
   vec3,
   AnimatedGraphicsBundle,
+  quat,
 } from "praccen-web-engine";
 
 export enum ItemType {
@@ -130,6 +131,15 @@ export default class Item {
         this.graphicsBundle.transform.position = this.startPosition;
 
         this.graphicsBundle.transform.scale = vec3.fromValues(scale, scale, scale);
+
+        // Add random rotation around Y-axis (0-360 degrees)
+        const randomYRotationRadians = Math.random() * Math.PI * 2;
+        quat.rotateY(
+          this.graphicsBundle.transform.rotation,
+          this.graphicsBundle.transform.rotation,
+          randomYRotationRadians
+        );
+
         this.physicsObject.boundingBox.setMinAndMaxVectors(vec3.fromValues(-0.5 * 1.0/scale, -0.5 * 1.0/scale, -0.5 * 1.0/scale), vec3.fromValues(0.5 * 1.0/scale, 0.5 * 1.0/scale, 0.5 * 1.0/scale));
 
         this.graphicsBundle.transform.position[1] -=
