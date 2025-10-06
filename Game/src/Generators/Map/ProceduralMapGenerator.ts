@@ -263,6 +263,7 @@ export default class ProceduralMap {
   private floorExitRoom: Map<number, vec2> = new Map<number, vec2>();
   private floorShaftRoom: Map<number, vec2> = new Map<number, vec2>();
   private currentFloor: number = 0;
+  endFloor: number = 0;
   private pointLight: PointLight | null = null;
   focusRoom: vec2;
 
@@ -280,7 +281,9 @@ export default class ProceduralMap {
 
     this.playerSpawnRoom = vec2.fromValues(0, 0);
 
+    floorNumbers.sort();
     this.currentFloor = floorNumbers[0];
+    this.endFloor = floorNumbers[floorNumbers.length - 1];
     for (const floorNumber of floorNumbers) {
       this.generateFloor(floorNumber);
     }
@@ -893,13 +896,14 @@ export default class ProceduralMap {
       for (let row = 0; row < rows + 1; row++) {
         // Tile filling (floor or blocked)
         if (column < columns && row < rows) {
+          const isShaft = (this.floorShaftRoom.get(floorNumber)[0] == column && this.floorShaftRoom.get(floorNumber)[1] == row);
           if (
             mapFloor[convertRoomIndexToCoordIncludingWalls(column)][
               convertRoomIndexToCoordIncludingWalls(row)
-            ] == 0
+            ] == 0 || (this.endFloor == floorNumber && isShaft)
           ) {
             if (
-              !(
+              floorNumber == this.endFloor || !(
                 column * 2 + 1 == this.getExitRoom(floorNumber)[0] &&
                 row * 2 + 1 == this.getExitRoom(floorNumber)[1]
               )
@@ -910,13 +914,14 @@ export default class ProceduralMap {
             let aboveFloor = this.getAboveFloorNumber(floorNumber);
 
             if (
+              !isShaft && (
               aboveFloor == -1 ||
               convertCoordIncludingWallsToRoomIndex(
                 this.getExitRoom(aboveFloor)[0]
               ) != column ||
               convertCoordIncludingWallsToRoomIndex(
                 this.getExitRoom(aboveFloor)[1]
-              ) != row
+              ) != row)
             ) {
               this.createCeilingTile(floorNumber, column, row);
             }

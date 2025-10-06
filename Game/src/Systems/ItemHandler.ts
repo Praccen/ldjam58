@@ -53,7 +53,7 @@ export default class ItemHandler {
     const rareCurses = [
       CurseType.PROTECTIONCHARMS,
       CurseType.JUMPY,
-      CurseType.CANEXTRACT,
+      // CurseType.CANEXTRACT,
     ];
 
     // After floor 8, 20% chance for a rare curse

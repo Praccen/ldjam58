@@ -260,7 +260,7 @@ export default class Level {
     this.playerController.update(camera, dt);
 
     if (this.bucketBundle != undefined) {
-      const target = -roomHeight * this.map.getCurrentFloor() - 1.0;
+      const target = -roomHeight * this.map.getCurrentFloor() - 1.0 + Number(this.map.endFloor == this.map.getCurrentFloor());
       const current = this.bucketBundle.transform.position[1];
 
       this.bucketBundle.transform.position[1] += (target - current) * dt;
