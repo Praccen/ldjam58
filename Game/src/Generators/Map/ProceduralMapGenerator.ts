@@ -1210,7 +1210,10 @@ export default class ProceduralMap {
   }
 
   getfloorShaftRoomPos(floorNumber: number): vec3 {
-    const room = this.floorShaftRoom.get(floorNumber);
+    let room = vec2.fromValues(3, 3); // Standard 
+    if (this.floorShaftRoom.has(floorNumber)) {
+      room = this.floorShaftRoom.get(floorNumber);
+    }
     return vec3.fromValues(
       room[0] * roomSize + roomSize / 2,
       floorNumber * -roomHeight,
