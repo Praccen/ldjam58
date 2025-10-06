@@ -92,18 +92,18 @@ export default class Game {
   loadSounds() {
     this.soundManager.loadSound("arrow_twang", {
       src: ["Assets/Audio/arrow-twang_01-306041.mp3"],
-      volume: 0.5,
+      volume: this.soundManager.getSfxVolume(),
     });
 
     this.soundManager.loadSound("arrow_swish", {
       src: ["Assets/Audio/arrow-swish_03-306040.mp3"],
-      volume: 0.4,
+      volume: this.soundManager.getSfxVolume(),
     });
 
-    // Load ambient cave sound
+    // Load ambient cave sound 
     this.soundManager.loadSound("cave_ambient", {
       src: ["Assets/Audio/cave-temple-fantasy-dark-20185.mp3"],
-      volume: 0.3,
+      volume: this.soundManager.getMusicVolume(), // 15% volume - ambient should be subtle
       loop: false, // Manual looping with crossfade
       html5: true,
     });
@@ -111,7 +111,7 @@ export default class Game {
     // Load footstep sound
     this.soundManager.loadSound("footsteps", {
       src: ["Assets/Audio/concrete-footsteps-6752.mp3"],
-      volume: 0.4,
+      volume: this.soundManager.getSfxVolume(),
       loop: true,
     });
   }

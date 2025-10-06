@@ -99,9 +99,9 @@ function startGame() {
 
 function startMenuMusic() {
   if (currentState === GameState.MAIN_MENU && !menuMusic) {
-    // Get saved music volume or use default (0.4 = 40%)
+    // Get saved music volume or use default 
     const savedVolume = localStorage.getItem('musicVolume');
-    const volume = savedVolume ? parseInt(savedVolume) / 100 : 0.4;
+    const volume = savedVolume ? parseInt(savedVolume) / 100 : 0.3;
 
     menuMusic = new Howl({
       src: ['Assets/Audio/forgotten-echoes-338507.mp3'],
@@ -113,13 +113,16 @@ function startMenuMusic() {
 }
 
 function setMusicVolume(volume: number) {
+  // Update menu music volume (updates both default and all playing instances)
   if (menuMusic) {
     menuMusic.volume(volume);
   }
+
+  // Update sound manager (this will update game ambient music)
+  soundManager.setMusicVolume(volume);
 }
 
 function setSfxVolume(volume: number) {
-  // Update the global SoundManager
   soundManager.setSfxVolume(volume);
 }
 
@@ -158,10 +161,16 @@ async function returnToMenu() {
   if (menuMusic) {
     // Fade in menu music over 2 seconds
     const savedVolume = localStorage.getItem('musicVolume');
-    const targetVolume = savedVolume ? parseInt(savedVolume) / 100 : 0.4;
+    const targetVolume = savedVolume ? parseInt(savedVolume) / 100 : 0.3;
 
-    menuMusic.volume(0);
-    menuMusic.play();
+    // Only play if not already playing
+    if (!menuMusic.playing()) {
+      menuMusic.volume(0);
+      menuMusic.play();
+    } else {
+      // If already playing, just fade from current volume
+      menuMusic.volume(0);
+    }
     menuMusic.fade(0, targetVolume, 2000);
   }
 

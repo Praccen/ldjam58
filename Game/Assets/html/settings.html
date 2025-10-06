@@ -377,9 +377,9 @@
             const musicValue = document.getElementById('music-value');
             const sfxValue = document.getElementById('sfx-value');
 
-            // Load saved values or use defaults (40% music, 70% SFX)
-            const savedMusicVolume = localStorage.getItem('musicVolume') || '40';
-            const savedSfxVolume = localStorage.getItem('sfxVolume') || '70';
+            // Load saved values or use defaults (30% music, 30% SFX)
+            const savedMusicVolume = localStorage.getItem('musicVolume') || '30';
+            const savedSfxVolume = localStorage.getItem('sfxVolume') || '30';
 
             musicSlider.value = savedMusicVolume;
             musicValue.textContent = savedMusicVolume + '%';
@@ -393,9 +393,14 @@
                 musicValue.textContent = value + '%';
                 localStorage.setItem('musicVolume', value);
 
-                // Update parent window's music volume
+                // Update parent window's music volume (menu music and game ambient)
                 if (window.parent && window.parent.setMusicVolume) {
                     window.parent.setMusicVolume(value / 100);
+                }
+
+                // Update sound manager directly
+                if (window.parent && window.parent.soundManager) {
+                    window.parent.soundManager.setMusicVolume(value / 100);
                 }
             });
 
@@ -408,6 +413,11 @@
                 // Update parent window's SFX volume
                 if (window.parent && window.parent.setSfxVolume) {
                     window.parent.setSfxVolume(value / 100);
+                }
+
+                // Update sound manager directly
+                if (window.parent && window.parent.soundManager) {
+                    window.parent.soundManager.setSfxVolume(value / 100);
                 }
             });
 

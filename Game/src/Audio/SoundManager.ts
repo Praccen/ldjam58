@@ -21,6 +21,13 @@ export default class SoundManager {
   constructor() {
     // Set global howlar volume
     Howler.volume(1.0);
+
+    // Load saved volumes from localStorage (default 30%)
+    const savedMusicVolume = localStorage.getItem('musicVolume');
+    this.musicVolume = savedMusicVolume ? parseInt(savedMusicVolume) / 100 : 0.3;
+
+    const savedSfxVolume = localStorage.getItem('sfxVolume');
+    this.sfxVolume = savedSfxVolume ? parseInt(savedSfxVolume) / 100 : 0.3;
   }
 
   loadSound(name: string, config: SoundConfig): void {
@@ -136,17 +143,20 @@ export default class SoundManager {
     }
 
     // Stop any currently playing music
-    this.stopMusic();
+    this.stopMusic(2000);
 
     this.musicName = name;
     const id = sound.play();
     this.currentMusicId = id;
+
+    // Get the sound's default volume (set during loadSound)
+    const soundDefaultVolume = sound.volume() as number;
     sound.volume(0, id);
 
     if (fadeInDuration) {
-      sound.fade(0, this.musicVolume, fadeInDuration, id);
+      sound.fade(0, soundDefaultVolume, fadeInDuration, id);
     } else {
-      sound.volume(this.musicVolume, id);
+      sound.volume(soundDefaultVolume, id);
     }
 
     // Schedule crossfade to start 3 seconds before track ends
@@ -166,15 +176,18 @@ export default class SoundManager {
     const sound = this.sounds.get(name);
     if (!sound) return;
 
+    // Get the sound's default volume (set during loadSound)
+    const soundDefaultVolume = sound.volume() as number;
+
     // Start new instance with crossfade while old one is still playing
     const newId = sound.play();
     this.currentMusicId = newId;
 
     sound.volume(0, newId);
-    sound.fade(0, this.musicVolume, 3000, newId); // 3 second fade in
+    sound.fade(0, soundDefaultVolume, 3000, newId); // 3 second fade in
 
     // Fade out the old instance
-    sound.fade(sound.volume(oldId) || this.musicVolume, 0, 3000, oldId);
+    sound.fade(sound.volume(oldId) || soundDefaultVolume, 0, 3000, oldId);
     setTimeout(() => sound.stop(oldId), 3000);
 
     // Schedule next crossfade
@@ -230,19 +243,32 @@ export default class SoundManager {
     }
   }
 
+  getSfxVolume():number {
+    return this.sfxVolume;
+  }
+
+  getMusicVolume():number {
+    return this.musicVolume;
+  }
+
   setSfxVolume(volume: number): void {
     this.sfxVolume = Math.max(0, Math.min(1, volume));
+    localStorage.setItem('sfxVolume', Math.round(this.sfxVolume * 100).toString());
   }
 
   setMusicVolume(volume: number): void {
     this.musicVolume = Math.max(0, Math.min(1, volume));
+    localStorage.setItem('musicVolume', Math.round(this.musicVolume * 100).toString());
 
-    // Update currently playing music
-    this.sounds.forEach((sound) => {
-      if (sound.playing() && sound.loop()) {
+    // Update the default volume on the currently playing sound's Howl object
+    if (this.musicName && this.currentMusicId !== null) {
+      const sound = this.sounds.get(this.musicName);
+      if (sound) {
+        // Update both the default volume and the current instance volume
         sound.volume(this.musicVolume);
+        sound.volume(this.musicVolume, this.currentMusicId);
       }
-    });
+    }
   }
 
   setMuted(muted: boolean): void {
