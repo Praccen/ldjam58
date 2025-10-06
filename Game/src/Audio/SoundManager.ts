@@ -212,7 +212,8 @@ export default class SoundManager {
       const sound = this.sounds.get(this.musicName);
       if (sound) {
         if (fadeOutDuration) {
-          const currentVol = this.musicVolume;
+          // Get the actual current volume of the playing instance
+          const currentVol = sound.volume(this.currentMusicId) as number || sound.volume() as number;
           sound.fade(currentVol, 0, fadeOutDuration, this.currentMusicId);
           setTimeout(() => sound.stop(this.currentMusicId!), fadeOutDuration);
         } else {
@@ -258,11 +259,13 @@ export default class SoundManager {
   setSfxVolume(volume: number): void {
     this.sfxVolume = Math.max(0, Math.min(1, volume));
 
-    // Update all SFX sounds
+    // Update all SFX sounds by multiplying their base volume with category volume
     this.sounds.forEach((sound, name) => {
       const category = this.soundCategories.get(name);
       if (category === SoundCategory.SFX) {
-        sound.volume(this.sfxVolume);
+        // Get the base volume that was set during loadSound
+        const baseVolume = (sound as any)._volume || 1.0;
+        sound.volume(baseVolume * this.sfxVolume);
       }
     });
   }
@@ -270,16 +273,19 @@ export default class SoundManager {
   setMusicVolume(volume: number): void {
     this.musicVolume = Math.max(0, Math.min(1, volume));
 
-    // Update all music sounds
+    // Update all music sounds by multiplying their base volume with category volume
     this.sounds.forEach((sound, name) => {
       const category = this.soundCategories.get(name);
       if (category === SoundCategory.MUSIC) {
+        // Get the base volume that was set during loadSound
+        const baseVolume = (sound as any)._volume || 1.0;
+        const targetVolume = baseVolume * this.musicVolume;
 
-        sound.volume(this.musicVolume);
+        sound.volume(targetVolume);
 
         // If this is the currently playing music, also update the instance
         if (name === this.musicName && this.currentMusicId !== null) {
-          sound.volume(this.musicVolume, this.currentMusicId);
+          sound.volume(targetVolume, this.currentMusicId);
         }
       }
     });
