@@ -9,7 +9,7 @@ import {
 
 export enum ItemType {
   GRAIL,
-  RING,
+  CROWN,
   COIN,
   WEAPON,
   SKULL,
@@ -76,8 +76,8 @@ export default class Item {
     this.quantity = 1;
 
     let model: string = "Assets/objs/cube.obj";
-    let diffuse: string = "CSS:rgb(255,255,255)";
-    let specular: string = "CSS:rgb(0,0,0)";
+    let diffuse: string = "CSS:rgb(255, 196, 0)";
+    let specular: string = "CSS:rgb(255, 255, 255)";
     let scale: number = 1.0;
     switch (this.type) {
       case ItemType.GRAIL:
@@ -86,16 +86,31 @@ export default class Item {
         specular = "Assets/objs/grail/Scene_-_Root_metallicRoughness.png";
         scale = 0.1;
         break;
-      case ItemType.RING:
+      case ItemType.CROWN:
+        model = "Assets/objs/crown/Untitled.obj";
+        diffuse = "Assets/objs/crown/Crown_BaseColor.png";
+        specular = "Assets/objs/crown/Crown_Metallic.png";
         break;
       case ItemType.COIN:
         this.quantity = Math.ceil(Math.random() * 100 * (1 + this.floorFoundOn));
+        model = "Assets/objs/coins/Untitled.obj";
+        diffuse = "Assets/objs/coins/Bag_LP_Albedo.tga.png";
+        specular = "Assets/objs/coins/Bag_LP_Specular.tga.png";
         break;
       case ItemType.WEAPON:
+        model = "Assets/objs/sword/Untitled.obj";
+        diffuse = "Assets/objs/sword/Moonbrand_Mat_baseColor.jpeg";
+        specular = "Assets/objs/sword/Moonbrand_Mat_metallicRoughness.png";
         break;
       case ItemType.SKULL:
+        model = "Assets/objs/skull/Untitled.obj";
+        diffuse = "CSS:rgba(192, 184, 156, 1)";
+        specular = "CSS:rgb(10, 10, 10)";
         break;
       case ItemType.SCEPTER:
+        model = "Assets/objs/scepter/Untitled.obj";
+        diffuse = "CSS:rgba(177, 121, 0, 1)";
+         specular = "CSS:rgb(255, 255, 255)";
         break;
     }
 

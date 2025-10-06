@@ -31,7 +31,7 @@ export default class ItemHandler {
   private getRandomItemType(): ItemType {
     const types = [
       ItemType.GRAIL,
-      ItemType.RING,
+      ItemType.CROWN,
       ItemType.COIN,
       ItemType.WEAPON,
       ItemType.SKULL,
@@ -127,7 +127,7 @@ export default class ItemHandler {
 
     const names = {
       [ItemType.GRAIL]: ["Chalice", "Cup", "Goblet", "Vessel"],
-      [ItemType.RING]: ["Ring", "Band", "Circlet", "Loop"],
+      [ItemType.CROWN]: ["CROWN", "Band", "Circlet", "Loop"],
       [ItemType.COIN]: ["Coin", "Medallion", "Token", "Piece"],
       [ItemType.WEAPON]: ["Blade", "Dagger", "Sword", "Knife"],
       [ItemType.SKULL]: ["Skull", "Cranium", "Death Mask", "Relic"],

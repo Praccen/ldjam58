@@ -1,0 +1,33 @@
+# Blender 4.5.3 LTS MTL File: 'None'
+# www.blender.org
+
+newmtl Annotations.001
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.500000
+illum 2
+map_Kd C:/Annotations_baseColor.png
+map_Ke C:/Annotations_emissive.jpeg
+map_d C:/Annotations_baseColor.png
+
+newmtl Double_Sided_Annotations.001
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.500000
+illum 2
+map_Kd C:/Annotations_baseColor.png
+map_Ke C:/Annotations_emissive.jpeg
+map_d C:/Annotations_baseColor.png
+
+newmtl Moonbrand_Mat.001
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/Moonbrand_Mat_baseColor.jpeg
+map_Bump -bm 1.000000 C:/Moonbrand_Mat_normal.jpeg

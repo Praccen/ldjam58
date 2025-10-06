@@ -307,7 +307,7 @@ function calculateItemValue(
   // Base value by item type
   const typeBaseValues: { [key: number]: number } = {
     0: 1000, // GRAIL - very valuable
-    1: 300, // RING
+    1: 300, // CROWN
     2: 10, // COIN
     3: 400, // WEAPON
     4: 250, // SKULL

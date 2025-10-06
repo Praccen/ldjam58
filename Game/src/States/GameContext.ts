@@ -59,8 +59,13 @@ export default class GameContext {
         "Assets/objs/cube.obj",
         "Assets/gltf/NPCS/Ghost Skull.glb",
         "Assets/gltf/Bucket.glb",
-
         "Assets/objs/Boxes/wall_doorway.obj",
+        "Assets/objs/grail/Untitled.obj",
+        "Assets/objs/scepter/Untitled.obj",
+        "Assets/objs/sword/Untitled.obj",
+        "Assets/objs/crown/Untitled.obj",
+        "Assets/objs/skull/Untitled.obj",
+        "Assets/objs/coins/Untitled.obj",
       ];
       for (const mapPieces of wallPieceModels) {
         for (const path of mapPieces.paths) {
