@@ -149,10 +149,10 @@ export default class Game {
     this.gameTimer += dt;
 
     // Handle inventory toggle (I key)
-    if (Input.keys["I"] && !this.iWasPressed) {
+    if ((Input.keys["I"] || Input.buttons.get("B")) && !this.iWasPressed) {
       this.inventory.toggle();
       this.iWasPressed = true;
-    } else if (!Input.keys["I"]) {
+    } else if (!Input.keys["I"] && !Input.buttons.get("B")) {
       this.iWasPressed = false;
     }
 
