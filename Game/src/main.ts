@@ -6,6 +6,7 @@ import LoseGame from "./States/LoseGame.js";
 import Settings from "./States/Settings.js";
 import Game from "./States/Game.js";
 import { Howl, Howler } from "howler";
+import SoundManager from "./Audio/SoundManager.js";
 
 window.addEventListener("contextmenu", function (e: Event) {
   e.preventDefault();
@@ -14,13 +15,16 @@ window.addEventListener("contextmenu", function (e: Event) {
 // Menu music - created on first click
 let menuMusic: Howl | null = null;
 
+// Game sound manager - persists across game sessions
+export let soundManager = new SoundManager();
+
 let splashScreen = new SplashScreen();
 let mainMenu = new MainMenu();
 let settingsScreen = new Settings();
 let endGameScreen = new EndGame();
 let loseGameScreen = new LoseGame();
 
-export let gameContext = new GameContext();
+export let gameContext = new GameContext(soundManager);
 
 // Game state management
 enum GameState {
@@ -115,10 +119,8 @@ function setMusicVolume(volume: number) {
 }
 
 function setSfxVolume(volume: number) {
-  // Update the SoundManager in the game context
-  if (gameContext && gameContext.game && gameContext.game.soundManager) {
-    gameContext.game.soundManager.setSfxVolume(volume);
-  }
+  // Update the global SoundManager
+  soundManager.setSfxVolume(volume);
 }
 
 function showSettings() {
@@ -148,8 +150,11 @@ async function returnToMenu() {
   loseGameScreen.hide();
   mainMenu.mainMenu.style.display = "block";
 
-  // Fade out cave ambient and fade in menu music
-  gameContext.game.stopAmbientSound();
+  // Reset and create new game context (loadNewGame already stops ambient sound)
+  gameContext.loadNewGame();
+  setupGameCallbacks();
+
+  // Fade in menu music
   if (menuMusic) {
     // Fade in menu music over 2 seconds
     const savedVolume = localStorage.getItem('musicVolume');
@@ -177,6 +182,7 @@ function onGameComplete() {
 
   const floorsExplored = gameContext.game.getLevel().map.getCurrentFloor();
 
+  gameContext.game.soundManager.stop("footsteps");
   // Get items and curses data, but serialize only necessary fields
   // Also calculate value for each item based on rarity
   const items = gameContext.game.inventory.getItems().map((item) => ({
@@ -205,9 +211,6 @@ function onGameComplete() {
 
   // Keep cave ambient sound playing on end screen
 
-  gameContext.loadNewGame();
-  setupGameCallbacks();
-
   // Show end game screen with stats
   endGameScreen.show({
     time: timeString,
@@ -233,6 +236,8 @@ function onGameLose() {
   const seconds = Math.floor((timePlayedMs % 60000) / 1000);
   const timeString = `${minutes}:${seconds.toString().padStart(2, "0")}`;
 
+
+  gameContext.game.soundManager.stop("footsteps");
   const curses = gameContext.game.inventory.getAggregatedCurses();
 
   // Get current floor depth
@@ -251,9 +256,6 @@ function onGameLose() {
   localStorage.setItem("totalValue", newTotalValue.toString());
 
   // Keep cave ambient sound playing on lose screen
-
-  gameContext.loadNewGame();
-  setupGameCallbacks();
 
   // Show lose game screen with stats
   loseGameScreen.show({

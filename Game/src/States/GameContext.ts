@@ -4,6 +4,7 @@ import Game from "./Game.js";
 import MetaGUI from "../GUI/MetaGUI.js";
 import { SetCookie } from "../Utils/WebUtils.js";
 import { Input } from "../Input.js";
+import SoundManager from "../Audio/SoundManager.js";
 
 export let sensitivity = 1.0;
 
@@ -15,9 +16,13 @@ export default class GameContext {
 
   metaGui: MetaGUI;
 
+  private soundManager: SoundManager;
+
   private oWasPressed = false;
 
-  constructor() {
+  constructor(soundManager: SoundManager) {
+    this.soundManager = soundManager;
+
     // Create a renderer and attach it to the document body
     this.renderer = new Renderer3D();
     document.body.appendChild(this.renderer.domElement);
@@ -36,7 +41,7 @@ export default class GameContext {
     // Set the class to apply style defined in index.css
     this.guiRenderer.domElement.className = "guiContainer";
 
-    this.game = new Game(this.renderer, this.guiRenderer);
+    this.game = new Game(this.renderer, this.guiRenderer, this.soundManager);
 
     this.metaGui = new MetaGUI(this.guiRenderer);
   }
@@ -136,7 +141,8 @@ export default class GameContext {
   }
 
   loadNewGame() {
+    this.game.stopAmbientSound();
     delete this.game;
-    this.game = new Game(this.renderer, this.guiRenderer);
+    this.game = new Game(this.renderer, this.guiRenderer, this.soundManager);
   }
 }

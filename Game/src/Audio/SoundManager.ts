@@ -24,6 +24,11 @@ export default class SoundManager {
   }
 
   loadSound(name: string, config: SoundConfig): void {
+    // Don't reload if already loaded
+    if (this.sounds.has(name)) {
+      return;
+    }
+
     const sound = new Howl({
       src: config.src,
       volume: config.volume ?? 1.0,
@@ -186,20 +191,22 @@ export default class SoundManager {
   }
 
   stopMusic(fadeOutDuration?: number): void {
+    if (this.musicName && this.currentMusicId !== null) {
+      const sound = this.sounds.get(this.musicName);
+      if (sound) {
+        if (fadeOutDuration) {
+          const currentVol = this.musicVolume;
+          sound.fade(currentVol, 0, fadeOutDuration, this.currentMusicId);
+          setTimeout(() => sound.stop(this.currentMusicId!), fadeOutDuration);
+        } else {
+          sound.stop(this.currentMusicId);
+        }
+      }
+    }
+
     // Clear tracking so loop doesn't restart
     this.musicName = null;
     this.currentMusicId = null;
-
-    this.sounds.forEach((sound) => {
-      if (sound.playing() && sound.loop()) {
-        if (fadeOutDuration) {
-          sound.fade(sound.volume(), 0, fadeOutDuration);
-          setTimeout(() => sound.stop(), fadeOutDuration);
-        } else {
-          sound.stop();
-        }
-      }
-    });
   }
 
   stop(name: string, id?: number): void {

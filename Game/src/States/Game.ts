@@ -33,9 +33,10 @@ export default class Game {
   private saveScreenshot = false;
   private iWasPressed = false;
 
-  constructor(renderer: Renderer3D, guiRenderer: GUIRenderer) {
+  constructor(renderer: Renderer3D, guiRenderer: GUIRenderer, soundManager: SoundManager) {
     this.renderer = renderer;
     this.guiRenderer = guiRenderer;
+    this.soundManager = soundManager;
 
     this.renderer.useVolumetric = true;
     this.renderer.setFogTexture("Assets/Textures/Fog.png");
@@ -71,8 +72,6 @@ export default class Game {
 
     this.inventory = new Inventory();
 
-    // Initialize sound manager
-    this.soundManager = new SoundManager();
     this.loadSounds();
 
     this.createLevel();
