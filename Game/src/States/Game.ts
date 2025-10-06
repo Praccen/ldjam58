@@ -4,7 +4,6 @@ import {
   GUIRenderer,
   Renderer3D,
   vec3,
-  WorldEditor,
 } from "praccen-web-engine";
 import { GetCookie, SetCookie } from "../Utils/WebUtils.js";
 import GameGUI from "../GUI/GameGUI.js";

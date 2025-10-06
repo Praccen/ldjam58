@@ -197,53 +197,6 @@ export default class PlayerController {
     this.light.linear = 0.1;
     this.light.position = this.physicsObject.transform.position;
 
-    let self = this;
-
-    addNewConsoleCommand(
-      ["set"],
-      ["light"],
-      {
-        minArgs: 3,
-        logic(args: string[]): boolean {
-          if (args[1] == "colour") {
-            let colourVals = args[2].split(",").map((value) => {
-              let retVal = parseFloat(value); 
-              return isNaN(retVal)? 0.0: retVal;
-            });
-            vec3.set(self.light.colour, colourVals[0], colourVals[1], colourVals[2]);
-            return true;
-          }
-          if (args[1] == "quadratic") {
-            let quadraticVal = parseFloat(args[2]);
-            if (isNaN(quadraticVal)) {
-              return false;
-            }
-            self.light.quadratic = quadraticVal;
-            return true;
-          }
-          if (args[1] == "linear") {
-            let linearVal = parseFloat(args[2]);
-            if (isNaN(linearVal)) {
-              return false;
-            }
-            self.light.linear = linearVal;
-            return true;
-          }
-          if (args[1] == "constant") {
-            let constantVal = parseFloat(args[2]);
-            if (isNaN(constantVal)) {
-              return false;
-            }
-            self.light.constant = constantVal;
-            return true;
-          }
-          return false;
-        },
-        successfulOutput: "Successful",
-        failedOutput: "Failed"
-      }
-    );
-
     this.startPosition = spawnPosition;
     this.respawn();
   }

@@ -59,7 +59,7 @@ export default class GameContext {
         "Assets/objs/cube.obj",
         "Assets/gltf/NPCS/Ghost Skull.glb",
         "Assets/gltf/Bucket.glb",
-        "Assets/objs/Boxes/wall_doorway.obj",
+        "Assets/objs/MyDungeon/Wall_doorway.obj",
         "Assets/objs/grail/Untitled.obj",
         "Assets/objs/scepter/Untitled.obj",
         "Assets/objs/sword/Untitled.obj",

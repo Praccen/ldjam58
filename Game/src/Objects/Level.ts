@@ -27,6 +27,7 @@ import ArrowTrap, { TrapDirection } from "./ArrowTrap";
 import { GraphicsBundle } from "../../../dist/Engine";
 import { Factories } from "../Utils/Factories";
 import ShopManager from "../Systems/ShopManager";
+import { ItemType } from "./Item";
 
 type TriggerCallback = (triggerName: string) => void;
 
@@ -76,6 +77,7 @@ export default class Level {
 
   private arrowDispenserInstancedObject: GraphicsBundle;
   private tripWireInstancedObject: GraphicsBundle;
+  private itemInstancedObjects = new Map<ItemType, GraphicsBundle>();
 
   constructor(renderer: Renderer3D, game: Game) {
     this.game = game;
@@ -171,7 +173,16 @@ export default class Level {
     this.itemHandler.setPlayer(this.playerController);
 
     this.scene.renderer.meshStore
-      .loadMeshes(["Assets/objs/cube.obj", "Assets/objs/cube2.obj"], { loaded: 0 })
+      .loadMeshes([
+        "Assets/objs/cube.obj", 
+        "Assets/objs/cube2.obj",
+        "Assets/objs/grail/Untitled.obj",
+        "Assets/objs/scepter/Untitled.obj",
+        "Assets/objs/sword/Untitled.obj",
+        "Assets/objs/crown/Untitled.obj",
+        "Assets/objs/skull/Untitled.obj",
+        "Assets/objs/coins/Untitled.obj"
+      ], { loaded: 0 })
       .then(async () => {
         this.tripWireInstancedObject = await Factories.createInstancedMesh(this.scene, 
         "Assets/objs/cube2.obj", 
@@ -182,6 +193,49 @@ export default class Level {
         "Assets/objs/cube.obj", 
         "CSS:rgb(0,0,0)",
         "CSS:rgb(20,20,20)");
+
+        this.itemInstancedObjects.set(ItemType.GRAIL, await Factories.createInstancedMesh(
+          this.scene,
+          "Assets/objs/grail/Untitled.obj",
+          "Assets/objs/grail/Scene_-_Root_baseColor.png",
+          "Assets/objs/grail/Scene_-_Root_metallicRoughness.png"
+        ));
+
+        this.itemInstancedObjects.set(ItemType.SCEPTER, await Factories.createInstancedMesh(
+          this.scene,
+          "Assets/objs/scepter/Untitled.obj",
+          "CSS:rgba(177, 121, 0, 1)",
+          "CSS:rgb(255, 255, 255)"
+        ));
+
+        this.itemInstancedObjects.set(ItemType.WEAPON, await Factories.createInstancedMesh(
+          this.scene,
+          "Assets/objs/sword/Untitled.obj",
+          "Assets/objs/sword/Moonbrand_Mat_baseColor.jpeg",
+          "Assets/objs/sword/Moonbrand_Mat_metallicRoughness.png"
+        ));
+
+        this.itemInstancedObjects.set(ItemType.CROWN, await Factories.createInstancedMesh(
+          this.scene,
+          "Assets/objs/crown/Untitled.obj",
+          "Assets/objs/crown/Crown_BaseColor.png",
+          "Assets/objs/crown/Crown_Metallic.png"
+        ));
+
+        this.itemInstancedObjects.set(ItemType.SKULL, await Factories.createInstancedMesh(
+          this.scene,
+          "Assets/objs/skull/Untitled.obj",
+          "CSS:rgba(192, 184, 156, 1)",
+          "CSS:rgb(10, 10, 10)"
+        ));
+
+        this.itemInstancedObjects.set(ItemType.COIN, await Factories.createInstancedMesh(
+          this.scene,
+          "Assets/objs/coins/Untitled.obj",
+          "Assets/objs/coins/Bag_LP_Albedo.tga.png",
+          "Assets/objs/coins/Bag_LP_Specular.tga.png"
+        ));
+          
 
         this.map.floorPhysicsScenes.forEach(
         (floorPhysicsScene: PhysicsScene, floor: number) => {
@@ -201,6 +255,8 @@ export default class Level {
           this.itemHandler.spawnItemsForFloor(
             worldRooms,
             floor,
+            this.itemInstancedObjects,
+            this.map.getGraphicsLayer(floor),
             floorPhysicsScene
           );
 

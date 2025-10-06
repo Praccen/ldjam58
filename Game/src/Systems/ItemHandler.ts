@@ -5,6 +5,7 @@ import {
   Scene,
   vec3,
   Ray,
+  GraphicsBundle,
 } from "praccen-web-engine";
 import Inventory from "./Inventory";
 import PlayerController from "../Objects/PlayerController";
@@ -191,6 +192,8 @@ export default class ItemHandler {
   spawnItemsForFloor(
     accessibleRooms: { x: number; y: number; z: number }[],
     floor: number,
+    itemInstancedObjects: Map<ItemType, GraphicsBundle>,
+    graphicsLayer: { enabled: boolean }[][][],
     physicsScene: PhysicsScene
   ) {
     // Calculate number of items based on floor size
@@ -218,11 +221,12 @@ export default class ItemHandler {
         room.z + offsetZ
       );
 
-      this.spawnItem(position, floor, physicsScene);
+      this.spawnItem(position, floor, itemInstancedObjects, graphicsLayer, physicsScene);
     }
   }
 
-  spawnItem(position: vec3, currentFloor: number, physicsScene: PhysicsScene) {
+  spawnItem(position: vec3, currentFloor: number, itemInstancedObjects: Map<ItemType, GraphicsBundle>,
+    graphicsLayer: { enabled: boolean }[][][], physicsScene: PhysicsScene) {
     const itemType = this.getRandomItemType();
     const curseType = this.getRandomCurseType(currentFloor);
     let rarity = this.getRarityForFloor(currentFloor);
@@ -255,7 +259,9 @@ export default class ItemHandler {
       rarity,
       `A ${rarity} artifact from the depths`,
       curse,
-      currentFloor
+      currentFloor,
+      itemInstancedObjects,
+      graphicsLayer
     );
 
     this.items.set(item.getPhysicsObject().physicsObjectId, item);
