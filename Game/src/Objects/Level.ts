@@ -206,7 +206,7 @@ export default class Level {
           // Spawn traps
           const trapRooms = this.map.getAccessibleRooms(floor);
           for (const trapRoom of trapRooms) {
-            if (Math.random() * (floor / this.map.endFloor) < 0.5) {
+            if (Math.random() * (((floor + 2) * 2)  / this.map.endFloor) < 0.5) {
               continue;
             }
 
