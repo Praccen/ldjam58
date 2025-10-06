@@ -94,7 +94,6 @@ export default class Game {
       src: ["Assets/Audio/cave-temple-fantasy-dark-20185.mp3"],
       volume: 0.15, // 15% of music volume - ambient should be subtle
       loop: false, // Manual looping with crossfade
-      html5: true,
     }, 'music');
 
     // Load footstep sound

@@ -29,7 +29,7 @@ if (savedSfxVolume) {
 soundManager.loadSound('menu_music', {
   src: ['Assets/Audio/forgotten-echoes-338507.mp3'],
   loop: true,
-  volume: soundManager.getMusicVolume()
+  volume: 1.0 // Base volume, will be multiplied by music category volume
 }, 'music');
 
 let menuMusicStarted = false;

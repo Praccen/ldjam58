@@ -17,6 +17,7 @@ enum SoundCategory {
 export default class SoundManager {
   private sounds: Map<string, Howl> = new Map();
   private soundCategories: Map<string, SoundCategory> = new Map(); // Track which category each sound belongs to
+  private baseVolumes: Map<string, number> = new Map(); // Store base volumes for each sound
   private musicVolume: number = 0.3;
   private sfxVolume: number = 0.3;
   private listenerPosition: vec3 = vec3.create();
@@ -39,9 +40,13 @@ export default class SoundManager {
     const categoryEnum = category === 'music' ? SoundCategory.MUSIC : SoundCategory.SFX;
     const categoryVolume = category === 'music' ? this.musicVolume : this.sfxVolume;
 
+    // Store the base volume (config volume defaults to 1.0 if not specified)
+    const baseVolume = config.volume ?? 1.0;
+    this.baseVolumes.set(name, baseVolume);
+
     const sound = new Howl({
       src: config.src,
-      volume: config.volume ?? categoryVolume,
+      volume: baseVolume * categoryVolume,
       loop: config.loop ?? false,
       sprite: config.sprite,
       preload: true,
@@ -263,8 +268,8 @@ export default class SoundManager {
     this.sounds.forEach((sound, name) => {
       const category = this.soundCategories.get(name);
       if (category === SoundCategory.SFX) {
-        // Get the base volume that was set during loadSound
-        const baseVolume = (sound as any)._volume || 1.0;
+        // Get the base volume that was stored during loadSound
+        const baseVolume = this.baseVolumes.get(name) ?? 1.0;
         sound.volume(baseVolume * this.sfxVolume);
       }
     });
@@ -277,8 +282,8 @@ export default class SoundManager {
     this.sounds.forEach((sound, name) => {
       const category = this.soundCategories.get(name);
       if (category === SoundCategory.MUSIC) {
-        // Get the base volume that was set during loadSound
-        const baseVolume = (sound as any)._volume || 1.0;
+        // Get the base volume that was stored during loadSound
+        const baseVolume = this.baseVolumes.get(name) ?? 1.0;
         const targetVolume = baseVolume * this.musicVolume;
 
         sound.volume(targetVolume);
