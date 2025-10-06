@@ -275,6 +275,22 @@
           transform: scale(1.2);
         }
       }
+
+      /* Crosshair */
+      .crosshair {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 4px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.8),
+          0 0 6px rgba(255, 255, 255, 0.3);
+        pointer-events: none;
+        z-index: 100;
+      }
     </style>
   </head>
   <body>
@@ -282,6 +298,7 @@
     <div class="damage-vignette" id="damageVignette"></div>
 
     <div class="hud-container">
+      <div class="crosshair"></div>
       <!-- Protection Charms Display -->
       <div class="charms-container" id="charmsContainer">
         <!-- Charms will be dynamically added here -->
