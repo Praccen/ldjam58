@@ -107,8 +107,7 @@ export default class SoundManager {
       );
       vec3.normalize(right, right);
 
-      // Calculate pan (-1 = left, 1 = right)
-      pan = vec3.dot(normalizedToSound, right);
+      pan = -vec3.dot(normalizedToSound, right); 
       pan = Math.max(-1, Math.min(1, pan)); // Clamp to [-1, 1]
     }
 

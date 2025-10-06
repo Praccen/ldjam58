@@ -15,6 +15,7 @@ export interface ArrowProjectile {
   lifetime: number;
   active: boolean;
   physicsObject: PhysicsObject;
+  swishSoundId: number | null;
 }
 
 export enum TrapDirection {
@@ -37,6 +38,10 @@ export default class ArrowTrap {
   private arrowSpeed = 15.0;
   private projectileLifetime = 3.0;
   private soundManager: SoundManager | null = null;
+
+  triggerPosition: vec3;
+  holePosition: vec3;
+
 
   constructor(
     scene: Scene,
@@ -95,6 +100,7 @@ export default class ArrowTrap {
       lifetime: 0,
       active: false,
       physicsObject,
+      swishSoundId: null,
     };
   }
 
@@ -106,15 +112,21 @@ export default class ArrowTrap {
       return; // No available projectiles
     }
 
-    // Play arrow fire sound
     if (this.soundManager) {
-      this.soundManager.playSpatialSfx("arrow_fire", this.position);
+      this.soundManager.playSpatialSfx("arrow_twang", this.holePosition);
     }
 
     // Set initial position and activate
     vec3.copy(projectile.bundle.transform.position, this.position);
     projectile.lifetime = this.projectileLifetime;
     projectile.active = true;
+
+    if (this.soundManager) {
+      projectile.swishSoundId = this.soundManager.playSpatialSfx(
+        "arrow_swish",
+        projectile.bundle.transform.position
+      );
+    }
 
     const velocity = vec3.create();
     switch (this.direction) {
@@ -164,12 +176,10 @@ export default class ArrowTrap {
         playerHit = true;
         projectile.active = false;
 
-        // Play arrow hit sound
-        if (this.soundManager) {
-          this.soundManager.playSpatialSfx(
-            "arrow_hit",
-            projectile.bundle.transform.position
-          );
+        // Stop swish sound
+        if (this.soundManager && projectile.swishSoundId !== null) {
+          this.soundManager.stop("arrow_swish", projectile.swishSoundId);
+          projectile.swishSoundId = null;
         }
 
         // Move offscreen when hit
@@ -180,6 +190,13 @@ export default class ArrowTrap {
       // Deactivate if lifetime expired
       if (projectile.lifetime <= 0) {
         projectile.active = false;
+
+        // Stop swish sound
+        if (this.soundManager && projectile.swishSoundId !== null) {
+          this.soundManager.stop("arrow_swish", projectile.swishSoundId);
+          projectile.swishSoundId = null;
+        }
+
         // Move offscreen when inactive
         vec3.set(projectile.bundle.transform.position, 0, -10000, 0);
         vec3.zero(projectile.physicsObject.velocity);

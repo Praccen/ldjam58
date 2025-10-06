@@ -91,29 +91,15 @@ export default class Game {
   }
 
   loadSounds() {
-    // Load sound effects
-    /* TODO:
-    this.soundManager.loadSound("arrow_fire", {
-      src: ["Assets/audio/arrow_fire.mp3", "Assets/audio/arrow_fire.ogg"],
-      volume: 0.6,
-    });
-
-    this.soundManager.loadSound("arrow_hit", {
-      src: ["Assets/audio/arrow_hit.mp3"],
+    this.soundManager.loadSound("arrow_twang", {
+      src: ["Assets/Audio/arrow-twang_01-306041.mp3"],
       volume: 0.5,
     });
 
-    this.soundManager.loadSound("player_hurt", {
-      src: ["Assets/audio/player_hurt.mp3"],
-      volume: 0.7,
+    this.soundManager.loadSound("arrow_swish", {
+      src: ["Assets/Audio/arrow-swish_03-306040.mp3"],
+      volume: 0.4,
     });
-
-    this.soundManager.loadSound("ambient_dungeon", {
-      src: ["Assets/audio/ambient_dungeon.mp3"],
-      volume: 0.3,
-      loop: true,
-    });
-    */
   }
 
   createLevel() {

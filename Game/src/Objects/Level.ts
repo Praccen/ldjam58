@@ -416,6 +416,7 @@ export default class Level {
           0.05,
           triggerSize * 0.8
         );
+        trap.triggerPosition = bundle.transform.position;
       });
 
     // Add arrow slit on the wall
@@ -448,6 +449,8 @@ export default class Level {
             vec3.set(bundle.transform.scale, 2.5, 0.6, 0.15);
             break;
         }
+
+        trap.holePosition = bundle.transform.position;
       });
   }
 
