@@ -1,24 +1,26 @@
-### What is it
+# **ARKEOLOG**
 
-#### Elevator pitch
-A rougelite top down 3D procedurally generated dungeon crawler wher you pull a cart with a fire. 
-You have to fuel the cart with coal/wood. Some theives/creatures/whatever steal fuel if you are not close to the cart.
-The cart is your light source (maybe you can bring a torch though).
-Combat is real time with abilities.
+## The Cursed Depths Await
 
-#### Special features that can be part of the game
-Narrow passages where the cart doesn't fit, and low openings where only the cart fits, so you sometimes have to push the cart through and walk around etc.
-Underwater caves with water, where you have to sail.
-Tracks that you push the cart on (Can you ride the cart maybe? Gringots similar tracks.)
-Lava pits (maybe these generate the wind needed for sailing in the water caves?)
-Lava shader that's below the floor, so it's easy to leave holes in the floor and see the lava through it. Put the directional light below the ground pointing upwards (will create cool god rays hopefully)
-Cart can break and then you need to find replacement parts, forcing you to leave the cart momentarely. (Generate these scenarios where parts are somewhere close)
-No skills, talents or player stats, instead use inventory management to create synergies like if this trinket is next to a weapon, the weapon repeats its attack once etc.
+*Deep beneath the earth, forgotten tombs whisper of ancient treasures. You are an archaeologist who has descended into a procedurally-generated temple, armed only with a flickering torch and an insatiable greed for artifacts. But the darkness is alive and every relic you claim places a curse that upon your soul.*
 
-#### Questions
-Who is the main character? Human? Spider? Gnome?
-What's the main characters motivation? Is it stuck and trying to get out? Is it traveling deeper to find fortune? (Maybe deeper as that will fit the procedurally generated / endless nature of a rougelite)
-How to keep the game interesting and puzzle elements non repetitive?
+**The deeper you go, the greater the treasures... and the heavier the curses.**
+
+
+## **Story**
+
+You've discovered an entrance to an ancient underground temple, rumored to hold priceless artifacts from a civilization lost to time. But these treasures are not freely given, each one carries a dark curse. Some curses dim your torch, making you vulnerable to the restless spirits that haunt these depths. Others slow your movements, cloud your vision, or even prevent your escape entirely.
+
+The ghosts fear your torch's light, but as curses accumulate, your flame weakens and the ghosts gets bolder. Protection charms offer temporary respite from spectral attacks, but they are precious few. You must balance greed with survival: collect enough artifacts to make the expedition worthwhile, but retain enough strength to reach the extraction bucket and escape with your life and your fortune.
+
+
+## **Goal**
+
+Navigate into the procedurally-generated temple, collecting valuable artifacts (grails, rings, coins, weapons, skulls, and scepters) while managing the curses they inflict. Avoid or survive encounters with ghosts that stalk the shadows and traps around the temple. When you've gathered enough treasure or when the curses become too heavy to bear find the extraction bucket to escape and bank your gold. But beware: death means losing gold based on how deep you ventured.
+
+**Will you escape with riches, or be forced to leave your loot behind?**
+
+---
 
 ### Setup
 
