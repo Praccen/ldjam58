@@ -185,14 +185,14 @@ function onGameComplete() {
     quantity: item.quantity,
     rarity: item.rarity,
     description: item.description,
-    value: calculateItemValue(item.rarity, item.type),
+    value: calculateItemValue(item.rarity, item.type, item.quantity),
   }));
 
   const curses = gameContext.game.inventory.getAggregatedCurses();
 
   // Calculate total value from this run
   const currentRunValue = items.reduce(
-    (total, item) => total + item.value * item.quantity,
+    (total, item) => total + item.value,
     0
   );
 
@@ -274,7 +274,8 @@ function onGameLose() {
  */
 function calculateItemValue(
   rarity: "common" | "rare" | "epic" | "legendary" | undefined,
-  type: number
+  type: number,
+  quantity: number
 ): number {
   // Base value multipliers by rarity
   const rarityMultipliers = {
@@ -298,9 +299,9 @@ function calculateItemValue(
   const multiplier = rarityMultipliers[rarity || "common"];
 
   // Add some randomness (±20%)
-  const randomFactor = 0.8 + Math.random() * 0.4;
+  const randomFactor = 0.8 + Math.random() * 0.4 ;
 
-  return Math.floor(baseValue * multiplier * randomFactor);
+  return Math.floor(baseValue * multiplier * randomFactor * quantity);
 }
 
 /**

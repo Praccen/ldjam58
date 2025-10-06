@@ -251,7 +251,8 @@ export default class ItemHandler {
       this.getItemName(itemType, rarity),
       rarity,
       `A ${rarity} artifact from the depths`,
-      curse
+      curse,
+      currentFloor
     );
 
     this.items.set(item.getPhysicsObject().physicsObjectId, item);

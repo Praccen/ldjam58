@@ -47,6 +47,7 @@ export default class Item {
   private graphicsBundle: GraphicsBundle;
   startPosition: vec3;
   curse: Curse;
+  floorFoundOn: number;
 
   description?: string;
   quantity: number;
@@ -60,7 +61,8 @@ export default class Item {
     name: string,
     rarity: "common" | "rare" | "epic" | "legendary",
     description: string,
-    curse: Curse
+    curse: Curse,
+    floorFoundOn: number,
   ) {
     this.scene = scene;
     this.physicsScene = physicsScene;
@@ -70,6 +72,7 @@ export default class Item {
     this.curse = curse;
     this.rarity = rarity;
     this.description = description;
+    this.floorFoundOn = floorFoundOn;
     this.quantity = 1;
 
     var model: string = "Assets/objs/cube.obj";
@@ -80,6 +83,7 @@ export default class Item {
       case ItemType.RING:
         break;
       case ItemType.COIN:
+        this.quantity = Math.ceil(Math.random() * 100 * (1 + this.floorFoundOn));
         break;
       case ItemType.WEAPON:
         break;

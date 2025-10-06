@@ -665,7 +665,7 @@
           if (item.value) {
             const value = document.createElement("div");
             value.className = "item-value";
-            value.textContent = formatCurrency(item.value * item.quantity);
+            value.textContent = formatCurrency(item.value);
             itemDiv.appendChild(value);
           }
 
