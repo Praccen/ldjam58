@@ -206,8 +206,8 @@ export default class ItemHandler {
       const room = shuffledRooms[i];
 
       // Random position within the room (not too close to walls)
-      const offsetX = (Math.random() - 0.5) * 9;
-      const offsetZ = (Math.random() - 0.5) * 9;
+      const offsetX = (Math.random() - 0.3) * 9;
+      const offsetZ = (Math.random() - 0.3) * 9;
 
       const position = vec3.fromValues(
         room.x + offsetX,
