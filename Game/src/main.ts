@@ -5,7 +5,7 @@ import EndGame from "./States/EndGame.js";
 import LoseGame from "./States/LoseGame.js";
 import Settings from "./States/Settings.js";
 import Game from "./States/Game.js";
-import { Howl } from "howler";
+import { Howl, Howler } from "howler";
 
 window.addEventListener("contextmenu", function (e: Event) {
   e.preventDefault();
@@ -53,6 +53,14 @@ function startGame() {
     if ((window as any).stopParticleSystem) {
       (window as any).stopParticleSystem();
     }
+
+    if (Howler.ctx && Howler.ctx.state === 'suspended') {
+      Howler.ctx.resume();
+    }
+
+    setTimeout(() => {
+      gameContext.game.startAmbientSound();
+    }, 100);
 
     gameContext.start();
     gameStartTime = Date.now();
@@ -140,9 +148,16 @@ async function returnToMenu() {
   loseGameScreen.hide();
   mainMenu.mainMenu.style.display = "block";
 
-  // Restart menu music
+  // Fade out cave ambient and fade in menu music
+  gameContext.game.stopAmbientSound();
   if (menuMusic) {
+    // Fade in menu music over 2 seconds
+    const savedVolume = localStorage.getItem('musicVolume');
+    const targetVolume = savedVolume ? parseInt(savedVolume) / 100 : 0.4;
+
+    menuMusic.volume(0);
     menuMusic.play();
+    menuMusic.fade(0, targetVolume, 2000);
   }
 
 }
@@ -188,6 +203,8 @@ function onGameComplete() {
   // Store new total value
   localStorage.setItem("totalValue", newTotalValue.toString());
 
+  // Keep cave ambient sound playing on end screen
+
   gameContext.loadNewGame();
   setupGameCallbacks();
 
@@ -232,6 +249,8 @@ function onGameLose() {
 
   // Save the new total value
   localStorage.setItem("totalValue", newTotalValue.toString());
+
+  // Keep cave ambient sound playing on lose screen
 
   gameContext.loadNewGame();
   setupGameCallbacks();

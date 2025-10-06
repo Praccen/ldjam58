@@ -100,6 +100,13 @@ export default class Game {
       src: ["Assets/Audio/arrow-swish_03-306040.mp3"],
       volume: 0.4,
     });
+
+    // Load ambient cave sound
+    this.soundManager.loadSound("cave_ambient", {
+      src: ["Assets/Audio/cave-temple-fantasy-dark-20185.mp3"],
+      volume: 0.3,
+      loop: true,
+    });
   }
 
   createLevel() {
@@ -191,5 +198,13 @@ export default class Game {
     }
 
     this.guiRenderer.draw(this.camera);
+  }
+
+  startAmbientSound() {
+    this.soundManager.playMusic("cave_ambient");
+  }
+
+  stopAmbientSound() {
+    this.soundManager.stopMusic(2000); // 2 second fade out
   }
 }
