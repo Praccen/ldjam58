@@ -105,7 +105,8 @@ export default class Game {
     this.soundManager.loadSound("cave_ambient", {
       src: ["Assets/Audio/cave-temple-fantasy-dark-20185.mp3"],
       volume: 0.3,
-      loop: true,
+      loop: false, // Manual looping with crossfade
+      html5: true,
     });
   }
 

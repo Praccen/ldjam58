@@ -6,6 +6,7 @@ interface SoundConfig {
   volume?: number;
   loop?: boolean;
   sprite?: { [key: string]: [number, number] };
+  html5?: boolean;
 }
 
 export default class SoundManager {
@@ -14,6 +15,8 @@ export default class SoundManager {
   private sfxVolume: number = 0.7;
   private listenerPosition: vec3 = vec3.create();
   private listenerDirection: vec3 = vec3.fromValues(0, 0, -1);
+  private currentMusicId: number | null = null;
+  private musicName: string | null = null;
 
   constructor() {
     // Set global howlar volume
@@ -27,6 +30,7 @@ export default class SoundManager {
       loop: config.loop ?? false,
       sprite: config.sprite,
       preload: true,
+      html5: config.html5 ?? false,
     });
 
     this.sounds.set(name, sound);
@@ -129,7 +133,9 @@ export default class SoundManager {
     // Stop any currently playing music
     this.stopMusic();
 
+    this.musicName = name;
     const id = sound.play();
+    this.currentMusicId = id;
     sound.volume(0, id);
 
     if (fadeInDuration) {
@@ -137,9 +143,53 @@ export default class SoundManager {
     } else {
       sound.volume(this.musicVolume, id);
     }
+
+    // Schedule crossfade to start 3 seconds before track ends
+    const duration = sound.duration() * 1000; // Convert to ms
+    const crossfadeStart = duration - 3000; // Start crossfade 3 seconds before end
+
+    if (crossfadeStart > 0) {
+      setTimeout(() => {
+        if (this.musicName === name && this.currentMusicId === id) {
+          this.startCrossfadeLoop(name, id);
+        }
+      }, crossfadeStart);
+    }
+  }
+
+  private startCrossfadeLoop(name: string, oldId: number): void {
+    const sound = this.sounds.get(name);
+    if (!sound) return;
+
+    // Start new instance with crossfade while old one is still playing
+    const newId = sound.play();
+    this.currentMusicId = newId;
+
+    sound.volume(0, newId);
+    sound.fade(0, this.musicVolume, 3000, newId); // 3 second fade in
+
+    // Fade out the old instance
+    sound.fade(sound.volume(oldId) || this.musicVolume, 0, 3000, oldId);
+    setTimeout(() => sound.stop(oldId), 3000);
+
+    // Schedule next crossfade
+    const duration = sound.duration() * 1000;
+    const crossfadeStart = duration - 3000;
+
+    if (crossfadeStart > 0) {
+      setTimeout(() => {
+        if (this.musicName === name && this.currentMusicId === newId) {
+          this.startCrossfadeLoop(name, newId);
+        }
+      }, crossfadeStart);
+    }
   }
 
   stopMusic(fadeOutDuration?: number): void {
+    // Clear tracking so loop doesn't restart
+    this.musicName = null;
+    this.currentMusicId = null;
+
     this.sounds.forEach((sound) => {
       if (sound.playing() && sound.loop()) {
         if (fadeOutDuration) {
