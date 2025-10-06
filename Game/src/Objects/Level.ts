@@ -456,13 +456,13 @@ export default class Level {
 
   private damagePlayer(): void {
     const currentCharms = this.playerController.getProtectionCharms();
-    if (currentCharms > 0) {
+    if (currentCharms > -1) {
       this.playerController.setProtectionCharms(currentCharms - 1);
 
       // Show damage effect
       this.game.gui.showDamageEffect();
 
-      if (currentCharms - 1 <= 0) {
+      if (currentCharms <= 0) {
         if (this.callbacks.onGameLose) {
           this.callbacks.onGameLose();
         }
