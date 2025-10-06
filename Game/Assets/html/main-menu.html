@@ -313,10 +313,15 @@
             // Menu button functions
             function startGame() {
                 console.log("Starting game...");
+                if (!musicStarted && window.parent && window.parent.startMenuMusic) {
+                    window.parent.startMenuMusic();
+                    musicStarted = true;
+                }
                 // Call the parent window's startGame function
                 if (window.parent && window.parent.startGame) {
                     window.parent.startGame();
                 }
+
             }
 
             function showOptions() {

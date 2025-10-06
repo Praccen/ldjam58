@@ -5,15 +5,12 @@ import EndGame from "./States/EndGame.js";
 import LoseGame from "./States/LoseGame.js";
 import Settings from "./States/Settings.js";
 import Game from "./States/Game.js";
-import { Howl, Howler } from "howler";
+import { Howler } from "howler";
 import SoundManager from "./Audio/SoundManager.js";
 
 window.addEventListener("contextmenu", function (e: Event) {
   e.preventDefault();
 });
-
-// Menu music - created on first click
-let menuMusic: Howl | null = null;
 
 // Game sound manager - persists across game sessions
 // Initialize with saved volumes from localStorage
@@ -27,6 +24,15 @@ if (savedMusicVolume) {
 if (savedSfxVolume) {
   soundManager.setSfxVolume(parseInt(savedSfxVolume) / 100);
 }
+
+// Load menu music into sound manager
+soundManager.loadSound('menu_music', {
+  src: ['Assets/Audio/forgotten-echoes-338507.mp3'],
+  loop: true,
+  volume: soundManager.getMusicVolume()
+}, 'music');
+
+let menuMusicStarted = false;
 
 let splashScreen = new SplashScreen();
 let mainMenu = new MainMenu();
@@ -53,6 +59,24 @@ let gameStartTime = 0;
  * Function to start the game - called from the main menu
  */
 function startGame() {
+  // Stop particles and music immediately before state change
+  if ((window as any).stopParticleSystem) {
+    (window as any).stopParticleSystem();
+  }
+
+  // Stop menu music
+  soundManager.stopMusic(2000); // 500ms fade out
+  menuMusicStarted = false;
+
+    // Resume audio context and start ambient sound
+    if (Howler.ctx && Howler.ctx.state === 'suspended') {
+      Howler.ctx.resume().then(() => {
+        gameContext.game.startAmbientSound();
+      });
+    } else {
+      gameContext.game.startAmbientSound();
+    }
+
   if (assetsLoaded) {
     // Assets are ready, start game immediately
     currentState = GameState.PLAYING;
@@ -60,34 +84,16 @@ function startGame() {
     endGameScreen.hide();
     loseGameScreen.hide();
 
-    // Stop menu music and particles when starting game
-    if (menuMusic) {
-      menuMusic.stop();
-    }
-    if ((window as any).stopParticleSystem) {
-      (window as any).stopParticleSystem();
-    }
-
-    if (Howler.ctx && Howler.ctx.state === 'suspended') {
-      Howler.ctx.resume();
-    }
-
-    setTimeout(() => {
-      gameContext.game.startAmbientSound();
-    }, 100);
-
     gameContext.start();
     gameStartTime = Date.now();
+
+
 
     // Focus the main document to enable keyboard input
     if (gameContext.renderer && gameContext.renderer.domElement) {
       gameContext.renderer.domElement.focus();
     } else {
       document.body.focus();
-    }
-
-    if ((window as any).stopParticleSystem) {
-      (window as any).stopParticleSystem();
     }
 
     animate();
@@ -99,37 +105,27 @@ function startGame() {
     loseGameScreen.hide();
     splashScreen.splashScreen.style.display = "block";
 
-    // Stop menu music and particles when showing loading screen
-    if (menuMusic) {
-      menuMusic.stop();
-    }
-
     loadingScreenAnimate();
   }
 }
 
 function startMenuMusic() {
-  if (currentState === GameState.MAIN_MENU && !menuMusic) {
-    // Get saved music volume or use default 
-    const savedVolume = localStorage.getItem('musicVolume');
-    const volume = savedVolume ? parseInt(savedVolume) / 100 : 0.3;
+  if (currentState === GameState.MAIN_MENU && !menuMusicStarted) {
+    menuMusicStarted = true;
 
-    menuMusic = new Howl({
-      src: ['Assets/Audio/forgotten-echoes-338507.mp3'],
-      loop: true,
-      volume: volume
-    });
-    menuMusic.play();
+    // Resume audio context before playing
+    if (Howler.ctx && Howler.ctx.state === 'suspended') {
+      Howler.ctx.resume().then(() => {
+        soundManager.playMusic('menu_music', 1000); // 1 second fade in
+      });
+    } else {
+      soundManager.playMusic('menu_music', 1000); // 1 second fade in
+    }
   }
 }
 
 function setMusicVolume(volume: number) {
-  // Update menu music volume (updates both default and all playing instances)
-  if (menuMusic) {
-    menuMusic.volume(volume);
-  }
-
-  // Update sound manager (this will update game ambient music)
+  // Update sound manager (this will update all music including menu music)
   soundManager.setMusicVolume(volume);
 }
 
@@ -178,22 +174,9 @@ async function returnToMenu() {
     (window as any).startParticleSystem();
   }
 
-  // Fade in menu music
-  if (menuMusic) {
-    // Fade in menu music over 2 seconds
-    const savedVolume = localStorage.getItem('musicVolume');
-    const targetVolume = savedVolume ? parseInt(savedVolume) / 100 : 0.3;
-
-    // Only play if not already playing
-    if (!menuMusic.playing()) {
-      menuMusic.volume(0);
-      menuMusic.play();
-    } else {
-      // If already playing, just fade from current volume
-      menuMusic.volume(0);
-    }
-    menuMusic.fade(0, targetVolume, 2000);
-  }
+  // Restart menu music with fade in
+  menuMusicStarted = false;
+  soundManager.playMusic('menu_music', 2000); // 2 second fade in
 
 }
 
