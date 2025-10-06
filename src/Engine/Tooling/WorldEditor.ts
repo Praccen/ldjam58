@@ -32,6 +32,36 @@ let json: {
   }[];
 };
 
+interface ConsoleEntry {
+  minArgs: number,
+  logic: (args: string[]) => boolean,
+  successfulOutput: string,
+  failedOutput: string,
+  updatesPhysics?: boolean,
+}
+
+// key should be the identifier
+let consoleCommands = new Map<string, Map<string, ConsoleEntry>>();
+
+export function addNewConsoleCommand(identifiers: string[], possibleArguments: string[], consoleEntry: ConsoleEntry) {
+  for (const identifier of identifiers) {
+    if (!consoleCommands.has(identifier)) {
+      consoleCommands.set(identifier, new Map<string, ConsoleEntry>());
+    }
+
+    if (possibleArguments.length == 0) {
+      possibleArguments.push("");
+    }
+
+    for (const argument of possibleArguments) {
+      if (consoleCommands.get(identifier).has(argument)) {
+        console.log("Debug console: Overwriting logic for \"" + identifier + "\" \"" + argument + "\"");
+      }
+      consoleCommands.get(identifier).set(argument, consoleEntry);
+    }
+  }
+}
+
 export default class WorldEditor {
   private camera: Camera;
   private scene: Scene;
@@ -240,6 +270,214 @@ export default class WorldEditor {
       consoleOutput.textString += "Button clicked\n";
     });
 
+    addNewConsoleCommand(
+        ["r", "rot", "rotate"],
+        ["x", "y", "z"],
+        { 
+          minArgs: 2,
+        logic: (args: string[]): boolean => {
+          const index = ["x", "y", "z"].findIndex((string) => {
+            return string == args[0];
+          });
+          if (index != -1) {
+            let degrees = parseFloat(args[1]);
+            if (isNaN(degrees)) {
+              return false;
+            }
+            let rotChange = vec3.create();
+            rotChange[index] = degrees;
+            if (self.currentlySelectedTransform == undefined) {
+              consoleOutput.textString +=
+                "No object selected for modification\n";
+              return false;
+            }
+            quat.add(
+              self.currentlySelectedTransform.rotation,
+              self.currentlySelectedTransform.rotation,
+              quat.fromEuler(
+                quat.create(),
+                rotChange[0],
+                rotChange[1],
+                rotChange[2]
+              )
+            );
+            return true;
+          }
+          return false;
+        },
+        successfulOutput: "Rotated object",
+        failedOutput: "Failed to rotate object",
+        updatesPhysics: true,
+      });
+      
+      addNewConsoleCommand(
+        ["t", "trans", "translate", "move", "m", "mov"],
+        ["x", "y", "z"],
+        {
+        minArgs: 2,
+        logic: (args: string[]): boolean => {
+          const index = ["x", "y", "z"].findIndex((string) => {
+            return string == args[0];
+          });
+          if (index != -1) {
+            let degrees = parseFloat(args[1]);
+            if (isNaN(degrees)) {
+              return false;
+            }
+            let translationChange = vec3.create();
+            translationChange[index] = degrees;
+            if (self.currentlySelectedTransform == undefined) {
+              consoleOutput.textString +=
+                "No object selected for modification\n";
+              return false;
+            }
+            vec3.add(
+              self.currentlySelectedTransform.position,
+              self.currentlySelectedTransform.position,
+              translationChange
+            );
+            return true;
+          }
+          return false;
+        },
+        successfulOutput: "Translated object",
+        failedOutput: "Failed to translate object",
+        updatesPhysics: true,
+      });
+
+      addNewConsoleCommand(
+        ["s", "scale"],
+        ["x", "y", "z"],
+        {
+        minArgs: 2,
+        logic: (args: string[]): boolean => {
+          const index = ["x", "y", "z"].findIndex((string) => {
+            return string == args[0];
+          });
+          if (index != -1) {
+            let degrees = parseFloat(args[1]);
+            if (isNaN(degrees)) {
+              return false;
+            }
+            let scaleChange = vec3.create();
+            scaleChange[index] = degrees;
+            if (self.currentlySelectedTransform == undefined) {
+              consoleOutput.textString +=
+                "No object selected for modification\n";
+              return false;
+            }
+            vec3.add(
+              self.currentlySelectedTransform.scale,
+              self.currentlySelectedTransform.scale,
+              scaleChange
+            );
+            return true;
+          }
+          return false;
+        },
+        successfulOutput: "Scaled object",
+        failedOutput: "Failed to scale object",
+        updatesPhysics: true,
+      }
+    );
+
+    addNewConsoleCommand(["exit"],
+      [],
+      {
+        minArgs: 0,
+        logic: (args: string[]): boolean => {
+          self.guiDiv.setHidden(true);
+          return true;
+        },
+        successfulOutput: " ",
+        failedOutput: " ",
+      });
+      
+      addNewConsoleCommand(
+        ["toggle"],
+        ["cullingboxes"],
+        {
+        minArgs: 1,
+        logic: (args: string[]): boolean => {
+            (self.scene.renderer as Renderer3D).showCullingShapes = !(
+              self.scene.renderer as Renderer3D
+            ).showCullingShapes;
+            return true;
+        },
+        successfulOutput: "Toggled cullingboxes successfully",
+        failedOutput: "Failed to toggle cullingboxes",
+      });
+      
+      addNewConsoleCommand(
+        ["set"],
+        ["sensitivity"],
+        {
+        minArgs: 2,
+        logic: (args: string[]): boolean => {
+          let sensitivity = parseFloat(args[1]);
+          if (isNaN(sensitivity)) {
+            return false;
+          }
+          self.sensitivity = sensitivity;
+          return true;
+        },
+        successfulOutput: "Set sensitivity successfully",
+        failedOutput: "Failed setting sensitivity",
+      });
+
+       addNewConsoleCommand(
+        ["set"],
+        ["autosave"],
+        {
+        minArgs: 2,
+        logic: (args: string[]): boolean => {
+          self.autosave = args[1] === "true";
+          return true;
+        },
+        successfulOutput: "Set autosave successfully",
+        failedOutput: "Set autosave failed",
+      });
+      
+      addNewConsoleCommand(
+        ["get"],
+        ["sensitivity"],
+        {
+        minArgs: 1,
+        logic: (args: string[]): boolean => {
+          consoleOutput.textString += self.sensitivity + "\n";
+          return true
+        },
+        successfulOutput: "",
+        failedOutput: "",
+      });
+
+      addNewConsoleCommand(
+        ["get"],
+        ["autosave"],
+        {
+        minArgs: 1,
+        logic: (args: string[]): boolean => {
+           consoleOutput.textString += self.autosave + "\n";
+          return true
+        },
+        successfulOutput: "",
+        failedOutput: "",
+      });
+      
+      addNewConsoleCommand(
+        ["save"],
+        [],
+        {
+        minArgs: 0,
+        logic: (args: string[]): boolean => {
+          self.save();
+          return true;
+        },
+        successfulOutput: "Saved to clipboard",
+        failedOutput: " ",
+      },
+    );
+
     this.guiDiv.setHidden(true);
   }
 
@@ -295,233 +533,46 @@ export default class WorldEditor {
 
     let self = this;
 
-    const commands = [
-      {
-        identifiers: ["r", "rot", "rotate"],
-        minArgs: 2,
-        logic: (args: string[]): boolean => {
-          const index = ["x", "y", "z"].findIndex((string) => {
-            return string == args[0];
-          });
-          if (index != -1) {
-            let degrees = parseFloat(args[1]);
-            if (isNaN(degrees)) {
-              return false;
-            }
-            let rotChange = vec3.create();
-            rotChange[index] = degrees;
-            if (self.currentlySelectedTransform == undefined) {
-              consoleOutput.textString +=
-                "No object selected for modification\n";
-              return false;
-            }
-            quat.add(
-              self.currentlySelectedTransform.rotation,
-              self.currentlySelectedTransform.rotation,
-              quat.fromEuler(
-                quat.create(),
-                rotChange[0],
-                rotChange[1],
-                rotChange[2]
-              )
-            );
-            return true;
-          }
-          return false;
-        },
-        successfulOutput: "Rotated object",
-        failedOutput: "Failed to rotate object",
-        updatesPhysics: true,
-      },
-      {
-        identifiers: ["t", "trans", "translate", "move", "m", "mov"],
-        minArgs: 2,
-        logic: (args: string[]): boolean => {
-          const index = ["x", "y", "z"].findIndex((string) => {
-            return string == args[0];
-          });
-          if (index != -1) {
-            let degrees = parseFloat(args[1]);
-            if (isNaN(degrees)) {
-              return false;
-            }
-            let translationChange = vec3.create();
-            translationChange[index] = degrees;
-            if (self.currentlySelectedTransform == undefined) {
-              consoleOutput.textString +=
-                "No object selected for modification\n";
-              return false;
-            }
-            vec3.add(
-              self.currentlySelectedTransform.position,
-              self.currentlySelectedTransform.position,
-              translationChange
-            );
-            return true;
-          }
-          return false;
-        },
-        successfulOutput: "Translated object",
-        failedOutput: "Failed to translate object",
-        updatesPhysics: true,
-      },
-      {
-        identifiers: ["s", "scale"],
-        minArgs: 2,
-        logic: (args: string[]): boolean => {
-          const index = ["x", "y", "z"].findIndex((string) => {
-            return string == args[0];
-          });
-          if (index != -1) {
-            let degrees = parseFloat(args[1]);
-            if (isNaN(degrees)) {
-              return false;
-            }
-            let scaleChange = vec3.create();
-            scaleChange[index] = degrees;
-            if (self.currentlySelectedTransform == undefined) {
-              consoleOutput.textString +=
-                "No object selected for modification\n";
-              return false;
-            }
-            vec3.add(
-              self.currentlySelectedTransform.scale,
-              self.currentlySelectedTransform.scale,
-              scaleChange
-            );
-            return true;
-          }
-          return false;
-        },
-        successfulOutput: "Scaled object",
-        failedOutput: "Failed to scale object",
-        updatesPhysics: true,
-      },
-      {
-        identifiers: ["exit"],
-        minArgs: 0,
-        logic: (args: string[]): boolean => {
-          self.guiDiv.setHidden(true);
-          return true;
-        },
-        successfulOutput: " ",
-        failedOutput: " ",
-      },
-      {
-        identifiers: ["toggle"],
-        minArgs: 1,
-        logic: (args: string[]): boolean => {
-          if (args[0] == "cullingboxes") {
-            (self.scene.renderer as Renderer3D).showCullingShapes = !(
-              self.scene.renderer as Renderer3D
-            ).showCullingShapes;
-            return true;
-          }
+    const identifier = input.split(" ")[0];
+  
+    let outputString = "Invalid command\n";
 
-          return false;
-        },
-        successfulOutput: "Toggled successfully",
-        failedOutput: "usage: toggle cullingboxes",
-      },
-      {
-        identifiers: ["selection"],
-        minArgs: 1,
-        logic: (args: string[]): boolean => {
-          if (args[0] == "physics") {
-            (self.scene.renderer as Renderer3D).showCullingShapes = !(
-              self.scene.renderer as Renderer3D
-            ).showCullingShapes;
-            return true;
-          }
+    if (consoleCommands.has(identifier)) {
+      const args = input.substring(identifier.length).trim().split(" ");
+      const commands = consoleCommands.get(identifier);
 
-          return false;
-        },
-        successfulOutput: "Toggled successfully",
-        failedOutput: "usage: toggle cullingboxes",
-      },
-      {
-        identifiers: ["set"],
-        minArgs: 2,
-        logic: (args: string[]): boolean => {
-          if (args[0] == "sensitivity") {
-            let sensitivity = parseFloat(args[1]);
-            if (isNaN(sensitivity)) {
-              return false;
-            }
-            self.sensitivity = sensitivity;
-            return true;
-          } else if (args[0] == "autosave") {
-            self.autosave = args[1] === "true";
-            return true;
-          }
-
-          return false;
-        },
-        successfulOutput: "Set successfully",
-        failedOutput: "usage: set [sensitivity number] | [autosave boolean]",
-      },
-      {
-        identifiers: ["get"],
-        minArgs: 1,
-        logic: (args: string[]): boolean => {
-          if (args[0] == "sensitivity") {
-            consoleOutput.textString +=
-              "sensitivity: " + self.sensitivity + "\n";
-            return true;
-          } else if (args[0] == "autosave") {
-            consoleOutput.textString += "autosave: " + self.autosave + "\n";
-            return true;
-          }
-
-          return false;
-        },
-        successfulOutput: "Get successfully",
-        failedOutput: "usage: get sensitivity | autosave",
-      },
-      {
-        identifiers: ["save"],
-        minArgs: 0,
-        logic: (args: string[]): boolean => {
-          self.save();
-          return true;
-        },
-        successfulOutput: "Saved to clipboard",
-        failedOutput: " ",
-      },
-    ];
-
-    for (const command of commands) {
-      for (const identifier of command.identifiers) {
-        if (input.startsWith(identifier + " ")) {
-          const args = input.substring(identifier.length).trim().split(" ");
-          if (
-            command.minArgs == 0 ||
-            (args.length >= command.minArgs && args[0].length > 0)
-          ) {
-            if (command.logic(args)) {
-              consoleOutput.textString += command.successfulOutput + "\n";
-              if (command.updatesPhysics) {
-                self.physicsScene.update(0.0, true, false);
-                self.internalPhysicsScene.update(0.0, true, false); // Update physicsScene in case the command updated static physics objects
-                if (self.autosave) {
-                  self.save();
-                  consoleOutput.textString += "Saved to clipboard \n";
-                }
+      if (args.length == 0 && commands.has("") || args.length > 0 && commands.has(args[0])){
+        const command = commands.get(args.length == 0? "": args[0]);
+        if (args.length >= command.minArgs) {
+          if (command.logic(args)) {
+            outputString = command.successfulOutput + "\n";
+            if (command.updatesPhysics) {
+              self.physicsScene.update(0.0, true, false);
+              self.internalPhysicsScene.update(0.0, true, false); // Update physicsScene in case the command updated static physics objects
+              if (self.autosave) {
+                self.save();
+                outputString += "Saved to clipboard \n";
               }
-            } else {
-              consoleOutput.textString += command.failedOutput + "\n";
             }
           } else {
-            consoleOutput.textString += "Not enough arguments\n";
-            consoleOutput.textString += command.failedOutput + "\n";
+            outputString = command.failedOutput + "\n";
           }
-
-          return;
         }
+        else {
+          outputString = "Not enough arguments\n";
+          outputString += command.failedOutput + "\n";
+        }
+      }
+      else {
+        outputString += "Usage: " + identifier + " ";
+        for (const command of commands) {
+          outputString += command[0] + " | "
+        }
+        outputString += "\n";
       }
     }
 
-    consoleOutput.textString += "Invalid command\n";
+    consoleOutput.textString += outputString;
   }
 
   async loadWorld(path: string) {

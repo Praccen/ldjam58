@@ -24,7 +24,7 @@ import PointLight from "./Engine/Rendering/Objects/Lighting/PointLight";
 import ShapeGraphicsObject from "./Engine/Rendering/Objects/GraphicsObjects/ShapeGraphicsObject";
 import ParticleSpawner from "./Engine/Rendering/Objects/InstancedGraphicsObjects/ParticleSpawner";
 import Heightmap from "./Engine/Rendering/Objects/GraphicsObjects/Heightmap";
-import WorldEditor from "./Engine/Tooling/WorldEditor";
+import WorldEditor, { addNewConsoleCommand } from "./Engine/Tooling/WorldEditor";
 
 // Rendering exports
 export { Renderer3D, Renderer2D, GUIRenderer, Scene, Camera };
@@ -47,7 +47,7 @@ export {
 };
 
 // Tooling
-export { WorldEditor };
+export { WorldEditor, addNewConsoleCommand };
 
 // Global exports
 export let applicationStartTime = Date.now();

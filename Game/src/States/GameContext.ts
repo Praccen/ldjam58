@@ -125,7 +125,7 @@ export default class GameContext {
     );
 
     // Update fog density according to density slider
-    this.renderer.setFogDensity(this.metaGui.densitySlider.getValue() * 0.005);
+    this.renderer.setFogDensity(this.metaGui.densitySlider.getValue() * 0.005); // 60 is a good value for the finished game I think
 
     // Update usage of volumetric lighting based on checkbox
     this.renderer.useVolumetric =

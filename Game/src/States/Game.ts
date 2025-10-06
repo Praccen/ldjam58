@@ -158,7 +158,7 @@ export default class Game {
     // Update sound listener position
     this.soundManager.updateListener(
       this.camera.getPosition(),
-      this.camera.getDir()
+      vec3.clone(this.camera.getDir())
     );
   }
 
