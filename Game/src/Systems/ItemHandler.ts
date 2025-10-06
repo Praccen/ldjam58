@@ -44,9 +44,9 @@ export default class ItemHandler {
   private getRandomCurseType(floor: number): CurseType {
     // Common curses available at all floors
     const commonCurses = [
-      // CurseType.SPEED,
-      // CurseType.TORCH,
-      // CurseType.SIGHT,
+      CurseType.SPEED,
+      CurseType.TORCH,
+      CurseType.SIGHT,
       CurseType.HAUNT,
     ];
 
