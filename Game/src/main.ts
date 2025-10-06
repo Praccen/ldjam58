@@ -86,6 +86,10 @@ function startGame() {
       document.body.focus();
     }
 
+    if ((window as any).stopParticleSystem) {
+      (window as any).stopParticleSystem();
+    }
+
     animate();
   } else {
     // Assets not ready, show loading screen
@@ -98,9 +102,6 @@ function startGame() {
     // Stop menu music and particles when showing loading screen
     if (menuMusic) {
       menuMusic.stop();
-    }
-    if ((window as any).stopParticleSystem) {
-      (window as any).stopParticleSystem();
     }
 
     loadingScreenAnimate();
@@ -166,6 +167,11 @@ async function returnToMenu() {
   // Reset and create new game context (loadNewGame already stops ambient sound)
   gameContext.loadNewGame();
   setupGameCallbacks();
+
+  // Restart particles for main menu
+  if ((window as any).startParticleSystem) {
+    (window as any).startParticleSystem();
+  }
 
   // Fade in menu music
   if (menuMusic) {

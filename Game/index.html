@@ -34,9 +34,12 @@
 			// Particle system - runs in parent window for consistency across menu screens
 			let particleInterval;
 			let particlesEnabled = true;
+			let activeAnimations = [];
 
 			function startParticleSystem() {
 				if (particleInterval) return; // Already running
+
+				particlesEnabled = true;
 
 				// Spawn a new particle every 800ms
 				particleInterval = setInterval(() => {
@@ -54,10 +57,17 @@
 			}
 
 			function stopParticleSystem() {
+				particlesEnabled = false;
+
 				if (particleInterval) {
 					clearInterval(particleInterval);
 					particleInterval = null;
 				}
+
+				// Cancel all active animation frames
+				activeAnimations.forEach(frameId => cancelAnimationFrame(frameId));
+				activeAnimations = [];
+
 				// Remove all existing particles
 				document.querySelectorAll('.dust-particle').forEach(p => p.remove());
 			}
@@ -87,31 +97,41 @@
 					const elapsed = Date.now() - startTime;
 					const progress = elapsed / duration;
 
-					if (progress < 1 && document.body.contains(particle)) {
-						// Calculate position
-						const y = progress * (window.innerHeight + 20);
-						const x = drift * progress;
-
-						// Calculate opacity (fade in and out)
-						let opacity;
-						if (progress < 0.15) {
-							opacity = progress / 0.15; // Fade in
-						} else if (progress > 0.85) {
-							opacity = (1 - progress) / 0.15; // Fade out
-						} else {
-							opacity = 0.6;
-						}
-
-						particle.style.transform = `translate(${x}px, ${y}px)`;
-						particle.style.opacity = opacity;
-
-						animationFrame = requestAnimationFrame(animate);
-					} else {
+					if (!particlesEnabled || progress >= 1 || !document.body.contains(particle)) {
 						// Clean up - remove particle from DOM
 						if (document.body.contains(particle)) {
 							particle.remove();
 						}
-						cancelAnimationFrame(animationFrame);
+						if (animationFrame) {
+							cancelAnimationFrame(animationFrame);
+							const index = activeAnimations.indexOf(animationFrame);
+							if (index > -1) {
+								activeAnimations.splice(index, 1);
+							}
+						}
+						return;
+					}
+
+					// Calculate position
+					const y = progress * (window.innerHeight + 20);
+					const x = drift * progress;
+
+					// Calculate opacity (fade in and out)
+					let opacity;
+					if (progress < 0.15) {
+						opacity = progress / 0.15; // Fade in
+					} else if (progress > 0.85) {
+						opacity = (1 - progress) / 0.15; // Fade out
+					} else {
+						opacity = 0.6;
+					}
+
+					particle.style.transform = `translate(${x}px, ${y}px)`;
+					particle.style.opacity = opacity;
+
+					animationFrame = requestAnimationFrame(animate);
+					if (!activeAnimations.includes(animationFrame)) {
+						activeAnimations.push(animationFrame);
 					}
 				}
 
