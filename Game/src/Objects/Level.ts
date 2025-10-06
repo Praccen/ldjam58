@@ -212,7 +212,7 @@ export default class Level {
             }
 
             // Never put a trap on the wall leading into the shaft
-            if (this.map.getFloorShaftCoords(floor)[0] == convertCoordIncludingWallsToRoomIndex(trapRoom[0]) && this.map.getFloorShaftCoords(floor)[1] == convertCoordIncludingWallsToRoomIndex(trapRoom[1]) - 1) {
+            if (this.map.getFloorShaftCoords(floor)[0] == convertCoordIncludingWallsToRoomIndex(trapRoom[0]) && this.map.getFloorShaftCoords(floor)[1] == convertCoordIncludingWallsToRoomIndex(trapRoom[1]) + 1) {
               continue;
             }
 
@@ -419,18 +419,18 @@ export default class Level {
     let offset = vec3.create();
     let tripwireRotation = 0.0;
     if (direction == TrapDirection.EAST) {
-      vec3.set(offset, -roomSize * 0.45, 1.5, 0.0);
+      vec3.set(offset, -roomSize * 0.45, 1.0, 0.0);
     }
     else if (direction == TrapDirection.NORTH) {
-      vec3.set(offset, 0.0, 1.5, roomSize * 0.45);
+      vec3.set(offset, 0.0, 1.0, roomSize * 0.45);
       tripwireRotation = 90;
     }
     else if (direction == TrapDirection.SOUTH) {
-      vec3.set(offset, 0.0, 1.5, -roomSize * 0.45);
+      vec3.set(offset, 0.0, 1.0, -roomSize * 0.45);
       tripwireRotation = 90;
     }
     else if (direction == TrapDirection.WEST) {
-      vec3.set(offset, roomSize * 0.45, 1.5, 0.0);
+      vec3.set(offset, roomSize * 0.45, 1.0, 0.0);
     }
 
     let trapPosition = vec3.add(vec3.create(), trapRoomPosition, offset);

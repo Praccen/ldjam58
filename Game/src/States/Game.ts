@@ -26,7 +26,6 @@ export default class Game {
   soundManager: SoundManager;
 
   private level: Level;
-  private worldEditor: WorldEditor;
 
   private gameTimer = 0.0;
 
@@ -78,13 +77,6 @@ export default class Game {
 
     // Connect inventory to player controller after level is created
     this.inventory.setPlayerController(this.level.getPlayerController());
-
-    this.worldEditor = new WorldEditor(
-      this.camera,
-      this.level.scene,
-      this.level.physicsScene,
-      this.guiRenderer
-    );
 
     // this.worldEditor.setEnabled(true);
     // Initialize HUD with correct values from shop upgrades
@@ -141,11 +133,6 @@ export default class Game {
   }
 
   update(dt: number) {
-    if (this.worldEditor.interacting()) {
-      this.level.map.updateFocusRoom(this.camera.getPosition());
-      return;
-    }
-
     this.gameTimer += dt;
 
     // Handle inventory toggle (I key)
