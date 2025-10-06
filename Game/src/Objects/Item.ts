@@ -75,10 +75,16 @@ export default class Item {
     this.floorFoundOn = floorFoundOn;
     this.quantity = 1;
 
-    var model: string = "Assets/objs/cube.obj";
-    // TODO: Add models
+    let model: string = "Assets/objs/cube.obj";
+    let diffuse: string = "CSS:rgb(255,255,255)";
+    let specular: string = "CSS:rgb(0,0,0)";
+    let scale: number = 1.0;
     switch (this.type) {
       case ItemType.GRAIL:
+        model = "Assets/objs/grail/Untitled.obj";
+        diffuse = "Assets/objs/grail/Scene_-_Root_baseColor.png";
+        specular = "Assets/objs/grail/Scene_-_Root_metallicRoughness.png";
+        scale = 0.1;
         break;
       case ItemType.RING:
         break;
@@ -101,16 +107,15 @@ export default class Item {
     this.scene
       .addNewMesh(
         model,
-        "Assets/gltf/items/textures/Scene_-_Root_baseColor.png",
-        "Assets/gltf/items/textures/Scene_-_Root_metallicRoughness.png"
+        diffuse,
+        specular
       )
       .then((bundle: AnimatedGraphicsBundle) => {
         this.graphicsBundle = bundle;
         this.graphicsBundle.transform.position = this.startPosition;
 
-        this.physicsObject.setupBoundingBoxFromGraphicsBundle(
-          this.graphicsBundle
-        );
+        this.graphicsBundle.transform.scale = vec3.fromValues(scale, scale, scale);
+        this.physicsObject.boundingBox.setMinAndMaxVectors(vec3.fromValues(-0.5 * 1.0/scale, -0.5 * 1.0/scale, -0.5 * 1.0/scale), vec3.fromValues(0.5 * 1.0/scale, 0.5 * 1.0/scale, 0.5 * 1.0/scale));
 
         this.graphicsBundle.transform.position[1] -=
           this.graphicsBundle.getMinAndMaxPositions().min[1];
