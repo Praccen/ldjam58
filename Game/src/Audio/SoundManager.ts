@@ -209,6 +209,20 @@ export default class SoundManager {
     }
   }
 
+  pause(name: string, id?: number): void {
+    const sound = this.sounds.get(name);
+    if (sound) {
+      sound.pause(id);
+    }
+  }
+
+  resume(name: string, id?: number): void {
+    const sound = this.sounds.get(name);
+    if (sound) {
+      sound.play(id);
+    }
+  }
+
   setSfxVolume(volume: number): void {
     this.sfxVolume = Math.max(0, Math.min(1, volume));
   }

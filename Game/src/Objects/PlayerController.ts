@@ -13,6 +13,7 @@ import {
 import { Input } from "../Input";
 import ItemHandler from "../Systems/ItemHandler";
 import Level from "./Level";
+import SoundManager from "../Audio/SoundManager";
 
 const sensitivity = 0.4;
 const accelerationForce = 75.0;
@@ -57,6 +58,9 @@ export default class PlayerController {
 
   private damageTimer = 0;
   private damageCooldown = 1.0;
+
+  private soundManager: SoundManager;
+  private footstepSoundId: number | null = null;
 
   private stats: PlayerStats = {
     luck: 1, //TODO
@@ -145,13 +149,15 @@ export default class PlayerController {
     rendering: Renderer3D,
     spawnPosition: vec3,
     itemHandler: ItemHandler,
-    level: Level
+    level: Level,
+    soundManager: SoundManager
   ) {
     this.scene = scene;
     this.phyiscsScene = physicsScene;
     this.rendering = rendering;
     this.itemHandler = itemHandler;
     this.level = level;
+    this.soundManager = soundManager;
 
     this.mouseMovement = vec2.create();
     Input.mouseMoveCallBack = (event: MouseEvent) => {
@@ -359,6 +365,22 @@ export default class PlayerController {
       this.cayoteeTimer = 0.0;
     } else {
       this.cayoteeTimer += dt;
+    }
+
+    // Handle footstep sounds
+    const isWalking = vec3.squaredLength(xzVelocity) > 0.1;
+    const shouldPlayFootsteps = isWalking && this.physicsObject.onGround;
+    if (this.footstepSoundId === null) {
+      this.footstepSoundId = this.soundManager.playSfx("footsteps");
+      if (!shouldPlayFootsteps) {
+        this.soundManager.pause("footsteps", this.footstepSoundId);
+      }
+    } else {
+      if (shouldPlayFootsteps) {
+        this.soundManager.resume("footsteps", this.footstepSoundId);
+      } else {
+        this.soundManager.pause("footsteps", this.footstepSoundId);
+      }
     }
 
     // Check for ghost collisions

@@ -158,7 +158,8 @@ export default class Level {
         this.map.getPlayerSpawnRoom()[1] * roomSize + roomSize / 2
       ),
       this.itemHandler,
-      this
+      this,
+      game.soundManager
     );
     this.itemHandler.setPlayer(this.playerController);
 

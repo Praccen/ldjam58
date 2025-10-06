@@ -108,6 +108,13 @@ export default class Game {
       loop: false, // Manual looping with crossfade
       html5: true,
     });
+
+    // Load footstep sound
+    this.soundManager.loadSound("footsteps", {
+      src: ["Assets/Audio/concrete-footsteps-6752.mp3"],
+      volume: 0.4,
+      loop: true,
+    });
   }
 
   createLevel() {
