@@ -139,18 +139,12 @@ async function returnToMenu() {
   endGameScreen.hide();
   loseGameScreen.hide();
   mainMenu.mainMenu.style.display = "block";
-  // Reset and create new game context
 
-  gameContext.loadNewGame();
-  setupGameCallbacks();
-
-  // Restart menu music and particles
+  // Restart menu music
   if (menuMusic) {
     menuMusic.play();
   }
-  if ((window as any).startParticleSystem) {
-    (window as any).startParticleSystem();
-  }
+
 }
 
 // Make returnToMenu available globally for the HTML
@@ -194,6 +188,9 @@ function onGameComplete() {
   // Store new total value
   localStorage.setItem("totalValue", newTotalValue.toString());
 
+  gameContext.loadNewGame();
+  setupGameCallbacks();
+
   // Show end game screen with stats
   endGameScreen.show({
     time: timeString,
@@ -235,6 +232,9 @@ function onGameLose() {
 
   // Save the new total value
   localStorage.setItem("totalValue", newTotalValue.toString());
+
+  gameContext.loadNewGame();
+  setupGameCallbacks();
 
   // Show lose game screen with stats
   loseGameScreen.show({
