@@ -88,7 +88,22 @@ export default class GhostManager {
       -0.05
     );
     vec3.set(fireParticleSpawner.randomPositionModifier.max, 0.05, 0.05, 0.05);
-    fireParticleSpawner.sizeChangePerSecond = -0.3;
+    fireParticleSpawner.sizeChangePerSecond = -0.0001;
+    fireParticleSpawner.initAllParticles(
+      {
+        startPosMin: vec3.fromValues(-0.05, -0.05, -0.05),
+        startPosMax: vec3.fromValues(0.05, 0.05, 0.05),
+      },
+      { sizeMin: 0.05, sizeMax: 0.1 },
+      {
+        startVelMin: vec3.fromValues(0.0, 0.05, 0.0),
+        startVelMax: vec3.fromValues(0.0, 0.15, 0.0),
+      },
+      {
+        accelerationMin: vec3.fromValues(0.0, 0.0, 0.0),
+        accelerationMax: vec3.fromValues(0.0, 0.0, 0.0),
+      }
+    );
 
     this.scene
       .addNewMesh(
