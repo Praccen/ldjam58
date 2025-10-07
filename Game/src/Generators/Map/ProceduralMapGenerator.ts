@@ -69,7 +69,7 @@ export const wallPieceModels = new Array<{
   posOffset: vec3;
 }>(
   {
-    paths: ["Assets/objs/MyDungeon/Floor.obj", "Assets/objs/MyDungeon/Ceiling.obj"],
+    paths: ["Assets/objs/MyDungeon/Floor.obj", "Assets/objs/MyDungeon/Ceiling.obj", "Assets/objs/MyDungeon/Ceiling2.obj"],
     rot: [0],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
   },
@@ -591,7 +591,7 @@ export default class ProceduralMap {
    * Creates ceiling for every room
    */
   createCeilingTile(floorNumber: number, column: number, row: number) {
-    const path = wallPieceModels[0].paths[1];
+    const path = wallPieceModels[0].paths[Math.ceil(Math.random() * 2)];
     let transform = null;
 
     // Make the tile a bridge if it has inaccessible spaces oposite of each other but accessible spaces in the other direction.
