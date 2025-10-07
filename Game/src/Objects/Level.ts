@@ -78,6 +78,8 @@ export default class Level {
   private arrowDispenserInstancedObject: GraphicsBundle;
   private tripWireInstancedObject: GraphicsBundle;
   private itemInstancedObjects = new Map<ItemType, GraphicsBundle>();
+  private initializationPromise: Promise<void>;
+  private initializationResolver: () => void;
 
   constructor(renderer: Renderer3D, game: Game) {
     this.game = game;
@@ -172,6 +174,19 @@ export default class Level {
       game.soundManager
     );
     this.itemHandler.setPlayer(this.playerController);
+
+    // Create initialization promise that tracks both loading chains
+    let meshesLoaded = false;
+    let bucketLoaded = false;
+    const checkComplete = () => {
+      if (meshesLoaded && bucketLoaded) {
+        this.initializationResolver();
+      }
+    };
+
+    this.initializationPromise = new Promise<void>((resolve) => {
+      this.initializationResolver = resolve;
+    });
 
     this.scene.renderer.meshStore
       .loadMeshes([
@@ -294,6 +309,8 @@ export default class Level {
           }
         }
       );
+        meshesLoaded = true;
+        checkComplete();
       }
     );
 
@@ -348,12 +365,18 @@ export default class Level {
             }
           },
         });
+        bucketLoaded = true;
+        checkComplete();
       });
 
     this.physicsScene.update(0.0, true);
 
     const shaft = this.map.getfloorShaftRoomPos(this.map.getCurrentFloor());
     this.currentFloorShaft = vec2.fromValues(shaft[0], shaft[2]);
+  }
+
+  async waitForInitialization(): Promise<void> {
+    await this.initializationPromise;
   }
 
   update(camera: Camera, dt: number) {

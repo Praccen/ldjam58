@@ -16,8 +16,8 @@ window.addEventListener("contextmenu", function (e: Event) {
 
 // Game sound manager - persists across game sessions
 // Initialize with saved volumes from localStorage
-const savedMusicVolume = localStorage.getItem('musicVolume');
-const savedSfxVolume = localStorage.getItem('sfxVolume');
+const savedMusicVolume = localStorage.getItem("musicVolume");
+const savedSfxVolume = localStorage.getItem("sfxVolume");
 export let soundManager = new SoundManager();
 // Set initial volumes from localStorage
 if (savedMusicVolume) {
@@ -28,11 +28,15 @@ if (savedSfxVolume) {
 }
 
 // Load menu music into sound manager
-soundManager.loadSound('menu_music', {
-  src: ['Assets/Audio/forgotten-echoes-338507.mp3'],
-  loop: true,
-  volume: 1.0 // Base volume, will be multiplied by music category volume
-}, 'music');
+soundManager.loadSound(
+  "menu_music",
+  {
+    src: ["Assets/Audio/forgotten-echoes-338507.mp3"],
+    loop: true,
+    volume: 1.0, // Base volume, will be multiplied by music category volume
+  },
+  "music"
+);
 
 let menuMusicStarted = false;
 
@@ -43,7 +47,7 @@ let shopScreen = new ShopScreen();
 let endGameScreen = new EndGame();
 let loseGameScreen = new LoseGame();
 
-export let gameContext = new GameContext(soundManager);
+export let gameContext: GameContext = null;
 
 // Game state management
 enum GameState {
@@ -56,44 +60,42 @@ enum GameState {
 
 let currentState = GameState.MAIN_MENU;
 let assetsLoaded = false;
+let gameFullyInitialized = false;
 let gameStartTime = 0;
 
 /**
  * Function to start the game - called from the main menu
  */
-function startGame() {
+async function startGame() {
   // Stop particles and music immediately before state change
   if ((window as any).stopParticleSystem) {
     (window as any).stopParticleSystem();
   }
 
   // Stop menu music
-  soundManager.stopMusic(2000); // 500ms fade out
+  soundManager.stopMusic(2000);
   menuMusicStarted = false;
 
-    // Resume audio context and start ambient sound
-    if (Howler.ctx && Howler.ctx.state === 'suspended') {
-      Howler.ctx.resume().then(() => {
-        gameContext.game.startAmbientSound();
-      });
-    } else {
-      gameContext.game.startAmbientSound();
-    }
-
-  if (assetsLoaded) {
-    // Assets are ready, start game immediately
+  // If game is already initialized, start immediately without loading screen
+  if (gameFullyInitialized) {
     currentState = GameState.PLAYING;
     mainMenu.mainMenu.style.display = "none";
     endGameScreen.hide();
     loseGameScreen.hide();
+
+    // Resume audio context and start ambient sound
+    if (Howler.ctx && Howler.ctx.state === "suspended") {
+      await Howler.ctx.resume();
+      gameContext.game.startAmbientSound();
+    } else {
+      gameContext.game.startAmbientSound();
+    }
 
     // Reset death ward for new run
     ShopManager.resetDeathWard();
 
     gameContext.start();
     gameStartTime = Date.now();
-
-
 
     // Focus the main document to enable keyboard input
     if (gameContext.renderer && gameContext.renderer.domElement) {
@@ -103,16 +105,61 @@ function startGame() {
     }
 
     animate();
-  } else {
-    // Assets not ready, show loading screen
-    currentState = GameState.LOADING;
-    mainMenu.mainMenu.style.display = "none";
-    endGameScreen.hide();
-    loseGameScreen.hide();
-    splashScreen.splashScreen.style.display = "block";
-
-    loadingScreenAnimate();
+    return;
   }
+
+  // First time loading - show loading screen
+  currentState = GameState.LOADING;
+  mainMenu.mainMenu.style.display = "none";
+  endGameScreen.hide();
+  loseGameScreen.hide();
+  splashScreen.splashScreen.style.display = "block";
+
+  // Start loading animation
+  loadingScreenAnimate();
+
+  // Initialize game context
+  gameContext = new GameContext(soundManager);
+  setupGameCallbacks();
+
+  // Load assets
+  await gameContext.loadMeshes(progress);
+  assetsLoaded = true;
+
+  // Wait for level to fully initialize (items, traps, bucket, etc.)
+  await gameContext.game.getLevel().waitForInitialization();
+
+  // Ensure proper resize
+  resize();
+
+  // Resume audio context and start ambient sound
+  if (Howler.ctx && Howler.ctx.state === "suspended") {
+    await Howler.ctx.resume();
+    gameContext.game.startAmbientSound();
+  } else {
+    gameContext.game.startAmbientSound();
+  }
+
+  // Hide loading screen and start game
+  splashScreen.destroy();
+  currentState = GameState.PLAYING;
+
+  // Reset death ward for new run
+  ShopManager.resetDeathWard();
+
+  gameContext.start();
+  gameStartTime = Date.now();
+
+  // Focus the main document to enable keyboard input
+  if (gameContext.renderer && gameContext.renderer.domElement) {
+    gameContext.renderer.domElement.focus();
+  } else {
+    document.body.focus();
+  }
+
+  gameFullyInitialized = true;
+
+  animate();
 }
 
 function startMenuMusic() {
@@ -120,12 +167,12 @@ function startMenuMusic() {
     menuMusicStarted = true;
 
     // Resume audio context before playing
-    if (Howler.ctx && Howler.ctx.state === 'suspended') {
+    if (Howler.ctx && Howler.ctx.state === "suspended") {
       Howler.ctx.resume().then(() => {
-        soundManager.playMusic('menu_music', 1000); // 1 second fade in
+        soundManager.playMusic("menu_music", 1000); // 1 second fade in
       });
     } else {
-      soundManager.playMusic('menu_music', 1000); // 1 second fade in
+      soundManager.playMusic("menu_music", 1000); // 1 second fade in
     }
   }
 }
@@ -140,7 +187,9 @@ function setSfxVolume(volume: number) {
 }
 
 function setSensitivity(value: number) {
-  gameContext.game.getLevel().getPlayerController().sensitivity = value;
+  if (gameContext) {
+    gameContext.game.getLevel().getPlayerController().sensitivity = value;
+  }
 }
 
 function showSettings() {
@@ -184,8 +233,10 @@ async function returnToMenu() {
   mainMenu.mainMenu.style.display = "block";
 
   // Reset and create new game context (loadNewGame already stops ambient sound)
-  gameContext.loadNewGame();
-  setupGameCallbacks();
+  if (gameContext) {
+    gameContext.loadNewGame();
+    setupGameCallbacks();
+  }
 
   // Restart particles for main menu
   if ((window as any).startParticleSystem) {
@@ -194,8 +245,7 @@ async function returnToMenu() {
 
   // Restart menu music with fade in
   menuMusicStarted = false;
-  soundManager.playMusic('menu_music', 2000); // 2 second fade in
-
+  soundManager.playMusic("menu_music", 2000); // 2 second fade in
 }
 
 // Make returnToMenu available globally for the HTML
@@ -209,29 +259,30 @@ function onGameComplete() {
   const seconds = Math.floor((timePlayedMs % 60000) / 1000);
   const timeString = `${minutes}:${seconds.toString().padStart(2, "0")}`;
 
-  const artifactsCollected = gameContext.game.inventory.getItemCount();
+  const artifactsCollected = gameContext?.game.inventory.getItemCount() || 0;
 
-  const floorsExplored = gameContext.game.getLevel().map.getCurrentFloor();
+  const floorsExplored =
+    gameContext?.game.getLevel().map.getCurrentFloor() || 0;
 
-  gameContext.game.soundManager.stop("footsteps");
+  if (gameContext) {
+    gameContext.game.soundManager.stop("footsteps");
+  }
   // Get items and curses data, but serialize only necessary fields
   // Also calculate value for each item based on rarity
-  const items = gameContext.game.inventory.getItems().map((item) => ({
-    name: item.name,
-    type: item.type,
-    quantity: item.quantity,
-    rarity: item.rarity,
-    description: item.description,
-    value: calculateItemValue(item.rarity, item.type, item.quantity),
-  }));
+  const items =
+    gameContext?.game.inventory.getItems().map((item) => ({
+      name: item.name,
+      type: item.type,
+      quantity: item.quantity,
+      rarity: item.rarity,
+      description: item.description,
+      value: calculateItemValue(item.rarity, item.type, item.quantity),
+    })) || [];
 
-  const curses = gameContext.game.inventory.getAggregatedCurses();
+  const curses = gameContext?.game.inventory.getAggregatedCurses() || [];
 
   // Calculate total value from this run
-  const currentRunValue = items.reduce(
-    (total, item) => total + item.value,
-    0
-  );
+  const currentRunValue = items.reduce((total, item) => total + item.value, 0);
 
   // Get persistent total value from localStorage
   const storedTotalValue = parseInt(localStorage.getItem("totalValue") || "0");
@@ -269,12 +320,13 @@ function onGameLose() {
   const seconds = Math.floor((timePlayedMs % 60000) / 1000);
   const timeString = `${minutes}:${seconds.toString().padStart(2, "0")}`;
 
-
-  gameContext.game.soundManager.stop("footsteps");
-  const curses = gameContext.game.inventory.getAggregatedCurses();
+  if (gameContext) {
+    gameContext.game.soundManager.stop("footsteps");
+  }
+  const curses = gameContext?.game.inventory.getAggregatedCurses() || [];
 
   // Get current floor depth
-  const currentFloor = gameContext.game.getLevel().map.getCurrentFloor();
+  const currentFloor = gameContext?.game.getLevel().map.getCurrentFloor() || 0;
 
   // Calculate gold penalty based on floor (deeper = more penalty)
   const goldPenalty = (currentFloor + 1) * 5000;
@@ -302,7 +354,7 @@ function onGameLose() {
   if ((window as any).startParticleSystem) {
     (window as any).startParticleSystem();
   }
-  
+
   document.exitPointerLock();
 }
 
@@ -336,12 +388,14 @@ function calculateItemValue(
   const multiplier = rarityMultipliers[rarity || "common"];
 
   // Add some randomness (±20%)
-  const randomFactor = 0.8 + Math.random() * 0.4 ;
+  const randomFactor = 0.8 + Math.random() * 0.4;
 
   // Apply shop upgrade bonus
   const shopMultiplier = ShopManager.getArtifactValueMultiplier();
 
-  return Math.floor(baseValue * multiplier * randomFactor * quantity * shopMultiplier);
+  return Math.floor(
+    baseValue * multiplier * randomFactor * quantity * shopMultiplier
+  );
 }
 
 /**
@@ -357,7 +411,7 @@ function setupGameCallbacks() {
  */
 function closeInventory() {
   // Access the inventory through gameContext and close it
-  if (gameContext && gameContext.game && gameContext.game.inventory) {
+  if (gameContext?.game?.inventory) {
     gameContext.game.inventory.hide();
   }
 }
@@ -393,7 +447,9 @@ function resize() {
   let width = window.innerWidth;
   let height = window.innerHeight;
 
-  gameContext.resize(width, height);
+  if (gameContext) {
+    gameContext.resize(width, height);
+  }
 }
 
 // Run the resize function once to sync with the current size of the browser window
@@ -405,7 +461,9 @@ window.addEventListener("resize", () => {
 });
 
 window.addEventListener("beforeunload", function (e: BeforeUnloadEvent) {
-  gameContext.onExit();
+  if (gameContext) {
+    gameContext.onExit();
+  }
 });
 
 // A timer to keep track of frame time
@@ -427,7 +485,7 @@ function animate() {
   requestAnimationFrame(animate);
   let now = Date.now();
   let dt = (now - lastUpdateTime) * 0.001;
-  
+
   lastUpdateTime = now;
 
   accumulativeDt += dt;
@@ -452,45 +510,25 @@ let progress = { requested: 0, loaded: 0 };
 splashScreen.splashScreen.style.display = "none";
 mainMenu.mainMenu.style.display = "block";
 
-// Setup callbacks initially
-setupGameCallbacks();
-
-// Start asset loading in background
-gameContext.loadMeshes(progress).then(() => {
-  assetsLoaded = true;
-});
-
 // Start menu music on first click anywhere
-document.addEventListener('click', function() {
-  startMenuMusic();
-}, { once: true });
+document.addEventListener(
+  "click",
+  function () {
+    startMenuMusic();
+  },
+  { once: true }
+);
 
 function loadingScreenAnimate() {
   if (currentState !== GameState.LOADING) {
     return;
   }
 
-  if (progress.requested == 0 || progress.loaded < progress.requested) {
-    splashScreen.draw(progress);
+  // Update progress display
+  splashScreen.draw(progress);
+
+  // Continue animating while loading
+  if (!gameFullyInitialized) {
     requestAnimationFrame(loadingScreenAnimate);
-  } else if (assetsLoaded) {
-    // Loading complete, start game
-    splashScreen.destroy();
-    currentState = GameState.PLAYING;
-    gameStartTime = Date.now();
-
-    // Reset death ward for new run
-    ShopManager.resetDeathWard();
-
-    gameContext.start();
-
-    // Focus the main document to enable keyboard input
-    if (gameContext.renderer && gameContext.renderer.domElement) {
-      gameContext.renderer.domElement.focus();
-    } else {
-      document.body.focus();
-    }
-
-    animate();
   }
 }

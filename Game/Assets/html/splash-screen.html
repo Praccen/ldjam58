@@ -112,18 +112,6 @@
         }
       }
 
-      /* Loading-specific particle system */
-      .dust-particle {
-        position: fixed;
-        width: 3px;
-        height: 3px;
-        background: #d4c5a9;
-        border-radius: 50%;
-        opacity: 0;
-        pointer-events: none;
-        z-index: 4;
-        box-shadow: 0 0 3px rgba(212, 197, 169, 0.5);
-      }
 
       /* Content */
       .container {
@@ -313,73 +301,6 @@
     <div class="footer">DIG DEEPER. DISCOVER MORE.</div>
 
     <script>
-      // Particle system - same as main menu but lighter
-      let particleInterval;
-
-      function startParticleSystem() {
-        particleInterval = setInterval(() => {
-          createParticle();
-        }, 1200); // Slower than main menu
-
-        // Create initial batch
-        for (let i = 0; i < 8; i++) {
-          setTimeout(() => createParticle(), i * 800);
-        }
-      }
-
-      function createParticle() {
-        const particle = document.createElement("div");
-        particle.className = "dust-particle";
-
-        const startX = Math.random() * 100;
-        particle.style.left = startX + "%";
-        particle.style.top = "-10px";
-
-        document.body.appendChild(particle);
-        animateParticle(particle);
-      }
-
-      function animateParticle(particle) {
-        const duration = 12000 + Math.random() * 8000; // 12-20 seconds
-        const drift = (Math.random() - 0.5) * 30; // Less drift than main menu
-        const startTime = Date.now();
-        let animationFrame;
-
-        function animate() {
-          const elapsed = Date.now() - startTime;
-          const progress = elapsed / duration;
-
-          if (progress < 1 && document.body.contains(particle)) {
-            const y = progress * (window.innerHeight + 20);
-            const x = drift * progress;
-
-            let opacity;
-            if (progress < 0.2) {
-              opacity = progress / 0.2;
-            } else if (progress > 0.8) {
-              opacity = (1 - progress) / 0.2;
-            } else {
-              opacity = 0.4; // Less opacity than main menu
-            }
-
-            particle.style.transform = `translate(${x}px, ${y}px)`;
-            particle.style.opacity = opacity;
-
-            animationFrame = requestAnimationFrame(animate);
-          } else {
-            if (document.body.contains(particle)) {
-              particle.remove();
-            }
-            cancelAnimationFrame(animationFrame);
-          }
-        }
-
-        animate();
-      }
-
-      // Start particle system
-      startParticleSystem();
-
       // Progress update function - called from parent window
       function updateProgress(progress) {
         const progressFill = document.getElementById("progressFill");
