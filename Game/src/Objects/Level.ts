@@ -107,13 +107,15 @@ export default class Level {
 
     let level = this;
     this.scene.useTrees = false;
+    let lastRoom = vec2.fromValues(-1, -1);
     let lastFloor = -1;
     this.scene.customFrustumCulling = (frustums: Shape[]) => {
-      if (level.map.getCurrentFloor() != lastFloor) {
+      if (lastRoom[0] != this.map.focusRoom[0] || lastRoom[1] != this.map.focusRoom[1] || lastFloor != level.map.getCurrentFloor()) {
         this.scene.disableInstancedBundles();
         level.map.doFrustumCulling();
         this.scene.updateInstanceBuffers();
       }
+      lastRoom = vec2.clone(level.map.focusRoom);
       lastFloor = level.map.getCurrentFloor();
     };
 
