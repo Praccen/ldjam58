@@ -24,6 +24,7 @@ export default class ShopScreen {
 
   show(): void {
     this.shopScreen.style.display = "block";
+    this.shopScreen.contentWindow.renderShop();
   }
 
   hide(): void {
