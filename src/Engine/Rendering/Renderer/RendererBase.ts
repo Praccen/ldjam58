@@ -17,10 +17,8 @@ export default class RendererBase {
   protected height: number;
 
   gl: WebGL2RenderingContext;
-  rendererStartTime: number;
 
   constructor() {
-    this.rendererStartTime = Date.now();
     this.initGL();
     this.width = 100;
     this.height = 100;

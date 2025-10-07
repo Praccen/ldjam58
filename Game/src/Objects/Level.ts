@@ -124,7 +124,7 @@ export default class Level {
       1000
     );
     this.moodParticleSpawner.lifeTime = 15.0;
-    this.moodParticleSpawner.fadePerSecond = 1.0 / 15.0;
+    this.moodParticleSpawner.fadePerSecond = 1.0 / this.moodParticleSpawner.lifeTime;
     vec3.set(
       this.moodParticleSpawner.randomPositionModifier.min,
       -50.0,

@@ -236,7 +236,7 @@ export default class ParticleSpawner extends GraphicsObject {
     }
     this.bufferSubDataUpdate(
       particleIndex * 11 + 7,
-      new Float32Array([(Date.now() - applicationStartTime) * 0.001 + 0.05]) // I add 0.05 to minimize the risk of the particle respawning before the position is updated
+      new Float32Array([(Date.now() - applicationStartTime) * 0.001])
     );
     return true;
   }

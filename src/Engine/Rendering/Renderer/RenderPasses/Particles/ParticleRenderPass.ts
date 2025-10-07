@@ -1,3 +1,4 @@
+import { applicationStartTime } from "../../../../../Engine";
 import Texture from "../../../AssetHandling/Textures/Texture";
 import Camera from "../../../Objects/Camera";
 import ScreenQuad from "../../../Objects/GraphicsObjects/ScreenQuad";
@@ -28,7 +29,7 @@ export default class ParticleRenderPass {
     }
   }
 
-  draw(scene: Scene, camera: Camera, rendererStartTime: number) {
+  draw(scene: Scene, camera: Camera) {
     if (scene.particleSpawners.length > 0) {
       // only do this if there are any particle spawners
       this.particleShaderProgram.use();
@@ -40,9 +41,10 @@ export default class ParticleRenderPass {
         this.particleShaderProgram.getUniformLocation("cameraPos")[0],
         camera.getPosition()
       );
+
       this.gl.uniform1f(
         this.particleShaderProgram.getUniformLocation("currentTime")[0],
-        (Date.now() - rendererStartTime) * 0.001
+        (Date.now() - applicationStartTime) * 0.001
       );
       for (const particleSpawner of scene.particleSpawners.values()) {
         particleSpawner.draw(this.particleShaderProgram);

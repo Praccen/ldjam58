@@ -14,7 +14,6 @@ import ShopManager from "../Systems/ShopManager";
 export interface Ghost {
   physicsObject: PhysicsObject;
   graphicsBundle: GraphicsBundle;
-  fireParticleSpawner: ParticleSpawner;
 }
 
 export default class GhostManager {
@@ -80,7 +79,8 @@ export default class GhostManager {
       5
     );
     fireParticleSpawner.lifeTime = 0.8;
-    fireParticleSpawner.fadePerSecond = 1.0 / 0.8;
+    fireParticleSpawner.fadePerSecond = 1.0 / fireParticleSpawner.lifeTime;
+    vec3.set(fireParticleSpawner.offset, 0.0, 1.5, 0.0);
     vec3.set(
       fireParticleSpawner.randomPositionModifier.min,
       -0.05,
@@ -88,13 +88,13 @@ export default class GhostManager {
       -0.05
     );
     vec3.set(fireParticleSpawner.randomPositionModifier.max, 0.05, 0.05, 0.05);
-    fireParticleSpawner.sizeChangePerSecond = -0.0001;
+    fireParticleSpawner.sizeChangePerSecond = -0.1;
     fireParticleSpawner.initAllParticles(
       {
         startPosMin: vec3.fromValues(-0.05, -0.05, -0.05),
         startPosMax: vec3.fromValues(0.05, 0.05, 0.05),
       },
-      { sizeMin: 0.05, sizeMax: 0.1 },
+      { sizeMin: 0.1, sizeMax: 0.3 },
       {
         startVelMin: vec3.fromValues(0.0, 0.05, 0.0),
         startVelMax: vec3.fromValues(0.0, 0.15, 0.0),
@@ -127,12 +127,13 @@ export default class GhostManager {
         physicsObject.boundingBox.setTransformMatrix(
           graphicsBundle.transform.matrix
         );
+
+         fireParticleSpawner.position = physicsObject.transform.position;
       });
 
     this.ghosts.push({
       physicsObject,
       graphicsBundle,
-      fireParticleSpawner,
     });
   }
 
@@ -153,10 +154,6 @@ export default class GhostManager {
     const bobAmount = 0.0015;
     const bobOffset = Math.sin(Date.now() * 0.001 * bobSpeed) * bobAmount;
     ghostPos[1] = ghostPos[1] + bobOffset;
-
-    // Update fire particle spawner position to follow ghost
-    vec3.copy(ghost.fireParticleSpawner.position, ghostPos);
-    ghost.fireParticleSpawner.position[1] += 1.5;
 
     // Calculate direction from player to ghost
     const toGhost = vec3.create();

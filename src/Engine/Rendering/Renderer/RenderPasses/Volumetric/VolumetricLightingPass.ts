@@ -11,6 +11,7 @@ import ScreenQuad from "../../../Objects/GraphicsObjects/ScreenQuad";
 import VolumetricLightingShaderProgram from "../../ShaderPrograms/Volumetric/VolumetricLightingShaderProgram";
 import VolumetricCombineShaderProgram from "../../ShaderPrograms/Volumetric/VolumetricCombineShaderProgram";
 import ScreenQuadShaderProgram from "../../ShaderPrograms/ScreenQuadShaderProgram";
+import { applicationStartTime } from "../../../../../Engine";
 
 export default class VolumetricLightingPass {
   private gl: WebGL2RenderingContext;
@@ -102,7 +103,7 @@ export default class VolumetricLightingPass {
     }
   }
 
-  draw(scene: Scene, camera: Camera, rendererStartTime: number) {
+  draw(scene: Scene, camera: Camera) {
     this.upscaleFramebuffer.bind(this.gl.DRAW_FRAMEBUFFER);
     this.gl.viewport(
       0,
@@ -193,7 +194,7 @@ export default class VolumetricLightingPass {
     // Time for fog moving
     this.gl.uniform1f(
       this.volumetricLightingShaderProgram.getUniformLocation("currentTime")[0],
-      (Date.now() - rendererStartTime) * 0.001
+      (Date.now() - applicationStartTime) * 0.001
     );
 
     this.volumetricScreenQuad.draw(this.volumetricLightingShaderProgram, true);

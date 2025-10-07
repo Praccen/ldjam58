@@ -30,7 +30,6 @@ import Shape from "../../Physics/Physics/Shapes/Shape";
 import ShapesShaderProgram from "./ShaderPrograms/Shapes/ShapesShaderProgram";
 import ShapesRenderPass from "./RenderPasses/Shapes/ShapesRenderPass";
 import BlurMaskShaderProgram from "./ShaderPrograms/PostProcessing/BlurMaskShaderProgram";
-import ShaderProgram from "./ShaderPrograms/ShaderProgram";
 
 export default class Renderer3D extends RendererBase {
   // ---- Multi use ----
@@ -347,7 +346,7 @@ export default class Renderer3D extends RendererBase {
     // ----------------
 
     // ---- Particles ----
-    this.particleRenderPass.draw(scene, camera, this.rendererStartTime);
+    this.particleRenderPass.draw(scene, camera);
     // -------------------
 
     // ---- Blur mask ----
@@ -356,7 +355,7 @@ export default class Renderer3D extends RendererBase {
 
     // ---- Volumetric God Rays ----
     if (this.useVolumetric) {
-      this.volumetricLightingPass.draw(scene, camera, this.rendererStartTime);
+      this.volumetricLightingPass.draw(scene, camera);
     }
     // -----------------------------
 

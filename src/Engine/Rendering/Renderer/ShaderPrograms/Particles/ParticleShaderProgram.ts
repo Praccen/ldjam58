@@ -81,9 +81,7 @@ void main()
         discard;
     }
 
-  // if (FragColor.a < 1.0) {
-    FragOpacity = 1.0;
-  // }
+  FragOpacity = 1.0;
   FragColor.a = 1.0; // Since we use screen door transparency, do not use alpha value
 }`;
 
