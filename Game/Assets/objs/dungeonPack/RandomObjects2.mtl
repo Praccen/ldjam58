@@ -1,0 +1,42 @@
+# Blender 3.3.1 MTL File: 'RandomObjects2.blend'
+# www.blender.org
+
+newmtl texture.004
+Ns 302.500000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Users/gbjor/source/repos/DungeonCrawlerRougelite/Game/Assets/objs/dungeonPack/dungeon_texture.png
+
+newmtl texture.005
+Ns 302.500000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Users/gbjor/source/repos/DungeonCrawlerRougelite/Game/Assets/objs/dungeonPack/dungeon_texture.png
+
+newmtl texture.006
+Ns 302.500000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Users/gbjor/source/repos/DungeonCrawlerRougelite/Game/Assets/objs/dungeonPack/dungeon_texture.png
+
+newmtl texture.007
+Ns 302.500000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Users/gbjor/source/repos/DungeonCrawlerRougelite/Game/Assets/objs/dungeonPack/dungeon_texture.png

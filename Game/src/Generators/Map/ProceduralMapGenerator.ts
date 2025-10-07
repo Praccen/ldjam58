@@ -156,6 +156,9 @@ export const wallPieceModels = new Array<{
       "Assets/objs/dungeonPack/column.obj",
       "Assets/objs/dungeonPack/chest.obj",
       "Assets/objs/dungeonPack/chair.obj",
+      "Assets/objs/dungeonPack/RandomObjects.obj",
+      "Assets/objs/dungeonPack/RandomObjects2.obj",
+      "Assets/objs/dungeonPack/RandomObjects3.obj",
     ],
     rot: [0, 45, 90, 135, 180, 225, 270, 315],
     posOffset: vec3.fromValues(0.0, 0.0, 0.0),
@@ -383,7 +386,7 @@ export default class ProceduralMap {
         mustGoRooms,
         noGoRooms,
         connectionRooms,
-        0.85
+        0.8
       )
     );
 
