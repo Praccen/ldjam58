@@ -31,9 +31,9 @@ const floorLayouts: string[] = [
   // 121
   // `,
   `
-  5111111
+  1111111
   0111111
-  1112111
+  1115111
   112X211
   1112111
   1111111
@@ -281,7 +281,6 @@ export default class ProceduralMap {
 
     this.playerSpawnRoom = vec2.fromValues(0, 0);
 
-    floorNumbers.sort();
     this.currentFloor = floorNumbers[0];
     this.endFloor = floorNumbers[floorNumbers.length - 1];
     for (const floorNumber of floorNumbers) {
@@ -1258,6 +1257,24 @@ export default class ProceduralMap {
   }
 
   doFrustumCulling() {
+    // Show whole shaft if in an adjecent room to it
+    for (const floor of this.graphicsContent) {
+      const shaftCoords = this.getFloorShaftCoords(floor[0]);
+      if (Math.abs(shaftCoords[0] - this.focusRoom[0]) > 1 || Math.abs(shaftCoords[1] - this.focusRoom[1]) > 1) {
+        continue;
+      }
+    
+      for (let col = shaftCoords[0]; col <= shaftCoords[0] + 1; col++) {
+        for (let row = shaftCoords[1]; row <= shaftCoords[1] + 1; row++) {
+          for (const objectToEnable of floor[1][col][row]) {
+            objectToEnable.enabled = true;
+          }
+        }
+      }
+    }
+    
+
+    // Show floors that the player is on, above and below.
     for (const floor of this.graphicsContent) {
       if (Math.abs(floor[0] - this.getCurrentFloor()) > 1) {
         continue;
@@ -1273,8 +1290,8 @@ export default class ProceduralMap {
             continue;
           }
 
-          for (const objectWithEnable of floor[1][col][row]) {
-            objectWithEnable.enabled = true;
+          for (const objectToEnable of floor[1][col][row]) {
+            objectToEnable.enabled = true;
           }
         }
       }

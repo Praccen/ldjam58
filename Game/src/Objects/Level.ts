@@ -85,7 +85,8 @@ export default class Level {
     this.scene = new Scene(renderer);
     this.scene.directionalLight.ambientMultiplier = 0.0;
     vec3.set(this.scene.directionalLight.colour, 0.6, 0.6, 0.6);
-    vec3.set(this.scene.directionalLight.direction, 0.001, -1.0, -0.6);
+    vec3.set(this.scene.directionalLight.direction, 0.001, -1.0, -0.1);
+    vec3.set(this.scene.directionalLight.shadowFocusPos, roomSize * 3.5, -30, roomSize * 3.5);
 
     this.scene.directionalLight.shadowCameraDistance = 100;
     this.scene.directionalLight.lightProjectionBoxSideLength = 100;
@@ -415,12 +416,6 @@ export default class Level {
 
   preRenderingUpdate(dt: number, camera: Camera) {
     this.moodParticleSpawner.position = camera.getPosition();
-
-    this.scene.getDirectionalLight().shadowFocusPos = vec3.fromValues(
-      this.map.focusRoom[0] * 10.0 + 5.0,
-      0.0,
-      this.map.focusRoom[1] * 10.0 + 5.0
-    );
   }
 
   cleanUp() {}
