@@ -139,11 +139,21 @@ export default class WorldEditor {
       if (event.key == "Shift") {
         self.shiftHeld = true;
       }
+      if (event.key == "Tab") {
+        event.preventDefault();
+      }
     });
 
     document.addEventListener("keyup", function (event) {
       if (event.key == "Shift") {
         self.shiftHeld = false;
+      }
+      if (event.key == "Tab") {
+        event.preventDefault();
+        const autocompleted = self.tabComplete(consoleCommandsTextEdit.getInputElement().value, consoleOutput);
+        if (autocompleted.length > 0) {
+          consoleCommandsTextEdit.getInputElement().value = autocompleted;
+        }
       }
 
       if (event.key == "§") {
@@ -522,6 +532,39 @@ export default class WorldEditor {
       consoleOutput.textString += "Selected new object " + name + "\n";
     }
     consoleOutput.scrollToBottom = true;
+  }
+  
+  private tabComplete(input: string, consoleOutput: TextObject2D): string {
+    input = input.trim() + " ";
+
+    let fittingCommands = Array.from(consoleCommands.keys()).filter((identifier) => identifier.startsWith(input.split(" ")[0]));
+    if (input == " ") {
+      fittingCommands = Array.from(consoleCommands.keys());
+    }
+
+    if (fittingCommands.length == 1 && input.split(" ").filter((value) => value.length > 0).length == 1) {
+      return fittingCommands[0] + " ";
+    }
+    else if (fittingCommands.length == 1) {
+      if (consoleCommands.get(fittingCommands[0]).size == 1) {
+        return fittingCommands + " " + Array.from(consoleCommands.get(fittingCommands[0]).keys())[0];
+      }
+      else {
+        consoleOutput.textString += "Available arguments for " + fittingCommands[0] + ": \n";
+        for (const command of consoleCommands) {
+          consoleOutput.textString += command[0] + "\n";
+        }
+        consoleOutput.scrollToBottom = true;
+        return fittingCommands[0] + " ";
+      }
+    }
+
+    for (const command of fittingCommands) {
+      consoleOutput.textString += command + " ";
+    }
+    consoleOutput.textString += "\n";
+    consoleOutput.scrollToBottom = true;
+    return "";
   }
 
   private parseConsoleInput(input: string, consoleOutput: TextObject2D) {
