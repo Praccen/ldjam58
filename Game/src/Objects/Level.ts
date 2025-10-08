@@ -495,18 +495,18 @@ export default class Level {
     let offset = vec3.create();
     let tripwireRotation = 0.0;
     if (direction == TrapDirection.EAST) {
-      vec3.set(offset, -roomSize * 0.45, 1.0, 0.0);
+      vec3.set(offset, -roomSize * 0.44, 1.0, Math.random() * 4.0 - 2.0);
     }
     else if (direction == TrapDirection.NORTH) {
-      vec3.set(offset, 0.0, 1.0, roomSize * 0.45);
+      vec3.set(offset, Math.random() * 4.0 - 2.0, 1.0, roomSize * 0.44);
       tripwireRotation = 90;
     }
     else if (direction == TrapDirection.SOUTH) {
-      vec3.set(offset, 0.0, 1.0, -roomSize * 0.45);
+      vec3.set(offset, Math.random() * 4.0 - 2.0, 1.0, -roomSize * 0.44);
       tripwireRotation = 90;
     }
     else if (direction == TrapDirection.WEST) {
-      vec3.set(offset, roomSize * 0.45, 1.0, 0.0);
+      vec3.set(offset, roomSize * 0.44, 1.0, Math.random() * 4.0 - 2.0);
     }
 
     let trapPosition = vec3.add(vec3.create(), trapRoomPosition, offset);

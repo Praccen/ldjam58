@@ -12,6 +12,7 @@ import {
   TextObject2D,
   Transform,
 } from "../../Engine";
+import { compileFunction } from "vm";
 
 let json: {
   meshes: {
@@ -150,9 +151,19 @@ export default class WorldEditor {
       }
       if (event.key == "Tab") {
         event.preventDefault();
-        const autocompleted = self.tabComplete(consoleCommandsTextEdit.getInputElement().value, consoleOutput);
-        if (autocompleted.length > 0) {
-          consoleCommandsTextEdit.getInputElement().value = autocompleted;
+        const autocompleted = self.tabComplete(consoleCommandsTextEdit.getInputElement().value);
+        if (autocompleted.complete.length > 0) {
+          consoleCommandsTextEdit.getInputElement().value = autocompleted.complete;
+        }
+
+        if (autocompleted.suggestions.length > 0) {
+          // Print the options
+          consoleOutput.textString += "  ";
+          for (const suggestion of autocompleted.suggestions) {
+            consoleOutput.textString += suggestion + " ";
+          }
+          consoleOutput.textString += "\n";
+          consoleOutput.scrollToBottom = true;
         }
       }
 
@@ -219,7 +230,8 @@ export default class WorldEditor {
             -self.sensitivity
           );
           self.camera.setPitchJawDegrees(pitchJaw[0], pitchJaw[1]);
-        } else if (self.mouseMiddleHeld || self.mouseRightHeld) {
+        }
+        else if (self.mouseMiddleHeld || self.mouseRightHeld) {
           let camPos = vec3.clone(self.camera.getPosition());
           vec3.scaleAndAdd(
             camPos,
@@ -437,7 +449,7 @@ export default class WorldEditor {
 
        addNewConsoleCommand(
         ["set"],
-        ["autosave"],
+        ["autosave", "auto", "a"],
         {
         minArgs: 2,
         logic: (args: string[]): boolean => {
@@ -488,6 +500,8 @@ export default class WorldEditor {
       },
     );
 
+    // this.tabCompleteUnitTest();
+
     this.guiDiv.setHidden(true);
   }
 
@@ -534,37 +548,146 @@ export default class WorldEditor {
     consoleOutput.scrollToBottom = true;
   }
   
-  private tabComplete(input: string, consoleOutput: TextObject2D): string {
-    input = input.trim() + " ";
-
-    let fittingCommands = Array.from(consoleCommands.keys()).filter((identifier) => identifier.startsWith(input.split(" ")[0]));
-    if (input == " ") {
-      fittingCommands = Array.from(consoleCommands.keys());
-    }
-
-    if (fittingCommands.length == 1 && input.split(" ").filter((value) => value.length > 0).length == 1) {
-      return fittingCommands[0] + " ";
-    }
-    else if (fittingCommands.length == 1) {
-      if (consoleCommands.get(fittingCommands[0]).size == 1) {
-        return fittingCommands + " " + Array.from(consoleCommands.get(fittingCommands[0]).keys())[0];
+  private tabCompleteUnitTest() {
+    const tests:{input: string, complete: string, suggestions: string[]}[] = [
+      {
+        input: "toggle c",
+        complete: "toggle cullingboxes ",
+        suggestions: []
+      },
+      {
+        input: "tog",
+        complete: "toggle ",
+        suggestions: []
+      },
+      {
+        input: "toggle a",
+        complete: "",
+        suggestions: []
+      },
+      {
+        input:"toggle",
+        complete:"toggle ",
+        suggestions: []
+      },
+      {
+        input:"toggle ",
+        complete:"toggle ",
+        suggestions: ["cullingboxes"]
+      },
+      {
+        input: "rot",
+        complete: "",
+        suggestions: ["rot", "rotate"]
+      },
+      {
+        input: "rot ",
+        complete: "rot ",
+        suggestions: ["x", "y", "z"]
+      },
+      {
+        input: "rot x",
+        complete: "rot x ",
+        suggestions: []
+      },
+      {
+        input: "rot x ",
+        complete: "rot x ",
+        suggestions: []
       }
-      else {
-        consoleOutput.textString += "Available arguments for " + fittingCommands[0] + ": \n";
-        for (const command of consoleCommands) {
-          consoleOutput.textString += command[0] + "\n";
+    ]
+    
+    for (const test of tests) {
+      const output = this.tabComplete(test.input);
+      if (output.complete != test.complete) {
+        debugger;
+      }
+      if (output.suggestions.length != test.suggestions.length) {
+        debugger;
+      }
+      if (output.suggestions.length == 0) {
+        continue;
+      }
+      test.suggestions.sort();
+      output.suggestions.sort();
+      for (let i = 0; i < test.suggestions.length; i++) {
+        if (test.suggestions[i] != output.suggestions[i]) {
+          debugger;
         }
-        consoleOutput.scrollToBottom = true;
-        return fittingCommands[0] + " ";
       }
     }
+  }
 
-    for (const command of fittingCommands) {
-      consoleOutput.textString += command + " ";
+  private getCompletionAndSuggestions(input: string, matchAgainst: string[]) : {complete: string, suggestions: string[]} {
+    const inputSplitWithoutEmptyEntries = input.split(" ").filter((value) => value.length > 0);
+    if (inputSplitWithoutEmptyEntries.length == 0) {
+      return {complete: "", suggestions: matchAgainst};
     }
-    consoleOutput.textString += "\n";
-    consoleOutput.scrollToBottom = true;
-    return "";
+
+    let matches = matchAgainst.filter((identifier) => identifier.startsWith(inputSplitWithoutEmptyEntries[0]));
+    if (matches.length == 0) {
+      // We have no fitting matches, don't suggest anything
+      return {complete: "", suggestions: []};
+    }
+
+    if (matches.length > 1) {
+      for (const match of matches) {
+        if (input.trimStart().startsWith(match + " ")) {
+          // There where multiple matches, but the input was a complete match followed by a space, so return that match
+          return {complete: match + " ", suggestions: []};
+        }
+      }
+
+      if (inputSplitWithoutEmptyEntries.length == 1) {
+        // Many matches and we have only one word input, return all applicable matches
+        return {complete: "", suggestions: matches};
+      }
+
+      // We have inputted more than one word, but the first word doesn't match anything, don't suggest anything
+      return {complete: "", suggestions: []};
+    }
+
+    if (matches.length == 1) {
+      // Exactly one fit, return it
+      return {complete: matches[0] + " ", suggestions: []};
+    }
+  }
+
+  private tabComplete(input: string): {complete: string, suggestions: string[]} {
+    let completionAndSuggestion = this.getCompletionAndSuggestions(input, Array.from(consoleCommands.keys()));
+
+    if (completionAndSuggestion.complete == "") {
+      // No direct match, return possible suggestions
+      return completionAndSuggestion;
+    }
+
+    if (completionAndSuggestion.complete.trim() == input.trim()) {
+      // The input matched a single option, and has no arguments
+      if (completionAndSuggestion.complete.trim() == input.trimStart()) {
+        // input doesn't have a space at the end yet, autocomplete one (already on complete) and don't suggest anything
+        return {complete: completionAndSuggestion.complete, suggestions: []};
+      }
+
+      // Input ends with a space, return the match + a space, suggest all options
+      return {complete: completionAndSuggestion.complete, suggestions: Array.from(consoleCommands.get(completionAndSuggestion.complete.trim()).keys())};
+    }
+
+    const inputSplitWithoutEmptyEntries = input.split(" ").filter((value) => value.length > 0);
+    if (inputSplitWithoutEmptyEntries.length == 1) {
+      // One word input, return the match
+      return completionAndSuggestion;
+    }
+
+    // Input has more words than the matched consoleCommand identifier, match the next word to arguments
+    let argumentCompletionAndSuggesstion = this.getCompletionAndSuggestions(inputSplitWithoutEmptyEntries[1], Array.from(consoleCommands.get(completionAndSuggestion.complete.trim()).keys()));
+
+    if (argumentCompletionAndSuggesstion.complete.length > 0) {
+      // Found an argument, use it
+      return {complete: completionAndSuggestion.complete + argumentCompletionAndSuggesstion.complete, suggestions: []};
+    }
+
+    // Found multiple or no arguments, either way returning the result will give the correct result
+    return {complete: "", suggestions: argumentCompletionAndSuggesstion.suggestions};
   }
 
   private parseConsoleInput(input: string, consoleOutput: TextObject2D) {
